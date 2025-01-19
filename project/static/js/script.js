@@ -18,8 +18,8 @@ class Letter {
     createTextElement() {
         const span = document.createElement('span');
         span.classList.add('text');
-        span.style.visibility = 'visible';
-        span.textContent = 'Z';
+        span.style.visibility = 'hidden';
+        span.textContent = '';
         return span;
     }
 
@@ -44,8 +44,12 @@ class Letter {
     }
 
     toggleIsSelected() {
-        this.is_selected = !this.is_selected;
-        if (this.is_selected) {
+        this.setIsSelected(!this.is_selected);
+    }
+
+    setIsSelected(value) {
+        this.is_selected = value;
+        if (value) {
             this.element.classList.add('selected');
         } else {
             this.element.classList.remove('selected');
@@ -91,12 +95,24 @@ class Word {
 }
 
 class Board {
-    constructor(container_id, num_words) {
+    constructor(container_id, num_words, data) {
         this.element = document.getElementById(container_id);
         this.words = [];
         this.num_words = num_words;
+        
         this.selected_w = 0;
         this.selected_l = 0;
+        
+        this.constraints = data["constraints"];
+        this.grid = data["grid"];
+        // this is used to ensure that no constraints can be assigned the same letter
+        this.constraints_to_letters = {
+            '@': '',
+            '#': '',
+            '$': '',
+            '%': ''
+        }
+        
         this.initBoard();
 
     }
@@ -110,15 +126,59 @@ class Board {
             this.words.push(word);
             word.appendWordElement(this.element);
         }
+        let constraint_to_class = {
+            '@': 'c1',
+            '#': 'c2',
+            '$': 'c3',
+            '%': 'c4'
+        }
+        for (let constraint in this.constraints) {
+            this.constraints[constraint].forEach(constrained_letter => {
+                let w = constrained_letter[0];
+                let l = constrained_letter[1];
+                this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
+            });
+            // for (let constrained_letter in this.constraints[constraint]) {
+            //     console.log(constrained_letter);
+                
+            //     let w = constrained_letter[0];
+            //     let l = constrained_letter[1];
+            //     console.log(w);
+            //     console.log(l);
+                
+            //     this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
+            // }
+        }
+    }
+
+    deselectAll() {
+        this.words.forEach((word) => {
+            word.letters.forEach((letter) => {
+                letter.setIsSelected(false);
+            });
+        });
+    }
+
+    toggleSelected() {
+        this.deselectAll();
+        this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
     }
 
     keyPressed(event) {
+        if (event.keyCode == 32) {
+            this.handleArrowKeyPressed(39)
+        }
         if (event.keyCode >= 37 && event.keyCode <= 40) {
             this.handleArrowKeyPressed(event.keyCode);
             return;
         }
         if (event.keyCode >= 65 && event.keyCode <= 90) {
-            console.log("letter pressed!")
+            this.handleLetterKeyPressed(event.keyCode);
+            return;
+        }
+        if (event.keyCode == 8) {
+            // backspace
+            this.handleBackspacePressed();
             return;
         }
     }
@@ -130,9 +190,13 @@ class Board {
         new_l--;
         if (new_l < 0) {
             new_l = 4;
-            new_w = this.moveUp();
+            if (new_w != 0) {
+                this.moveUp();
+                new_w = this.selected_w;
+            }
         }
-        return [new_w, new_l];
+        this.selected_w = new_w;
+        this.selected_l = new_l;
     }
 
     moveUp() {
@@ -141,7 +205,7 @@ class Board {
         if (new_w < 0) {
             new_w = 3;
         }
-        return new_w;
+        this.selected_w = new_w;
     }
 
     moveRight() {
@@ -150,9 +214,11 @@ class Board {
         new_l++;
         if (new_l > 4) {
             new_l = 0;
-            new_w = this.moveDown();
+            this.moveDown();
+            new_w = this.selected_w;
         }
-        return [new_w, new_l];
+        this.selected_w = new_w;
+        this.selected_l = new_l;
     }
 
     moveDown() {
@@ -161,45 +227,123 @@ class Board {
         if (new_w > 3) {
             new_w = 0;
         }
-        return new_w;
+        this.selected_w = new_w;
     }
 
     handleArrowKeyPressed(key) {
-        let new_w = this.selected_w;
-        let new_l = this.selected_l;
-        
+        if (this.selected_w == null) {
+            this.selected_w = 0;
+        }
+        if (this.selected_l == null) {
+            this.selected_l = 0;
+        }
         switch (key) {
             case 37:
-                [new_w, new_l] = this.moveLeft();
+                this.moveLeft();
                 break;
             case 38:
-                new_w = this.moveUp();
+                this.moveUp();
                 break;
             case 39:
-                [new_w, new_l] = this.moveRight();
+                this.moveRight();
                 break;
             case 40:
-                new_w = this.moveDown();
+                this.moveDown();
                 break;
         }
-        // toggle current off
-        this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
         // toggle new on
-        this.words[new_w].letters[new_l].toggleIsSelected();
-        
-        this.selected_w = new_w;
-        this.selected_l = new_l;
+        this.toggleSelected();
     }
 
+    // this gets called when the user uses their mouse to click on a letter to select it
     handleLetterClicked(w, l) {
-        // toggle current off
-        this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
-        // toggle new on
-        this.words[w].letters[l].toggleIsSelected();
+        let clicked_currently_selected = (w == this.selected_w && l == this.selected_l);
+        this.deselectAll();
+        this.selected_w = null;
+        this.selected_l = null;
 
-        this.selected_w = w;
-        this.selected_l = l;
+        if (!clicked_currently_selected) {
+            // toggle new on
+            this.words[w].letters[l].toggleIsSelected();
+            this.selected_w = w;
+            this.selected_l = l;
+        }
+    }
+
+    selectedIsConstrained() {
+        return (this.grid[this.selected_w][this.selected_l] != '-');
+    }
+
+    getSelectedConstrainedLetters() {
+        return this.constraints[this.grid[this.selected_w][this.selected_l]];
+    }
+
+    handleLetterKeyPressed(key) {
+        console.log(String.fromCharCode(key));
+        // if the currently selected letter is constrained, update all letters with that same constraint
+        if (this.selectedIsConstrained()) {
+            // if the letter is already in use, return
+            for (let constraint in this.constraints_to_letters) {
+                if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
+                    if (constraint == this.grid[this.selected_w][this.selected_l]) {
+                        return;
+                    } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
+                    // do something visual to highlight all of the conflicting letters
+                    this.constraints[constraint].forEach(conflicting_letter => {
+                        let w = conflicting_letter[0];
+                        let l = conflicting_letter[1];
+                        this.words[w].letters[l].element.classList.add('conflict');
+                    });
+                    setTimeout(() => {
+                        this.constraints[constraint].forEach(conflicting_letter => {
+                            let w = conflicting_letter[0];
+                            let l = conflicting_letter[1];
+                            this.words[w].letters[l].element.classList.remove('conflict');
+                        });
+                    }, 100);
+                    return;
+                } // if we find that a symbol already is using that letter, return early
+            } // go through the map mapping a constraint symbol to a letter
+            let constrained_letters = this.getSelectedConstrainedLetters();
+            constrained_letters.forEach(letter => {
+                let w = letter[0];
+                let l = letter[1];
+                this.words[w].letters[l].updateLetter(String.fromCharCode(key));
+            })
+            this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = String.fromCharCode(key);
+        } else {
+            // otherwise, just update the letter
+            this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
+        }
+        this.moveRight();
+        this.toggleSelected();
+    }
+
+    handleBackspacePressed() {
+        if (this.selectedIsConstrained()) {
+            let constrained_letters = this.getSelectedConstrainedLetters();
+            constrained_letters.forEach(letter => {
+                let w = letter[0];
+                let l = letter[1];
+                this.words[w].letters[l].updateLetter("");
+            })
+            this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = '';
+        } else {
+            this.words[this.selected_w].letters[this.selected_l].updateLetter("");
+        }
+        if (this.selected_w == 0 && this.selected_l == 0) {
+            return;
+        }
+        this.moveLeft();
+        this.toggleSelected();
     }
 }
 
-const board = new Board('board', 4);
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/game')
+    .then(response => response.json())
+    .then(data => {
+        const board = new Board('board', 4, data)
+        
+    })
+});

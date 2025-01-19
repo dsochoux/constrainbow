@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    background-color: #f0f0f0; /* Optional background */
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(5, 70px);
+    grid-gap: 12px;
+}
+.tile {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3.5px solid #000;
+    border-radius: 14px;
+    background-color: #e6e6e6;
+    cursor: pointer;
+    box-sizing: border-box; /* Ensure padding and border are included in the tile size */
+    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
+}
+.tile.active {
+    border: 5.5px solid black;
+}

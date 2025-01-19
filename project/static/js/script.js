@@ -92,6 +92,21 @@ class Word {
 
     // some handy functions might live here,
     // like getting a word in string version from the letters
+    isAllLettersFilled() {
+        let all_letters_filled = true;
+        this.letters.forEach(letter => {
+            all_letters_filled = all_letters_filled && Boolean(letter.current_letter);
+        });
+        return all_letters_filled;
+    }
+
+    getWordString() {
+        let word = "";
+        this.letters.forEach(letter => {
+            word = word + letter.current_letter;
+        });
+        return word.toLowerCase();
+    } // will only be called for full words, guaranteed
 }
 
 class Board {
@@ -105,6 +120,8 @@ class Board {
         
         this.constraints = data["constraints"];
         this.grid = data["grid"];
+        this.accepted_words = new Set(data["words"]);
+        console.log(this.accepted_words);
         // this is used to ensure that no constraints can be assigned the same letter
         this.constraints_to_letters = {
             '@': '',
@@ -278,14 +295,15 @@ class Board {
         return this.constraints[this.grid[this.selected_w][this.selected_l]];
     }
 
-    handleLetterKeyPressed(key) {
-        console.log(String.fromCharCode(key));
+    async handleLetterKeyPressed(key) {
         // if the currently selected letter is constrained, update all letters with that same constraint
         if (this.selectedIsConstrained()) {
             // if the letter is already in use, return
             for (let constraint in this.constraints_to_letters) {
                 if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
                     if (constraint == this.grid[this.selected_w][this.selected_l]) {
+                        this.moveRight();
+                        this.toggleSelected();
                         return;
                     } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
                     // do something visual to highlight all of the conflicting letters
@@ -317,9 +335,36 @@ class Board {
         }
         this.moveRight();
         this.toggleSelected();
+        if (this.isSolutionFound()) {
+            this.deselectAll();
+            let delay_time = 100;
+            // loop through the letters and add celebrate class
+            await this.delayedForEach(this.words, (word) => {
+                this.delayedForEach(word.letters, (letter) => {
+                    letter.element.classList.add('celebrate');
+                }, delay_time);
+            }, delay_time);
+            // loop through the letters and remove celebrate class
+            await this.delayedForEach(this.words, (word) => {
+                this.delayedForEach(word.letters, (letter) => {
+                    letter.element.classList.remove('celebrate');
+                }, delay_time);
+            }, delay_time);
+        }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    async delayedForEach(array, callback, delayTime) {
+        for (const item of array) {
+            await callback(item);
+            await this.delay(delayTime);
+        }
     }
 
     handleBackspacePressed() {
+        let is_on_blank_letter = (this.words[this.selected_w].letters[this.selected_l].current_letter == "");
         if (this.selectedIsConstrained()) {
             let constrained_letters = this.getSelectedConstrainedLetters();
             constrained_letters.forEach(letter => {
@@ -334,8 +379,32 @@ class Board {
         if (this.selected_w == 0 && this.selected_l == 0) {
             return;
         }
-        this.moveLeft();
-        this.toggleSelected();
+        if (is_on_blank_letter) {
+            this.moveLeft();
+            this.toggleSelected();
+        }
+    }
+
+    isSolutionFound() {
+        let is_solution_found = true;
+        this.words.forEach(word => {
+            is_solution_found = is_solution_found && word.isAllLettersFilled();
+        });
+
+        if (!is_solution_found) {
+            return false;
+        } // if we don't have all the letters, it is certainly not done
+
+        // must verify that they are valid words
+        this.words.forEach(word => {
+            console.log("checking " + word.getWordString());
+            let is_valid_word = this.accepted_words.has(word.getWordString());
+            if (!is_valid_word) {
+                is_solution_found = false;
+            }
+        });
+
+        return is_solution_found;
     }
 }
 

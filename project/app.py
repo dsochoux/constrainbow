@@ -16,6 +16,11 @@ def game():
     #     "word_3": "%---$",
     #     "word_4": "-#-#%"
     # },
+    words = []
+    with open('../word_files/words.txt', 'r') as f:
+        for word in f:
+            words.append(word.strip())
+
     return jsonify({
         "constraints": {
             '@': [[0, 0], [0, 4], [1, 2]],
@@ -27,8 +32,9 @@ def game():
             ['@', '-', '-', '$', '@'],
             ['-', '-', '@', '-', '#'],
             ['%', '-', '-', '-', '$'],
-            ['-', '#', '-', '#', '%']
-        ]
+            ['-', '#', '-', '#', '%'],
+        ],
+        "words": words
     })
 
 if __name__ == '__main__':

@@ -52,6 +52,11 @@ body {
 .letter.conflict {
     background-color: rgb(255, 172, 172);
 }
+.letter.celebrate {
+    border: 5px solid green;
+    background-color: #525252;
+    color: white;
+}
 
 .text {
     font-size: 40px;

@@ -13,7 +13,7 @@ class Letter {
         this.is_selected = (w == 0 && l == 0);
         this.element = this.createLetterElement(this.textElement, this.is_selected);
         
-        this.current_letter = null;
+        this.current_letter = "";
     }
 
     createTextElement() {
@@ -109,7 +109,7 @@ class Word {
         return word.toLowerCase();
     } // will only be called for full words, guaranteed
 
-    flashRed(w, constraint_symbol) {
+    turnRed(w, constraint_symbol) {
         console.log("here!")
         // want to return early if we should not flash red
         if (w != this.index) {
@@ -127,11 +127,16 @@ class Word {
         this.letters.forEach(letter => {
             letter.element.classList.add('conflict');
         });
-        setTimeout(() => {
-            this.letters.forEach(letter => {
-                letter.element.classList.remove('conflict');
-            });
-        }, 200);
+        // setTimeout(() => {
+        //     this.letters.forEach(letter => {
+        //         letter.element.classList.remove('conflict');
+        //     });
+        // }, 200);
+    }
+    clearRed() {
+        this.letters.forEach(letter => {
+            letter.element.classList.remove('conflict');
+        });
     }
 }
 
@@ -345,25 +350,22 @@ class Board {
             // if the letter is already in use, return
             for (let constraint in this.constraints_to_letters) {
                 if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
-                    if (constraint == this.grid[this.selected_w][this.selected_l]) {
-                        this.moveRight();
-                        this.toggleSelected();
-                        return;
-                    } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
-                    // do something visual to highlight all of the conflicting letters
-                    this.constraints[constraint].forEach(conflicting_letter => {
-                        let w = conflicting_letter[0];
-                        let l = conflicting_letter[1];
-                        this.words[w].letters[l].element.classList.add('conflict');
-                    });
-                    setTimeout(() => {
+                    if (constraint != this.grid[this.selected_w][this.selected_l]) {
                         this.constraints[constraint].forEach(conflicting_letter => {
                             let w = conflicting_letter[0];
                             let l = conflicting_letter[1];
-                            this.words[w].letters[l].element.classList.remove('conflict');
+                            this.words[w].letters[l].element.classList.add('conflict');
                         });
-                    }, 100);
-                    return;
+                        setTimeout(() => {
+                            this.constraints[constraint].forEach(conflicting_letter => {
+                                let w = conflicting_letter[0];
+                                let l = conflicting_letter[1];
+                                this.words[w].letters[l].element.classList.remove('conflict');
+                            });
+                        }, 200);
+                        return;
+                    } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
+                    // do something visual to highlight all of the conflicting letters
                 } // if we find that a symbol already is using that letter, return early
             } // go through the map mapping a constraint symbol to a letter
             let constrained_letters = this.getSelectedConstrainedLetters();
@@ -394,7 +396,9 @@ class Board {
                 }, delay_time);
             }, delay_time);
         }
-        this.moveRight();
+        while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && this.selected_l < 4) {
+            this.moveRight();
+        }
         this.toggleSelected();
     }
 
@@ -416,18 +420,28 @@ class Board {
                 let w = letter[0];
                 let l = letter[1];
                 this.words[w].letters[l].updateLetter("");
+                this.words[w].clearRed();
             })
             this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = '';
         } else {
             this.words[this.selected_w].letters[this.selected_l].updateLetter("");
         }
+        this.words[this.selected_w].clearRed();
         if (this.selected_w == 0 && this.selected_l == 0) {
             return;
         }
         if (is_on_blank_letter) {
-            this.moveLeft();
+            while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && this.selected_l > 0) {
+                this.moveLeft();
+            }
             this.toggleSelected();
         }
+        
+        // if (is_on_blank_letter) {
+            
+            
+            
+        // }
     }
 
     isSolutionFound() {
@@ -439,14 +453,18 @@ class Board {
             if (word.isAllLettersFilled()) {
                 let is_valid_word = this.accepted_words.has(word.getWordString());
                 if (!is_valid_word) {
-                    is_solution_found = false;
                     // color the word red for a second
-                    word.flashRed(this.selected_w, this.grid[this.selected_w][this.selected_l]);
-                    return is_solution_found = false;
+                    word.turnRed(this.selected_w, this.grid[this.selected_w][this.selected_l]);
+                    is_solution_found = false;
+                    return;
+                } else {
+                    word.clearRed();
                 }
                 is_solution_found = is_solution_found && is_valid_word;
+            } else {
+                is_solution_found = false;
+                return;
             }
-            return is_solution_found = false;
         });
         return is_solution_found;
     }

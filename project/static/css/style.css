@@ -69,7 +69,8 @@ h1 {
 }
 
 .letter.conflict {
-    background-color: rgb(255, 172, 172);
+    /* background-color: rgb(255, 172, 172); */
+    color: rgb(255, 76, 76);
 }
 .letter.celebrate {
     border: 5px solid green;

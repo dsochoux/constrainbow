@@ -43,12 +43,15 @@ def generate_game():
     for i in range(4):
         words[i][difference_column] = symbols[i]
         num_symbols += 1
-        
+    for i in range(4):
         # randomly pick a different word, and assign one of its
         # non-difference-positions this symbol. This guaretees that no
         # symbol is contained in only one word
         random_word = random.choice([j for j in range(0, 4) if j!=i])
-        random_position = random.choice([j for j in range(0, 5) if j != difference_column])
+        random_position = difference_column # start with a bad column
+        while words[random_word][random_position] != '-':
+            random_word = random.choice([j for j in range(0, 4) if j!=i])
+            random_position = random.choice([j for j in range(0, 5) if j != difference_column])
         words[random_word][random_position] = symbols[i]
         num_symbols += 1
     

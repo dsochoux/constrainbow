@@ -7,11 +7,12 @@ class Letter {
         this.l = l;
         this.constraint_symbol = constraint_symbol;
         this.click_handler = click_handler;
-        this.textElement = this.createTextElement();
+        this.text_element = this.createTextElement();
         
         // the first letter of the first word will begin in the selected state
-        this.is_selected = (w == 0 && l == 0);
-        this.element = this.createLetterElement(this.textElement, this.is_selected);
+        // this.is_selected = (w == 0 && l == 0);
+        this.is_selected = false;
+        this.element = this.createLetterElement(this.text_element, this.is_selected);
         
         this.current_letter = "";
     }
@@ -60,12 +61,12 @@ class Letter {
     updateLetter(letter) {
         this.current_letter = letter;
         if (letter) {
-            this.textElement.textContent = letter;
-            this.textElement.style.visibility = 'visible';
+            this.text_element.textContent = letter;
+            this.text_element.style.visibility = 'visible';
         } else {
             // no need to overwrite the letterElement.textContent, just hide it
             // it will be overwritten before it is made visible again
-            this.textElement.style.visibility = 'hidden';
+            this.text_element.style.visibility = 'hidden';
         }
     }
 }
@@ -125,7 +126,7 @@ class Word {
             }
         }
         this.letters.forEach(letter => {
-            letter.element.classList.add('conflict');
+            letter.element.classList.add('incorrect');
         });
         // setTimeout(() => {
         //     this.letters.forEach(letter => {
@@ -135,7 +136,7 @@ class Word {
     }
     clearRed() {
         this.letters.forEach(letter => {
-            letter.element.classList.remove('conflict');
+            letter.element.classList.remove('incorrect');
         });
     }
 }
@@ -146,8 +147,8 @@ class Board {
         this.words = [];
         this.num_words = num_words;
         
-        this.selected_w = 0;
-        this.selected_l = 0;
+        this.selected_w = null;
+        this.selected_l = null;
         
         this.constraints = data["constraints"];
         this.grid = data["grid"];
@@ -162,16 +163,78 @@ class Board {
         }
         
         this.is_paused = false;
-
+        this.game_has_started = false; // this will only ever be updated once, when the user makes their first click
+        this.first_solution_found = false; // they are only timed for their first solution. then the timer stops
+        this.total_seconds = 0;
+        this.interval_id = null;
+        this.timer_element = document.getElementById("timer");
+        this.start_instructions_element = document.getElementById("start-message");
         this.initBoard();
+        this.pause();
 
+    }
+
+    updateTimerDisplay() {
+        let minutes = Math.floor(this.total_seconds / 60).toString().padStart(2, '0');
+        let seconds = (this.total_seconds % 60).toString().padStart(2, '0');
+        this.timer_element.textContent = `${minutes}:${seconds}`;
+    }
+
+    startTimer() {
+        this.interval_id = setInterval(() => {
+            this.total_seconds++;
+            this.updateTimerDisplay();
+        }, 1000);
+    }
+
+    pauseTimer() {
+        clearInterval(this.interval_id);
     }
 
     pause() {
+        if (this.is_paused || this.first_solution_found) {
+            return;
+        }
+        this.pauseTimer();
         this.is_paused = true;
+        // add the paused class to all of the letters
+        this.words.forEach((word) => {
+            word.letters.forEach((letter) => {
+                letter.element.classList.add('paused');
+                letter.text_element.style.visibility = 'hidden';
+            });
+        });
     }
     resume() {
+        if (!this.is_paused || this.first_solution_found) {
+            return;
+        }
+        this.start_instructions_element.style.display = 'none';
+        this.timer_element.style.display = 'inline-block';
+        this.startTimer();
         this.is_paused = false;
+        // remove the paused class from all of the letters
+        this.words.forEach((word) => {
+            word.letters.forEach((letter) => {
+                letter.element.classList.remove('paused');
+                letter.text_element.style.visibility = 'visible';
+            });
+        });
+        if (!this.game_has_started) {
+            this.game_has_started = true;
+            // need to switch the start message for the timer and get it rolling
+        }
+    }
+
+    handleTimerClicked() {
+        if (this.first_solution_found) {
+            return;
+        }
+        if (this.is_paused) {
+            this.resume();
+        } else {
+            this.pause();
+        }
     }
 
     initBoard() {
@@ -320,6 +383,7 @@ class Board {
 
     // this gets called when the user uses their mouse to click on a letter to select it
     handleLetterClicked(w, l) {
+        this.resume();
         let clicked_currently_selected = (w == this.selected_w && l == this.selected_l);
         this.deselectAll();
         this.selected_w = null;
@@ -380,7 +444,9 @@ class Board {
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
         }
         if (this.isSolutionFound()) {
-            document.getElementById('encouraging-message').textContent = "Way to go! Keep finding more.";
+            document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
+            this.pauseTimer();
+            this.timer_element.classList.add('end-timer');
             this.deselectAll();
             let delay_time = 100;
             // loop through the letters and add celebrate class
@@ -395,11 +461,12 @@ class Board {
                     letter.element.classList.remove('celebrate');
                 }, delay_time);
             }, delay_time);
+        } else {
+            while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && this.selected_l < 4) {
+                this.moveRight();
+            }
+            this.toggleSelected();
         }
-        while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && this.selected_l < 4) {
-            this.moveRight();
-        }
-        this.toggleSelected();
     }
 
     delay(ms) {
@@ -466,6 +533,9 @@ class Board {
                 return;
             }
         });
+        if (is_solution_found) {
+            this.first_solution_found = true; // can overwrite this only once
+        }
         return is_solution_found;
     }
 }
@@ -477,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById("overlay");
     const howToPlayButton = document.getElementById("how-to-play-button");
     const closeButton = document.getElementById("close-button");
+    const timerButton = document.getElementById("timer");
     console.log(closeButton);
 
     // Show the overlay when the "How to Play" button is clicked
@@ -488,21 +559,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hide the overlay when the "X" button is clicked
     closeButton.addEventListener("click", () => {
         overlay.style.visibility = 'hidden';
-        board.resume();
+        // board.resume();
     });
+
+    timerButton.addEventListener("click", () => {
+        board.handleTimerClicked();
+    });
+
 
     // Optional: Hide the overlay if the user clicks outside the popup
     overlay.addEventListener("click", (event) => {
         if (event.target === overlay) {
             overlay.style.visibility = 'hidden';
-            board.resume();
+            // board.resume();
         }
     });
     fetch('/game')
     .then(response => response.json())
     .then(data => {
         board = new Board('board', 4, data);
-        document.getElementById("num-valid-constraint-assignments").textContent = data["num_valid_constraint_assignments"].toLocaleString();
+        // document.getElementById("num-valid-constraint-assignments").textContent = data["num_valid_constraint_assignments"].toLocaleString();
         document.getElementById("num-possible-solutions").textContent = data["num_possible_solutions"].toLocaleString();
     });
 });

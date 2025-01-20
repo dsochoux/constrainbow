@@ -19,10 +19,16 @@
     </div>
     <div id="container">
         <h1>CONSTRAINBOW</h1>
+        <div>
+            <div>
+                <span id="start-message">Click any tile to start. Click the timer to pause.</span>
+                <button id="timer" class="link-styled-button">00:00</span>
+            </div>
+        </div>
         <div id="board"></div>
         <div>
-            <p class="description"><span id="num-valid-constraint-assignments"></span> ways to assign the constraints; <span id="num-possible-solutions"></span> possible solutions</p>
-            <p class="description"><span id="encouraging-message">Good luck finding one.</span> <button id="how-to-play-button">How to play?</button></p>
+            <p class="description">Today's puzzle has <span id="num-possible-solutions"></span> possible solutions.</p>
+            <p class="description"><span id="encouraging-message">Good luck finding one.</span> <button class="link-styled-button" id="how-to-play-button">How to play?</button></p>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

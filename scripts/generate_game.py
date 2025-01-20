@@ -65,12 +65,21 @@ def generate_game():
 
 words = generate_game()
 
-result["constraints"] = {
-    "word_1": "".join(words[0]),
-    "word_2": "".join(words[1]),
-    "word_3": "".join(words[2]),
-    "word_4": "".join(words[3]),
-}
+# result["constraints"] = {
+#     "word_1": "".join(words[0]),
+#     "word_2": "".join(words[1]),
+#     "word_3": "".join(words[2]),
+#     "word_4": "".join(words[3]),
+# }
+result["grid"] = words
+result["constraints"] = {}
+for i in range(len(words)):
+    for j in range(len(words[i])):
+        if words[i][j] == '-': continue
+        l = result["constraints"].get(words[i][j], [])
+        l.append([i, j])
+        result["constraints"][words[i][j]] = l
+
 
 num_valid_symbol_assignments = 0
 num_possible_boards = 0
@@ -175,7 +184,7 @@ def find_solution(symbol):
 
 
 find_solution(0)
-result["num_valid_contraint_assignments"] = num_valid_symbol_assignments
+result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
 result["num_possible_solutions"] = num_possible_boards
 result["solutions"] = solutions_result
 

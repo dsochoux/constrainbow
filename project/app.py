@@ -1,4 +1,7 @@
 from flask import Flask, render_template, jsonify
+import os
+import random
+import json
 
 app = Flask(__name__)
 
@@ -17,23 +20,24 @@ def game():
     #     "word_4": "-#-#%"
     # },
     words = []
+    generated_game_folder = '../generated_games'
+    files = [f for f in os.listdir(generated_game_folder)]
+    selected_game_file = random.choice(files)
+    # selected_game_file will be a json file. load into a python dict
+    file_path = os.path.join(generated_game_folder, selected_game_file)
+    with open(file_path, 'r') as f:
+        game_object = json.load(f)
+
+
     with open('../word_files/words.txt', 'r') as f:
         for word in f:
             words.append(word.strip())
 
     return jsonify({
-        "constraints": {
-            '@': [[0, 0], [0, 4], [1, 2]],
-            '#': [[1, 4], [3, 1], [3, 3]],
-            '$': [[0, 3], [2, 4]],
-            '%': [[2, 0], [3, 4]]
-        },
-        "grid": [
-            ['@', '-', '-', '$', '@'],
-            ['-', '-', '@', '-', '#'],
-            ['%', '-', '-', '-', '$'],
-            ['-', '#', '-', '#', '%'],
-        ],
+        "constraints": game_object["constraints"],
+        "grid": game_object["grid"],
+        "num_valid_constraint_assignments": game_object["num_valid_constraint_assignments"],
+        "num_possible_solutions": game_object["num_possible_solutions"],
         "words": words
     })
 

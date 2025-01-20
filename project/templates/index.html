@@ -7,7 +7,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div id="board"></div>
+    <div id="overlay">
+        <div id="popup">
+            <button id="close-button">&times;</button>
+            <h2>How to play CONSTRAINBOW</h2>
+            <p>The object of the game is to find four five-letter words that fit the constraints.</p>
+            <p>All letters of the same color must be the same, and no two colors can be the same letter.</p>
+            <p>All other letters (the black ones) can be anything.</p>
+            <p>Don't get mad at the list of words; it's Wordle's.</p>
+        </div>
+    </div>
+    <div id="container">
+        <h1>CONSTRAINBOW</h1>
+        <div id="board"></div>
+        <div>
+            <p class="description"><span id="num-valid-constraint-assignments"></span> ways to assign the constraints; <span id="num-possible-solutions"></span> possible solutions</p>
+            <p class="description"><span id="encouraging-message">Good luck finding one.</span> <button id="how-to-play-button">How to play?</button></p>
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

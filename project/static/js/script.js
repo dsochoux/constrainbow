@@ -1,10 +1,11 @@
 class Letter {
     // w: index of word, l: index of letter
-    constructor(w, l, click_handler) {
+    constructor(w, l, constraint_symbol, click_handler) {
         // a Letter needs to know "who" is is. when clicked, it must
         // tell the board that it has been selected
         this.w = w;
         this.l = l;
+        this.constraint_symbol = constraint_symbol;
         this.click_handler = click_handler;
         this.textElement = this.createTextElement();
         
@@ -71,15 +72,15 @@ class Letter {
 
 class Word {
     // w: index of the word
-    constructor(w, click_handler) {
+    constructor(w, grid, click_handler) {
         this.index = w;
         this.letters = [];
-        this.initWord(click_handler);
+        this.initWord(click_handler, grid);
     }
 
-    initWord(click_handler) {
+    initWord(click_handler, grid) {
         for (let l = 0; l < 5; l++) {
-            const letter = new Letter(this.index, l, click_handler);
+            const letter = new Letter(this.index, l, grid[this.index][l], click_handler);
             this.letters.push(letter);
         }
     }
@@ -107,6 +108,31 @@ class Word {
         });
         return word.toLowerCase();
     } // will only be called for full words, guaranteed
+
+    flashRed(w, constraint_symbol) {
+        console.log("here!")
+        // want to return early if we should not flash red
+        if (w != this.index) {
+            // the only time we don't want to flash would be if the word is not the one that just got completed
+            let word_contrains_constraint_symbol = false;
+            this.letters.forEach(letter => {
+                if (constraint_symbol != "-" && letter.constraint_symbol == constraint_symbol) {
+                    word_contrains_constraint_symbol = true;
+                }
+            });
+            if (!word_contrains_constraint_symbol) {
+                return;
+            }
+        }
+        this.letters.forEach(letter => {
+            letter.element.classList.add('conflict');
+        });
+        setTimeout(() => {
+            this.letters.forEach(letter => {
+                letter.element.classList.remove('conflict');
+            });
+        }, 200);
+    }
 }
 
 class Board {
@@ -130,8 +156,17 @@ class Board {
             '%': ''
         }
         
+        this.is_paused = false;
+
         this.initBoard();
 
+    }
+
+    pause() {
+        this.is_paused = true;
+    }
+    resume() {
+        this.is_paused = false;
     }
 
     initBoard() {
@@ -139,7 +174,7 @@ class Board {
             this.keyPressed(event)
         });
         for (let w = 0; w < this.num_words; w++) {
-            const word = new Word(w, this.handleLetterClicked.bind(this))
+            const word = new Word(w, this.grid, this.handleLetterClicked.bind(this))
             this.words.push(word);
             word.appendWordElement(this.element);
         }
@@ -182,6 +217,12 @@ class Board {
     }
 
     keyPressed(event) {
+        if (this.is_paused) {
+            return;
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
+            return;
+        }
         if (event.keyCode == 32) {
             this.handleArrowKeyPressed(39)
         }
@@ -288,6 +329,9 @@ class Board {
     }
 
     selectedIsConstrained() {
+        if (this.selected_w == null || this.selected_l == null) {
+            return false;
+        }
         return (this.grid[this.selected_w][this.selected_l] != '-');
     }
 
@@ -333,9 +377,8 @@ class Board {
             // otherwise, just update the letter
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
         }
-        this.moveRight();
-        this.toggleSelected();
         if (this.isSolutionFound()) {
+            document.getElementById('encouraging-message').textContent = "Way to go! Keep finding more.";
             this.deselectAll();
             let delay_time = 100;
             // loop through the letters and add celebrate class
@@ -351,6 +394,8 @@ class Board {
                 }, delay_time);
             }, delay_time);
         }
+        this.moveRight();
+        this.toggleSelected();
     }
 
     delay(ms) {
@@ -387,32 +432,59 @@ class Board {
 
     isSolutionFound() {
         let is_solution_found = true;
+        
+        // ensure all letters of the board are filled
         this.words.forEach(word => {
-            is_solution_found = is_solution_found && word.isAllLettersFilled();
-        });
-
-        if (!is_solution_found) {
-            return false;
-        } // if we don't have all the letters, it is certainly not done
-
-        // must verify that they are valid words
-        this.words.forEach(word => {
-            console.log("checking " + word.getWordString());
-            let is_valid_word = this.accepted_words.has(word.getWordString());
-            if (!is_valid_word) {
-                is_solution_found = false;
+            // is_solution_found = is_solution_found && word.isAllLettersFilled();
+            if (word.isAllLettersFilled()) {
+                let is_valid_word = this.accepted_words.has(word.getWordString());
+                if (!is_valid_word) {
+                    is_solution_found = false;
+                    // color the word red for a second
+                    word.flashRed(this.selected_w, this.grid[this.selected_w][this.selected_l]);
+                    return is_solution_found = false;
+                }
+                is_solution_found = is_solution_found && is_valid_word;
             }
+            return is_solution_found = false;
         });
-
         return is_solution_found;
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    let board = null;
+
+    const overlay = document.getElementById("overlay");
+    const howToPlayButton = document.getElementById("how-to-play-button");
+    const closeButton = document.getElementById("close-button");
+    console.log(closeButton);
+
+    // Show the overlay when the "How to Play" button is clicked
+    howToPlayButton.addEventListener("click", () => {
+        overlay.style.visibility = 'visible';
+        board.pause();
+    });
+
+    // Hide the overlay when the "X" button is clicked
+    closeButton.addEventListener("click", () => {
+        overlay.style.visibility = 'hidden';
+        board.resume();
+    });
+
+    // Optional: Hide the overlay if the user clicks outside the popup
+    overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+            overlay.style.visibility = 'hidden';
+            board.resume();
+        }
+    });
     fetch('/game')
     .then(response => response.json())
     .then(data => {
-        const board = new Board('board', 4, data)
-        
-    })
+        board = new Board('board', 4, data);
+        document.getElementById("num-valid-constraint-assignments").textContent = data["num_valid_constraint_assignments"].toLocaleString();
+        document.getElementById("num-possible-solutions").textContent = data["num_possible_solutions"].toLocaleString();
+    });
 });

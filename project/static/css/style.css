@@ -22,7 +22,10 @@ button {
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center items horizontally */
     text-align: center; /* Center-align text */
-    gap: 15px; /* Add spacing between elements */
+    gap: 12px; /* Add spacing between elements */
+    /* max-height: 600px; */
+    /* overflow-y: auto; */
+    /* height: auto; */
 }
 
 h1 {
@@ -32,19 +35,19 @@ h1 {
 
 .description {
     margin: 0;
-    margin: 10px;
+    margin-bottom: 10px;
     font-size: 1rem;
     color: #666; /* Optional: light gray text */
 }
 
 #board {
     display: grid;
-    grid-template-columns: repeat(5, 60px);
+    grid-template-columns: repeat(5, 67px);
     grid-gap: 8px;
 }
 .letter {
-    width: 60px;
-    height: 60px;
+    width: 67px;
+    height: 67px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -56,8 +59,29 @@ h1 {
     font-weight: bold;
     /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
 }
+
+/* The overlay background */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    backdrop-filter: blur(5px); /* Blur effect */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1000; /* Ensure it's above other content */
+    visibility: hidden;
+    padding-top: 5px;
+}
 @media (min-width: 1024px) {
     html, body {
+        align-items: center;
+        padding-top: 0px;
+    }
+    .overlay {
         align-items: center;
         padding-top: 0px;
     }
@@ -122,22 +146,6 @@ h1 {
     font-size: 40px;
 }
 
-/* The overlay background */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    backdrop-filter: blur(5px); /* Blur effect */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Ensure it's above other content */
-    visibility: hidden;
-}
-
 /* The popup window */
 .popup {
     background-color: #fff;
@@ -178,6 +186,7 @@ h1 {
     font-weight: bold;
     margin: 0;
     padding: 0;
+    /* font-size: 1rem; */
 }
 
 .end-timer {

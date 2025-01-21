@@ -12,11 +12,20 @@
         <div class="popup">
             <button id="close-button">&times;</button>
             <h2>How to play CONSTRAINBOW</h2>
-            <p>The object of the game is to find four five-letter words that fit the constraints.</p>
-            <p>All letters of the same color must be the same, and no two colors can be the same letter.</p>
+            <p>Your goal is to create four five-letter words that meet these rules:</p>
+            <ol>
+                <li>Each tile's border color represents a constraint:</li>
+                <ul>
+                    <li><strong>Colored tiles (non-black)</strong> must all contain the <i>same letter</i>.</li>
+                    <li><strong>Black tiles</strong> can be any letter that <i>isn’t assigned</i> to a colored tile.</li>
+                </ul>
+                <li>Each letter can belong to only one color group (including black).</li>
+                <li>Black tiles can repeat letters, but colored tiles cannot share letters with black tiles or other colors.</li>
+            </ol>
+            <!-- <p>All letters of the same color must be the same, and no two colors can be the same letter.</p>
             <p>All other letters (the black ones) can be anything.</p>
-            <p>Don't get mad at the list of words; it's Wordle's.</p>
-            <p>BETA TESTERS: I still do not understand the relationship between the number of possible solutions and how difficult the game is. Below is a list of links to puzzles with ranging numbers of solutions. Please play them and share your thoughts with me.</p>
+            <p>Don't get mad at the list of words; it's Wordle's.</p> -->
+            <!-- <p>BETA TESTERS: I still do not understand the relationship between the number of possible solutions and how difficult the game is. Below is a list of links to puzzles with ranging numbers of solutions. Please play them and share your thoughts with me.</p>
             <p>
                 <a href="/?game-id=10.50999">50999 solutions</a>, 
                 <a href="/?game-id=10.77885">77885 solutions</a>, 
@@ -30,7 +39,7 @@
                 <a href="/?game-id=12.3841">3841 solutions</a>, 
                 <a href="/?game-id=12.5594">5594 solutions</a>, 
                 <a href="/?game-id=12.19040">19040 solutions</a>
-            </p>
+            </p> -->
         </div>
     </div>
     <!-- Overlay for win message. Not sure if I'll use it -->

@@ -113,8 +113,6 @@ class Word {
     } // will only be called for full words, guaranteed
 
     turnRed(w, constraint_symbol) {
-        console.log("here!")
-        // want to return early if we should not flash red
         if (w != this.index) {
             // the only time we don't want to flash would be if the word is not the one that just got completed
             let word_contrains_constraint_symbol = false;
@@ -130,11 +128,6 @@ class Word {
         this.letters.forEach(letter => {
             letter.element.classList.add('incorrect');
         });
-        // setTimeout(() => {
-        //     this.letters.forEach(letter => {
-        //         letter.element.classList.remove('conflict');
-        //     });
-        // }, 200);
     }
     clearRed() {
         this.letters.forEach(letter => {
@@ -152,7 +145,7 @@ class Board {
         this.selected_w = null;
         this.selected_l = null;
         
-        this.constraints = data["constraints"];
+        this.constraints_to_positions = data["constraints"];
         this.grid = data["grid"];
         this.accepted_words = new Set(data["words"]);
         console.log(this.accepted_words);
@@ -269,8 +262,8 @@ class Board {
             '$': 'c3',
             '%': 'c4'
         }
-        for (let constraint in this.constraints) {
-            this.constraints[constraint].forEach(constrained_letter => {
+        for (let constraint in this.constraints_to_positions) {
+            this.constraints_to_positions[constraint].forEach(constrained_letter => {
                 let w = constrained_letter[0];
                 let l = constrained_letter[1];
                 this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
@@ -437,35 +430,74 @@ class Board {
         return (this.grid[this.selected_w][this.selected_l] != '-');
     }
 
-    getSelectedConstrainedLetters() {
-        return this.constraints[this.grid[this.selected_w][this.selected_l]];
+    getSelectedConstrainedLetterPositions() {
+        return this.constraints_to_positions[this.grid[this.selected_w][this.selected_l]];
     }
+
+    // need two functions to answer two different questions
+    // is the typed letter used by any constrained letters? (asked by wildcard tile)
+    // if the typed letter used anywhere?
+
+    flashLetters(positions) {
+        console.log("flashing!");
+        
+        positions.forEach(conflicting_letter => {
+            let w = conflicting_letter[0];
+            let l = conflicting_letter[1];
+            this.words[w].letters[l].element.classList.add('conflict');
+        });
+        setTimeout(() => {
+            positions.forEach(conflicting_letter => {
+                let w = conflicting_letter[0];
+                let l = conflicting_letter[1];
+                this.words[w].letters[l].element.classList.remove('conflict');
+            });
+        }, 200);
+    }
+
+    flashConflictingConstrainedLetters(key) {
+        for (let constraint in this.constraints_to_letters) {
+            if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
+                if (constraint != this.grid[this.selected_w][this.selected_l]) {
+                    this.flashLetters(this.constraints_to_positions[constraint])
+                    return true;
+                } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
+                // do something visual to highlight all of the conflicting letters
+            } // if we find that a symbol already is using that letter, return early
+        } // go through the map mapping a constraint symbol to a letter
+        return false;
+    }
+
+    flashConflictingWildcardLetters(key) {
+        console.log("i am here");
+        
+        let conflicting_wildcard_letter_positions = [];
+        this.words.forEach(word => {
+            word.letters.forEach(letter => {
+                if (this.grid[letter.w][letter.l] == "-" && letter.current_letter == String.fromCharCode(key)) {
+                    conflicting_wildcard_letter_positions.push([letter.w, letter.l]);
+                }
+            });
+        });
+        if (conflicting_wildcard_letter_positions.length == 0) {
+            return false;
+        }
+        this.flashLetters(conflicting_wildcard_letter_positions);
+        return true;
+
+    }
+    
 
     async handleLetterKeyPressed(key) {
         // if the currently selected letter is constrained, update all letters with that same constraint
         if (this.selectedIsConstrained()) {
-            // if the letter is already in use, return
-            for (let constraint in this.constraints_to_letters) {
-                if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
-                    if (constraint != this.grid[this.selected_w][this.selected_l]) {
-                        this.constraints[constraint].forEach(conflicting_letter => {
-                            let w = conflicting_letter[0];
-                            let l = conflicting_letter[1];
-                            this.words[w].letters[l].element.classList.add('conflict');
-                        });
-                        setTimeout(() => {
-                            this.constraints[constraint].forEach(conflicting_letter => {
-                                let w = conflicting_letter[0];
-                                let l = conflicting_letter[1];
-                                this.words[w].letters[l].element.classList.remove('conflict');
-                            });
-                        }, 200);
-                        return;
-                    } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
-                    // do something visual to highlight all of the conflicting letters
-                } // if we find that a symbol already is using that letter, return early
-            } // go through the map mapping a constraint symbol to a letter
-            let constrained_letters = this.getSelectedConstrainedLetters();
+            if (this.flashConflictingConstrainedLetters(key)) {
+                return;
+            }
+            if (this.flashConflictingWildcardLetters(key)) {
+                return;
+            }
+            let constrained_letters = this.getSelectedConstrainedLetterPositions();
             constrained_letters.forEach(letter => {
                 let w = letter[0];
                 let l = letter[1];
@@ -474,6 +506,9 @@ class Board {
             this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = String.fromCharCode(key);
         } else {
             // otherwise, just update the letter
+            if (this.flashConflictingConstrainedLetters(key)) {
+                return;
+            }
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
         }
         if (this.isSolutionFound()) {
@@ -521,7 +556,7 @@ class Board {
     handleBackspacePressed() {
         let is_on_blank_letter = (this.words[this.selected_w].letters[this.selected_l].current_letter == "");
         if (this.selectedIsConstrained()) {
-            let constrained_letters = this.getSelectedConstrainedLetters();
+            let constrained_letters = this.getSelectedConstrainedLetterPositions();
             constrained_letters.forEach(letter => {
                 let w = letter[0];
                 let l = letter[1];

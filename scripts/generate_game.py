@@ -134,28 +134,66 @@ for i in range(len(words)):
 num_valid_symbol_assignments = 0
 num_possible_boards = 0
 
-# takes in the start of a query, and a word (constraints)
-def generate_query(query, word):
+# generate a query whose WHERE clause concerns only that the contrained letters
+# match their constrained values 
+def verify_constraints_query(query_stub, word):
+    positive_index_to_clauses = [
+        " first_letter = ?",
+        " second_letter = ?",
+        " third_letter = ?",
+        " fourth_letter = ?",
+        " fifth_letter = ?"
+    ]
     query_args = []
     for i, symbol in enumerate(word):
         if symbol not in symbol_to_letter: continue
         query_args.append(symbol_to_letter[symbol])
-        if i == 0:
-            query += " first_letter = ?"
-        elif i == 1:
-            query += " second_letter = ?"
-        elif i == 2:
-            query += " third_letter = ?"
-        elif i == 3:
-            query += " fourth_letter = ?"
-        else:
-            query += " fifth_letter = ?"
-        query += " AND"
+        query_stub += positive_index_to_clauses[i]
+        query_stub += " AND"
     # chop off the last and
-    if query[-4:] == " AND":
-        query = query[:-4]
-    query += ";"
-    return query, query_args
+    if query_stub[-4:] == " AND":
+        query_stub = query_stub[:-4]
+    query_stub += ";"
+    return query_stub, query_args
+
+# generate a query whose WHERE clause concerns that constrained letters match their
+# constrained value AND where wildcard letters cannot be the same as a constrained
+# letter
+def verify_word_query(query_stub, word):
+    positive_index_to_clauses = [
+        " first_letter = ?",
+        " second_letter = ?",
+        " third_letter = ?",
+        " fourth_letter = ?",
+        " fifth_letter = ?"
+    ]
+    negative_index_to_clauses = [
+        " first_letter != ?",
+        " second_letter != ?",
+        " third_letter != ?",
+        " fourth_letter != ?",
+        " fifth_letter != ?"
+    ]
+
+    query_args = []
+    for i, symbol in enumerate(word):
+        if symbol == '-':
+            # we need to add clauses to ensure that the ith letter
+            # is not a letter assigned to a constraint
+            for letter in symbol_to_letter.values():
+                query_args.append(letter)
+                query_stub += negative_index_to_clauses[i]
+                query_stub += " AND"
+        else:
+            # need to add clauses that ensure that the ith letter
+            # is the letter assigned to the symbol
+            query_args.append(symbol_to_letter[symbol])
+            query_stub += positive_index_to_clauses[i]
+            query_stub += " AND"
+    if query_stub[-4:] == " AND":
+        query_stub = query_stub[:-4]
+    query_stub += ";"
+    return query_stub, query_args
 
 # check to see if there are any solutions for the ith word in the words list
 def is_solution_for(i):
@@ -166,13 +204,46 @@ def is_solution_for(i):
     SELECT COUNT(*) FROM words
     WHERE
     '''
-    query, query_args = generate_query(query_stub, word)
+    query, query_args = verify_constraints_query(query_stub, word)
     cursor.execute(query, query_args)
     return cursor.fetchone()[0] > 0
 
 
-# this function will be called every time a new symbol assignment is found that contains a solution/
-def generate_solutions_for_assignment():
+# this function will be called when we want to generate all solutions to a promising
+# constraint assignment where the wildcards are not allowed to be the same letter
+# as one of the constraints
+def generate_solutions_wildcards_constrained():
+    given_symbols_num_possibilities = 1
+    solution_object = {
+        "constraint_assignments": {**symbol_to_letter},
+    }
+    for i, word in enumerate(words):
+        query_stub = '''
+        SELECT first_letter, second_letter, third_letter, fourth_letter, fifth_letter FROM words
+        WHERE
+        '''
+        query, query_args = verify_word_query(query_stub, word)
+        cursor.execute(query, query_args)
+        raw_solutions = cursor.fetchall()
+        if len(raw_solutions) == 0:
+            # there is no point in continuing, this constraint assignment has nothing for us
+            return
+        solutions = [] # all of the different possible word choices
+        for raw_solution in raw_solutions:
+            solutions.append("".join(raw_solution))
+        given_symbols_num_possibilities *= len(solutions)
+        solution_object[f"word_{i + 1}"] = {
+            "num_solutions": len(solutions),
+            "solutions": solutions
+        }
+    solutions_result.append(solution_object)
+    # we will want to add the computed number of possibilites for this symbol arrangement to a total 
+    global num_possible_boards
+    num_possible_boards += given_symbols_num_possibilities
+
+# this function will be called when we want to generate all solutions to a promising
+# constraint assignment where the wildcards can be anything
+def generate_solutions_wildcards_free():
     # we would like to know how many possible different boards can emerge from a single
     # symbol mapping. to do this, we will multiply the number of possible solutions for each word
     # with each other. (how many ways can the first word be * how many ways can the second word be * ...)
@@ -186,7 +257,7 @@ def generate_solutions_for_assignment():
         SELECT first_letter, second_letter, third_letter, fourth_letter, fifth_letter FROM words
         WHERE
         '''
-        query, query_args = generate_query(query_stub, word)
+        query, query_args = verify_constraints_query(query_stub, word)
         cursor.execute(query, query_args)
         raw_solutions = cursor.fetchall()
         solutions = [] # all of the different possible word choices
@@ -206,8 +277,14 @@ def generate_solutions_for_assignment():
 
 def find_solution(symbol):
     if symbol == len(symbols):
-        # we've found solutions! do something with them
-        generate_solutions_for_assignment()
+        # at this point, we have assigned each symbol a letter
+        # this assignment is promisng -- there are words that would satisfy the 
+        # constraints if the wildcard letters could by ANYTHING. However, I am messing
+        # around with the idea that wildcards cannnot be the same letter as another symbol.
+        # therefore, I must now checkk to make sure that for each word, there is a solution
+        # where the wildcards are not the same as any of the symbols
+        # generate_solutions_wildcards_free()
+        generate_solutions_wildcards_constrained()
         global num_valid_symbol_assignments
         num_valid_symbol_assignments += 1
         return

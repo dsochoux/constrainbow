@@ -96,6 +96,14 @@ class Word {
         return all_letters_filled;
     }
 
+    isBlank() {
+        let is_blank = true;
+        this.letters.forEach(letter => {
+            is_blank = is_blank && letter.current_letter == "";
+        });
+        return is_blank;
+    }
+
     getWordString() {
         let word = "";
         this.letters.forEach(letter => {
@@ -166,6 +174,21 @@ class Board {
         this.initBoard();
         this.pause();
 
+    }
+
+    isEmpty() {
+        let is_empty = true;
+        this.words.forEach(word => {
+            is_empty = is_empty && word.isBlank();
+        });
+        return is_empty;
+    }
+    isFull() { 
+        let is_full = true;
+        this.words.forEach(word => {
+            is_full = is_full && word.isAllLettersFilled();
+        });
+        return is_full;
     }
 
     updateTimerDisplay() {
@@ -458,8 +481,13 @@ class Board {
                 }, delay_time);
             }, delay_time);
         } else {
-            while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && this.selected_l < 4) {
+            // if the board is full, this will go forver
+            if (this.isFull()) {
                 this.moveRight();
+            } else {
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "") {
+                    this.moveRight();
+                }
             }
             this.toggleSelected();
         }
@@ -494,8 +522,13 @@ class Board {
             return;
         }
         if (is_on_blank_letter) {
-            while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && this.selected_l > 0) {
+            // if the board is empty this will go forever
+            if (this.isEmpty()) {
                 this.moveLeft();
+            } else {
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "") {
+                    this.moveLeft();
+                }
             }
             this.toggleSelected();
         }

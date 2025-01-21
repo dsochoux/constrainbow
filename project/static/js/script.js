@@ -301,6 +301,17 @@ class Board {
         this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
     }
 
+    clearBoard() {  
+        this.words.forEach((word) => {
+            word.letters.forEach((letter) => {
+                letter.updateLetter("");
+                letter.element.classList.remove('incorrect');
+            });
+            // clear the constraints to letters map
+            this.constraints_to_letters = {};
+        });
+    }
+
     keyPressed(event) {
         
         if (this.is_paused) {
@@ -308,6 +319,10 @@ class Board {
         }
         if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
             return;
+        }
+        if (event.keyCode == 2000) {
+            // special clear board case
+            this.clearBoard();
         }
         if (event.keyCode == 32) {
             this.handleArrowKeyPressed(39)
@@ -617,7 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
         key.addEventListener("click", (e) => {
             
             const keyValue = e.target.getAttribute("data-key");
-            console.log(keyValue);
             triggerKeyEvent(keyValue);
         });
     });

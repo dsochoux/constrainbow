@@ -217,13 +217,30 @@ h1 {
     border: 1px solid #aaa;
     border-radius: 5px;
     cursor: pointer;
-    width: 30px;
+    min-width: 30px;
     text-align: center;
+}
+
+#reset-button {
+    margin: 0; /* Remove margins */
+    padding: 4px;
+    /* padding-bottom: 4px; */
+    font-size: 18px;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    cursor: pointer;
+    /* width: 70px; */
+    text-align: center;
+    display: none;
 }
 
 @media (min-width: 1024px) {
     #keyboard-container {
         display: none; /* Hide on-screen keyboard for larger screens */
+    }
+    #reset-button {
+        display: block; /* Hide reset button for larger screens */
     }
 }
 

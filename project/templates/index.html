@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>CONSTRAINBOW</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div id="overlay">
-        <div id="popup">
+    <div class="overlay" id="how-to-play-overlay">
+        <div class="popup">
             <button id="close-button">&times;</button>
             <h2>How to play CONSTRAINBOW</h2>
             <p>The object of the game is to find four five-letter words that fit the constraints.</p>
@@ -17,18 +17,75 @@
             <p>Don't get mad at the list of words; it's Wordle's.</p>
         </div>
     </div>
+    <!-- Overlay for win message. Not sure if I'll use it -->
+    <div class="overlay" id="win-overlay">
+        <div class="popup">
+            <button id="close-button">&times;</button>
+            <h2>Way to go! 🎉</h2>
+            <div id="results-div">
+                <p>CONSTRAINBOW 1/20</p>
+                <p>1:32</p>
+                <p>🟥⬛️⬛️⬛️🟧</p>
+                <p>🟧🟦🟨🟧⬛️</p>
+                <p>🟨⬛️🟥⬛️🟥</p>
+                <p>🟦⬛️⬛️⬛️⬛️</p>
+            </div>
+            <br />
+            <button>Copy results</button>
+        </div>
+    </div>
     <div id="container">
         <h1>CONSTRAINBOW</h1>
         <div>
-            <div>
-                <span id="start-message">Click any tile to start. Click the timer to pause.</span>
-                <button id="timer" class="link-styled-button">00:00</span>
+            <span id="start-message">Click any tile to start. Click the timer to pause.</span>
+            <button id="timer" class="link-styled-button">00:00</button>
+            <span id="copy-results-span"> | <button class="link-styled-button" id="copy-results-button">copy results</button></span>
+        </div>
+        <p id="loading-text">Loading game...</p>
+        <div id="board"></div>
+        <div id="keyboard-container">
+            <div class="keyboard-row">
+                <button class="key" data-key=81>Q</button>
+                <button class="key" data-key=87>W</button>
+                <button class="key" data-key=69>E</button>
+                <button class="key" data-key=82>R</button>
+                <button class="key" data-key=84>T</button>
+                <button class="key" data-key=89>Y</button>
+                <button class="key" data-key=85>U</button>
+                <button class="key" data-key=73>I</button>
+                <button class="key" data-key=79>O</button>
+                <button class="key" data-key=80>P</button>
+              <!-- Add remaining keys here -->
+            </div>
+            <div class="keyboard-row">
+              <!-- Second row keys -->
+                <button class="key" data-key=65>A</button>
+                <button class="key" data-key=83>S</button>
+                <button class="key" data-key=68>D</button>
+                <button class="key" data-key=70>F</button>
+                <button class="key" data-key=71>G</button>
+                <button class="key" data-key=72>H</button>
+                <button class="key" data-key=74>J</button>
+                <button class="key" data-key=75>K</button>
+                <button class="key" data-key=76>L</button>
+            </div>
+            <div class="keyboard-row" id="bottom-keyboard-row">
+                <button class="key" data-key=90>Z</button>
+                <button class="key" data-key=88>X</button>
+                <button class="key" data-key=67>C</button>
+                <button class="key" data-key=86>V</button>
+                <button class="key" data-key=66>B</button>
+                <button class="key" data-key=78>N</button>
+                <button class="key" data-key=77>M</button>
+                <button class="key" data-key=8>⌫</button>
             </div>
         </div>
-        <div id="board"></div>
-        <div>
+        <div id="info-div">
             <p class="description">Today's puzzle has <span id="num-possible-solutions"></span> possible solutions.</p>
-            <p class="description"><span id="encouraging-message">Good luck finding one.</span> <button class="link-styled-button" id="how-to-play-button">How to play?</button></p>
+            <p class="description">
+                <span id="encouraging-message">Good luck finding one.</span> 
+                <button class="link-styled-button" id="how-to-play-button">How to play?</button>
+            </p>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

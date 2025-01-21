@@ -60,14 +60,8 @@ class Letter {
 
     updateLetter(letter) {
         this.current_letter = letter;
-        if (letter) {
-            this.text_element.textContent = letter;
-            this.text_element.style.visibility = 'visible';
-        } else {
-            // no need to overwrite the letterElement.textContent, just hide it
-            // it will be overwritten before it is made visible again
-            this.text_element.style.visibility = 'hidden';
-        }
+        this.text_element.textContent = letter;
+        this.text_element.style.visibility = 'visible';
     }
 }
 
@@ -239,7 +233,7 @@ class Board {
 
     initBoard() {
         document.addEventListener('keydown', (event) => {
-            this.keyPressed(event)
+            this.keyPressed(event);
         });
         for (let w = 0; w < this.num_words; w++) {
             const word = new Word(w, this.grid, this.handleLetterClicked.bind(this))
@@ -285,6 +279,7 @@ class Board {
     }
 
     keyPressed(event) {
+        
         if (this.is_paused) {
             return;
         }
@@ -445,6 +440,7 @@ class Board {
         }
         if (this.isSolutionFound()) {
             document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
+            document.getElementById("copy-results-span").style.display = "inline-block";
             this.pauseTimer();
             this.timer_element.classList.add('end-timer');
             this.deselectAll();
@@ -538,17 +534,60 @@ class Board {
         }
         return is_solution_found;
     }
+
+    copyResults() {
+
+        let symbol_to_emoji_map = {
+            '@': '🟥',
+            '#': '🟧',
+            '$': '🟨',
+            '%': '🟦',
+            '-': '⬛️'
+        }
+
+        const date = new Date();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Get the month (0-11), so add 1 and pad to 2 digits
+        const day = String(date.getDate()).padStart(2, '0');
+        let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
+        // generate the emojis from the grid
+        this.grid.forEach((word) => {
+            word.forEach((letter) => {
+                message += symbol_to_emoji_map[letter];
+            });
+            message += "\n";
+        });
+        navigator.clipboard.writeText(message.trim());
+        document.getElementById("copy-results-button").textContent = "copied!"
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
 
     let board = null;
 
-    const overlay = document.getElementById("overlay");
+    const overlay = document.getElementById("how-to-play-overlay");
+    // const overlay = document.getElementById("win-overlay");
     const howToPlayButton = document.getElementById("how-to-play-button");
     const closeButton = document.getElementById("close-button");
     const timerButton = document.getElementById("timer");
-    console.log(closeButton);
+    // const keyboard = document.getElementById("keyboard-container");
+    const keys = document.querySelectorAll(".key");
+
+    // Function to simulate key events
+    function triggerKeyEvent(keyCode) {
+        const event = new KeyboardEvent("keydown", { keyCode });
+        document.dispatchEvent(event);
+    }
+
+    // Add click event to each virtual key
+    keys.forEach((key) => {
+        key.addEventListener("click", (e) => {
+            
+            const keyValue = e.target.getAttribute("data-key");
+            console.log(keyValue);
+            triggerKeyEvent(keyValue);
+        });
+    });
 
     // Show the overlay when the "How to Play" button is clicked
     howToPlayButton.addEventListener("click", () => {
@@ -574,11 +613,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // board.resume();
         }
     });
+
     fetch('/game')
     .then(response => response.json())
     .then(data => {
         board = new Board('board', 4, data);
         // document.getElementById("num-valid-constraint-assignments").textContent = data["num_valid_constraint_assignments"].toLocaleString();
         document.getElementById("num-possible-solutions").textContent = data["num_possible_solutions"].toLocaleString();
+        document.getElementById("loading-text").style.display = "none";
     });
+
+    document.getElementById("copy-results-button").addEventListener("click", () => {
+        board.copyResults();
+        setTimeout(() => {
+            document.getElementById("copy-results-button").textContent = "copy results"
+        }, 1000);
+    });
+    
 });

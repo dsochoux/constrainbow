@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 import os
 import random
 import json
+import time
 
 app = Flask(__name__)
 
@@ -42,4 +43,4 @@ def game():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

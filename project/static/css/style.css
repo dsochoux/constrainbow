@@ -1,11 +1,20 @@
-body {
+html, body {
     margin: 0;
     height: 100vh; /* Full viewport height */
     display: flex;
-    align-items: center; /* Center vertically */
+    align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
     background-color: #f0f0f0; /* Optional background */
     font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    padding-top: 10px;
+}
+
+button {
+    all: unset; /* Resets most properties to their initial value */
+    display: inline-block; /* Needed for proper button-like behavior */
+    cursor: pointer; /* Ensures it looks clickable */
+    touch-action: manipulation;
 }
 
 #container {
@@ -13,7 +22,7 @@ body {
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center items horizontally */
     text-align: center; /* Center-align text */
-    gap: 25px; /* Add spacing between elements */
+    gap: 15px; /* Add spacing between elements */
 }
 
 h1 {
@@ -22,19 +31,20 @@ h1 {
 }
 
 .description {
-    /* margin: 0; */
+    margin: 0;
+    margin: 10px;
     font-size: 1rem;
     color: #666; /* Optional: light gray text */
 }
 
 #board {
     display: grid;
-    grid-template-columns: repeat(5, 70px);
+    grid-template-columns: repeat(5, 60px);
     grid-gap: 8px;
 }
 .letter {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,6 +56,25 @@ h1 {
     font-weight: bold;
     /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
 }
+@media (min-width: 1024px) {
+    html, body {
+        align-items: center;
+        padding-top: 0px;
+    }
+    #container {
+        gap: 25px;
+    }
+    #board {
+        grid-template-columns: repeat(5, 70px); /* Adjust column width */
+    }
+
+    .letter {
+        width: 70px; /* Adjust letter size */
+        height: 70px;
+    }
+}
+
+
 .letter.selected {
     /* border: 5.5px solid black; */
     /* background-color: rgb(133, 132, 132);
@@ -56,15 +85,19 @@ h1 {
 }
 
 .letter.c1 {
+    /* border: 5px solid #D04848; */
     border: 5px solid #c30000;
 }
 .letter.c2 {
+    /* border: 5px solid #F3B95F; */
     border: 5px solid #ff9019;
 }
 .letter.c3 {
+    /* border: 5px solid #FDE767; */
     border: 5px solid #d4c600;
 }
 .letter.c4 {
+    /* border: 5px solid #6895D2; */
     border: 5px solid #3a2fda;
 }
 
@@ -90,7 +123,7 @@ h1 {
 }
 
 /* The overlay background */
-#overlay {
+.overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -106,7 +139,7 @@ h1 {
 }
 
 /* The popup window */
-#popup {
+.popup {
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -157,4 +190,53 @@ h1 {
     /* font-weight: bold; */
     margin: 0;
     padding: 0;
+}
+
+#keyboard-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+    /* box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); */
+    gap: 10px; /* Add spacing between rows */
+    align-items: center; /* Center align the keyboard rows */
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px; /* Add spacing between keys */
+}
+
+.key {
+    margin: 0; /* Remove margins */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 18px;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 30px;
+    text-align: center;
+}
+
+@media (min-width: 1024px) {
+    #keyboard-container {
+        display: none; /* Hide on-screen keyboard for larger screens */
+    }
+}
+
+#info-div {
+    padding: 0;
+}
+
+#results-div p {
+    margin: -5px;
+    padding: 0px;
+}
+
+#copy-results-span {
+    display: none;
+    color: black;
 }

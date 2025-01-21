@@ -99,6 +99,8 @@ h1 {
 }
 
 
+
+
 .letter.selected {
     /* border: 5.5px solid black; */
     /* background-color: rgb(133, 132, 132);
@@ -265,4 +267,28 @@ h1 {
 #copy-results-span {
     display: none;
     color: black;
+}
+
+@media screen and (max-height: 655px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+    #board {
+        grid-template-columns: repeat(5, 60px);
+        grid-gap: 4px;
+    }
+    .letter {
+        width: 60px;
+        height: 60px;
+    }
+    #container {
+        gap: 5px;
+    }
+    #keyboard-container {
+        gap: 5px;
+    }
+    .description {
+        margin-bottom: 5px;
+    }
+    
 }

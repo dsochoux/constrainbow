@@ -89,7 +89,7 @@ h1 {
         gap: 25px;
     }
     /* #board {
-        grid-template-columns: repeat(5, 70px); /* Adjust column width */
+        grid-template-columns: repeat(5, 70px);
     } */
 
     /* .letter {

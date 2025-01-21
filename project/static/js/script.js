@@ -70,6 +70,7 @@ class Word {
     constructor(w, grid, click_handler) {
         this.index = w;
         this.letters = [];
+        this.is_invalid = false; // true if the word is not full or is a valid word
         this.initWord(click_handler, grid);
     }
 
@@ -128,11 +129,13 @@ class Word {
         this.letters.forEach(letter => {
             letter.element.classList.add('incorrect');
         });
+        this.is_invalid = true;
     }
     clearRed() {
         this.letters.forEach(letter => {
             letter.element.classList.remove('incorrect');
         });
+        this.is_invalid = false;
     }
 }
 
@@ -532,6 +535,9 @@ class Board {
             }, delay_time);
         } else {
             // if the board is full, this will go forver
+            if (this.words[this.selected_w].is_invalid) {
+                return;
+            }
             if (this.isFull()) {
                 this.moveRight();
             } else {

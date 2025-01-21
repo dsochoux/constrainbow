@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <input type="hidden" id="game-id" value="{{ game_id }}"" />
     <div class="overlay" id="how-to-play-overlay">
         <div class="popup">
             <button id="close-button">&times;</button>
@@ -15,6 +16,21 @@
             <p>All letters of the same color must be the same, and no two colors can be the same letter.</p>
             <p>All other letters (the black ones) can be anything.</p>
             <p>Don't get mad at the list of words; it's Wordle's.</p>
+            <p>BETA TESTERS: I still do not understand the relationship between the number of possible solutions and how difficult the game is. Below is a list of links to puzzles with ranging numbers of solutions. Please play them and share your thoughts with me.</p>
+            <p>
+                <a href="/?game-id=10.50999">50999 solutions</a>, 
+                <a href="/?game-id=10.77885">77885 solutions</a>, 
+                <a href="/?game-id=10.243946">243946 solutions</a>, 
+                <a href="/?game-id=10.411314">411314 solutions</a>, 
+                <a href="/?game-id=11.1840">1840 solutions</a>, 
+                <a href="/?game-id=11.2590">2590 solutions</a>, 
+                <a href="/?game-id=11.25500">25500 solutions</a>, 
+                <a href="/?game-id=11.40360">40360 solutions</a>, 
+                <a href="/?game-id=12.30">30 solutions</a>, 
+                <a href="/?game-id=12.3841">3841 solutions</a>, 
+                <a href="/?game-id=12.5594">5594 solutions</a>, 
+                <a href="/?game-id=12.19040">19040 solutions</a>
+            </p>
         </div>
     </div>
     <!-- Overlay for win message. Not sure if I'll use it -->

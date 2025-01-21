@@ -7,7 +7,7 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 symbols = ('@', '#', '$', '%')
-alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's'
+alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
 
@@ -16,6 +16,7 @@ result = {
     "no_constraint_symbol": '-'
 } # the result object that will be converted to JSON at the end
 solutions_result = []
+desired_num_symbols = 10 # must be greater than 8
 
 # between any two words, there MUST be a position that has differing symbols
 # otherwise, there is the risk that the same word can be used multiple times
@@ -30,7 +31,6 @@ def generate_game():
     # I thought that this number would directly correlate to how hard the game is.
     # Turns out, randomness is wild. There can be millions of solutions, or zero,
     # without changing this number.
-    desired_num_symbols = 10 # must be greater than 8
     words = [
         ['-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-'],
@@ -66,7 +66,43 @@ def generate_game():
 
     return words
 
-words = generate_game()
+# words = generate_game()
+words = [
+        ['#', '%', '%', '$', '@'],
+        ['-', '-', '-', '-', '#'],
+        ['-', '-', '-', '-', '$'],
+        ['@', '%', '-', '-', '%'],
+    ]
+# words = [
+#         [
+#             "#",
+#             "%",
+#             "%",
+#             "$",
+#             "@"
+#         ],
+#         [
+#             "-",
+#             "-",
+#             "-",
+#             "-",
+#             "#"
+#         ],
+#         [
+#             "-",
+#             "-",
+#             "-",
+#             "-",
+#             "$"
+#         ],
+#         [
+#             "@",
+#             "%",
+#             "-",
+#             "-",
+#             "%"
+#         ]
+#     ],
 
 # result["constraints"] = {
 #     "word_1": "".join(words[0]),
@@ -191,7 +227,8 @@ result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
 result["num_possible_solutions"] = num_possible_boards
 result["solutions"] = solutions_result
 
-output_file = f"generated_games/{num_valid_symbol_assignments}.{num_possible_boards}.{''.join([''.join(word) for word in words])}.json"
+output_file = f"generated_games/{desired_num_symbols}.{num_possible_boards}.{''.join([''.join(word) for word in words])}.json"
+# output_file = f"generated_games/solution.json"
 with open(output_file, "w") as f:
     json.dump(result, f, indent=4)
 

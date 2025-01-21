@@ -1,38 +1,43 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import os
 import random
 import json
-import time
+import glob
+import fnmatch
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    game_id = request.args.get("game-id", None)
+    return render_template('index.html', game_id=game_id)
 
 @app.route('/game')
 def game():
-    # returns json object containing info to play the game
-    # contraints, list of valid words, etc...
-    # "constraints": {
-    #     "word_1": "@--$@",
-    #     "word_2": "--@-#",
-    #     "word_3": "%---$",
-    #     "word_4": "-#-#%"
-    # },
     words = []
+    with open('../word_files/words.txt', 'r') as f:
+        for word in f:
+            words.append(word.strip())
+    
+    game_id = request.args.get("game-id", None)
+    print(game_id)
     generated_game_folder = '../generated_games'
     files = [f for f in os.listdir(generated_game_folder)]
-    selected_game_file = random.choice(files)
+    if game_id is None:
+        selected_game_file = random.choice(files)
+    else:
+        # get the file that starts with game_id
+        matching_files = [f for f in os.listdir(generated_game_folder) if fnmatch.fnmatch(f, str(game_id) + '*')]
+        selected_game_file = matching_files[0]
+
+    
     # selected_game_file will be a json file. load into a python dict
     file_path = os.path.join(generated_game_folder, selected_game_file)
     with open(file_path, 'r') as f:
         game_object = json.load(f)
 
 
-    with open('../word_files/words.txt', 'r') as f:
-        for word in f:
-            words.append(word.strip())
+    
 
     return jsonify({
         "constraints": game_object["constraints"],

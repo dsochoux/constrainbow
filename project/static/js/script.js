@@ -647,7 +647,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    fetch('/game')
+    const game_id = document.getElementById("game-id").value;
+    console.log(game_id);
+    
+    let endpoint = "/game";
+    
+    if (game_id != "None") {    
+        endpoint = endpoint + `?game-id=${game_id}`;
+    }
+    console.log(endpoint);
+    
+
+    fetch(endpoint)
     .then(response => response.json())
     .then(data => {
         board = new Board('board', 4, data);

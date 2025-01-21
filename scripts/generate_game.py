@@ -1,6 +1,7 @@
 import sqlite3
 import random
 import json
+import time
 
 db_path = "database.db"
 conn = sqlite3.connect(db_path)
@@ -76,8 +77,6 @@ def generate_game():
         num_symbols += 1
 
     return words
-
-words = generate_game()
 # words = [
 #         ['#', '%', '%', '$', '@'],
 #         ['-', '-', '-', '-', '#'],
@@ -121,14 +120,7 @@ words = generate_game()
 #     "word_3": "".join(words[2]),
 #     "word_4": "".join(words[3]),
 # }
-result["grid"] = words
-result["constraints"] = {}
-for i in range(len(words)):
-    for j in range(len(words[i])):
-        if words[i][j] == '-': continue
-        l = result["constraints"].get(words[i][j], [])
-        l.append([i, j])
-        result["constraints"][words[i][j]] = l
+
 
 
 num_valid_symbol_assignments = 0
@@ -309,8 +301,18 @@ def find_solution(symbol):
     # remove symbol from map before returning
     del symbol_to_letter[symbols[symbol]]
 
-
+start = time.time()
+words = generate_game()
+result["grid"] = words
+result["constraints"] = {}
+for i in range(len(words)):
+    for j in range(len(words[i])):
+        if words[i][j] == '-': continue
+        l = result["constraints"].get(words[i][j], [])
+        l.append([i, j])
+        result["constraints"][words[i][j]] = l
 find_solution(0)
+end = time.time()
 result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
 result["num_possible_solutions"] = num_possible_boards
 result["solutions"] = solutions_result
@@ -320,5 +322,5 @@ output_file = f"generated_games/{desired_num_symbols}.{num_possible_boards}.{''.
 with open(output_file, "w") as f:
     json.dump(result, f, indent=4)
 
-print(f"game file saved to {output_file}")
+print(f"game generated, solved, and saved to {output_file} in {end - start} seconds")
 print(result['constraints'])

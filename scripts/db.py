@@ -1,12 +1,23 @@
-# import sqlite3
+import sqlite3
 
-# db_path = "../database.db"
+db_path = "../database.db"
 
-# conn = sqlite3.connect(db_path)
-# cursor = conn.cursor()
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS words (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_letter TEXT NOT NULL,
+    second_letter TEXT NOT NULL,
+    third_letter TEXT NOT NULL,
+    fourth_letter TEXT NOT NULL,
+    fifth_letter TEXT NOT NULL
+)
+''')
 
 # cursor.execute('''
-# CREATE TABLE IF NOT EXISTS words (
+# CREATE TABLE IF NOT EXISTS birds (
 #     id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     first_letter TEXT NOT NULL,
 #     second_letter TEXT NOT NULL,
@@ -16,14 +27,19 @@
 # )
 # ''')
 
-# with open("../words.txt", "r") as f:
-#     for line in f:
-#         cursor.execute('''
-#         INSERT INTO words (first_letter, second_letter, third_letter, fourth_letter, fifth_letter)
-#         VALUES (?, ?, ?, ?, ?)
-#         ''', tuple(line.strip()))
+with open("../word_files/stanford-5-letter-words.txt", "r") as f:
+    for line in f:
+        if len(line.strip()) != 5:
+            print('oh no!')
+        try:
+            cursor.execute('''
+            INSERT INTO words (first_letter, second_letter, third_letter, fourth_letter, fifth_letter)
+            VALUES (?, ?, ?, ?, ?)
+            ''', tuple(line.strip()))
+        except:
+            print("bad")
 
-# conn.commit()
-# conn.close()
+conn.commit()
+conn.close()
 
 # print(f"database initialized at path {db_path}")

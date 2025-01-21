@@ -639,8 +639,12 @@ class Board {
             });
             message += "\n";
         });
-        navigator.clipboard.writeText(message.trim());
-        document.getElementById("copy-results-button").textContent = "copied!"
+        navigator.clipboard.writeText(message.trim()).then(() => {
+            document.getElementById("copy-results-button").textContent = "copied!";
+            setTimeout(() => {
+                document.getElementById("copy-results-button").textContent = "copy results"
+            }, 1000);
+        });
     }
 }
 
@@ -718,9 +722,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById("copy-results-button").addEventListener("click", () => {
         board.copyResults();
-        setTimeout(() => {
-            document.getElementById("copy-results-button").textContent = "copy results"
-        }, 1000);
     });
     
 });

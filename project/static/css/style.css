@@ -88,14 +88,14 @@ h1 {
     #container {
         gap: 25px;
     }
-    #board {
+    /* #board {
         grid-template-columns: repeat(5, 70px); /* Adjust column width */
-    }
+    } */
 
-    .letter {
-        width: 70px; /* Adjust letter size */
+    /* .letter {
+        width: 70px; 
         height: 70px;
-    }
+    } */
 }
 
 
@@ -244,14 +244,14 @@ h1 {
     display: none;
 }
 
-@media (min-width: 1024px) {
+/* @media (min-width: 2732px) {
     #keyboard-container {
-        display: none; /* Hide on-screen keyboard for larger screens */
+        display: none; 
     }
     #reset-button {
-        display: block; /* Hide reset button for larger screens */
+        display: block; 
     }
-}
+} */
 
 #info-div {
     padding: 0;

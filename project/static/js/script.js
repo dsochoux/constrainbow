@@ -306,6 +306,8 @@ class Board {
             // clear the constraints to letters map
             this.constraints_to_letters = {};
         });
+        document.getElementById("how-to-play-button").style.display = "inline-block";
+        document.getElementById("report-missing-word-button").style.display = "none";
     }
 
     keyPressed(event) {
@@ -492,6 +494,12 @@ class Board {
     
 
     async handleLetterKeyPressed(key) {
+        if (this.selected_w == null || this.selected_l == null) {
+            return;
+        }
+        if (this.words[this.selected_w].letters[this.selected_l].current_letter == String.fromCharCode(key)) {
+            return;
+        }
         // if the currently selected letter is constrained, update all letters with that same constraint
         if (this.selectedIsConstrained()) {
             if (this.flashConflictingConstrainedLetters(key)) {
@@ -515,7 +523,7 @@ class Board {
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
         }
         if (this.isSolutionFound()) {
-            document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
+            // document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
             document.getElementById("copy-results-span").style.display = "inline-block";
             this.pauseTimer();
             this.timer_element.classList.add('end-timer');
@@ -574,6 +582,22 @@ class Board {
             this.words[this.selected_w].letters[this.selected_l].updateLetter("");
         }
         this.words[this.selected_w].clearRed();
+        let num_invalid = 0;
+        this.words.forEach(word => {        
+            if (word.is_invalid) {
+                num_invalid++;
+            }
+        });
+        if (num_invalid) {
+            if (num_invalid == 1) {
+                document.getElementById("report-missing-word-button").textContent = "report missing word";
+            } else {
+                document.getElementById("report-missing-word-button").textContent = "report missing words";
+            }
+        } else {
+            document.getElementById("how-to-play-button").style.display = "inline-block";
+            document.getElementById("report-missing-word-button").style.display = "none";
+        }
         if (this.selected_w == 0 && this.selected_l == 0) {
             return;
         }
@@ -598,7 +622,7 @@ class Board {
 
     isSolutionFound() {
         let is_solution_found = true;
-        
+        let num_invalid_words = 0;
         // ensure all letters of the board are filled
         this.words.forEach(word => {
             // is_solution_found = is_solution_found && word.isAllLettersFilled();
@@ -606,20 +630,39 @@ class Board {
                 let is_valid_word = this.accepted_words.has(word.getWordString());
                 if (!is_valid_word) {
                     // color the word red for a second
+                    num_invalid_words++;
                     word.turnRed(this.selected_w, this.grid[this.selected_w][this.selected_l]);
                     is_solution_found = false;
-                    return;
                 } else {
                     word.clearRed();
                 }
                 is_solution_found = is_solution_found && is_valid_word;
             } else {
                 is_solution_found = false;
-                return;
             }
         });
         if (is_solution_found) {
             this.first_solution_found = true; // can overwrite this only once
+        } else {
+            let one_invalid = false;
+            this.words.forEach(word => {        
+                if (word.is_invalid) {
+                    one_invalid = true;
+                }
+            });
+            if (num_invalid_words > 0) {
+                document.getElementById("how-to-play-button").style.display = "none";
+                if (num_invalid_words == 1) {
+                    document.getElementById("report-missing-word-button").textContent = "report missing word";
+                    
+                } else {
+                    document.getElementById("report-missing-word-button").textContent = "report missing words";
+                }
+                document.getElementById("report-missing-word-button").style.display = "inline-block";
+            } else {
+                document.getElementById("how-to-play-button").style.display = "inline-block";
+                document.getElementById("report-missing-word-button").style.display = "none";
+            }
         }
         return is_solution_found;
     }
@@ -652,6 +695,34 @@ class Board {
             }, 1000);
         });
     }
+
+    // this function will be called when the user clicks the report missing word button
+    // it reports **incorect** words to the server, that the user thinks are valid
+    reportMissingWords() {
+        let incorect_words = [];
+        this.words.forEach(word => {
+            if (word.is_invalid) {
+                incorect_words.push(word.getWordString());
+            }
+        });
+        document.getElementById("report-missing-word-button").textContent = "reporting...";
+        fetch("/report-missing-word", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "words": incorect_words,
+            })
+        }).then(() => {
+            document.getElementById("report-missing-word-button").textContent = "reported!";
+            setTimeout(() => {
+                document.getElementById("report-missing-word-button").textContent = "report missing words";
+                document.getElementById("report-missing-word-button").style.display = "none";
+                document.getElementById("how-to-play-button").style.display = "inline-block";
+            }, 1000);
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -661,6 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById("how-to-play-overlay");
     // const overlay = document.getElementById("win-overlay");
     const howToPlayButton = document.getElementById("how-to-play-button");
+    const reportMissingWordButton = document.getElementById("report-missing-word-button");
     const closeButton = document.getElementById("close-button");
     const timerButton = document.getElementById("timer");
     // const keyboard = document.getElementById("keyboard-container");
@@ -685,6 +757,12 @@ document.addEventListener('DOMContentLoaded', () => {
     howToPlayButton.addEventListener("click", () => {
         overlay.style.visibility = 'visible';
         board.pause();
+    });
+
+    reportMissingWordButton.addEventListener("click", () => {
+        board.reportMissingWords();
+        
+        // console.log("reporting missing word");
     });
 
     // Hide the overlay when the "X" button is clicked
@@ -714,9 +792,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (game_id != "None") {    
         endpoint = endpoint + `?game-id=${game_id}`;
     }
+    
     console.log(endpoint);
     
-
     fetch(endpoint)
     .then(response => response.json())
     .then(data => {

@@ -269,6 +269,11 @@ h1 {
     color: black;
 }
 
+#report-missing-word-button {
+    display: none;
+    color: rgb(255, 76, 76);
+}
+
 @media screen and (max-height: 655px) {
     h1 {
         font-size: 1.3rem;

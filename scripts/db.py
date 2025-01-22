@@ -1,9 +1,11 @@
 import sqlite3
 
-db_path = "../database.db"
+db_path = "database.db"
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
+
+cursor.execute("DELETE FROM words")  # Clear existing data
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS words (
@@ -16,18 +18,7 @@ CREATE TABLE IF NOT EXISTS words (
 )
 ''')
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS birds (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     first_letter TEXT NOT NULL,
-#     second_letter TEXT NOT NULL,
-#     third_letter TEXT NOT NULL,
-#     fourth_letter TEXT NOT NULL,
-#     fifth_letter TEXT NOT NULL
-# )
-# ''')
-
-with open("../word_files/stanford-5-letter-words.txt", "r") as f:
+with open("./word_files/words.txt", "r") as f:
     for line in f:
         if len(line.strip()) != 5:
             print('oh no!')

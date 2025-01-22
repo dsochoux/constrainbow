@@ -303,9 +303,9 @@ class Board {
                 letter.updateLetter("");
                 letter.element.classList.remove('incorrect');
             });
-            // clear the constraints to letters map
-            this.constraints_to_letters = {};
+            word.is_invalid = false;
         });
+        this.constraints_to_letters = {}
         document.getElementById("how-to-play-button").style.display = "inline-block";
         document.getElementById("report-missing-word-button").style.display = "none";
     }
@@ -643,6 +643,8 @@ class Board {
         });
         if (is_solution_found) {
             this.first_solution_found = true; // can overwrite this only once
+            document.getElementById("how-to-play-button").style.display = "inline-block";
+            document.getElementById("report-missing-word-button").style.display = "none";
         } else {
             let one_invalid = false;
             this.words.forEach(word => {        
@@ -691,7 +693,7 @@ class Board {
         navigator.clipboard.writeText(message.trim()).then(() => {
             document.getElementById("copy-results-button").textContent = "copied!";
             setTimeout(() => {
-                document.getElementById("copy-results-button").textContent = "copy results"
+                document.getElementById("copy-results-button").textContent = "copy results 🎉"
             }, 1000);
         });
     }

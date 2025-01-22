@@ -6,7 +6,8 @@ html, body {
     justify-content: center; /* Center horizontally */
     background-color: #f0f0f0; /* Optional background */
     font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: scroll;
     padding-top: 10px;
 }
 
@@ -228,7 +229,7 @@ h1 {
     border: 1px solid #aaa;
     border-radius: 5px;
     cursor: pointer;
-    min-width: 30px;
+    width: 30px;
     text-align: center;
 }
 
@@ -276,9 +277,11 @@ h1 {
 
 #refresh-key, #delete-key  {
     color: rgb(255, 76, 76);
+    /* width: 45px;
+    font-size: 24px; */
 }
 
-@media screen and (max-height: 655px) {
+@media screen and (max-height: 645px) {
     h1 {
         font-size: 1.3rem;
     }

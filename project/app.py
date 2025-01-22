@@ -4,8 +4,11 @@ import random
 import json
 import glob
 import fnmatch
+import sqlite3
 
 app = Flask(__name__)
+
+db_path = "database.db"
 
 
 # return a random game
@@ -19,19 +22,19 @@ def index():
 @app.route('/game')
 def game():
     words = []
-    with open('../word_files/stanford-5-letter-words.txt', 'r') as f:
+    with open('./word_files/stanford-5-letter-words.txt', 'r') as f:
         for word in f:
             words.append(word.strip())
     
     game_id = request.args.get("game-id", None)
     print(game_id)
-    generated_game_folder = '../generated_games'
+    generated_game_folder = './generated_games'
     files = [f for f in os.listdir(generated_game_folder)]
     if game_id is None:
         selected_game_file = random.choice(files)
     else:
         # get the file that starts with game_id
-        generated_game_folder = '../generated_games'
+        generated_game_folder = './generated_games'
         matching_files = [f for f in os.listdir(generated_game_folder) if fnmatch.fnmatch(f, str(game_id) + '*')]
         selected_game_file = matching_files[0]
     
@@ -39,14 +42,6 @@ def game():
     file_path = os.path.join(generated_game_folder, selected_game_file)
     with open(file_path, 'r') as f:
         game_object = json.load(f)
-
-
-
-    
-
-    
-
-    
 
     return jsonify({
         "constraints": game_object["constraints"],
@@ -58,8 +53,14 @@ def game():
 
 @app.route('/report-missing-word', methods=['POST'])
 def report():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     data = request.get_json()
-    print(data)
+    words = data['words']
+    # insert the words into the database
+    cursor.executemany('INSERT INTO reported_missing_words (word) VALUES (?)', [(word,) for word in words])
+    conn.commit()
+    conn.close()
     return '', 200 # will never actually be used
 
 if __name__ == '__main__':

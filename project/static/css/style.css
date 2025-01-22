@@ -274,6 +274,10 @@ h1 {
     color: rgb(255, 76, 76);
 }
 
+#refresh-key, #delete-key  {
+    color: rgb(255, 76, 76);
+}
+
 @media screen and (max-height: 655px) {
     h1 {
         font-size: 1.3rem;

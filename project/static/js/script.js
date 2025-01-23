@@ -598,6 +598,9 @@ class Board {
             this.pauseTimer();
             this.timer_element.classList.add('end-timer');
             this.deselectAll();
+            this.selected_w = null;
+            this.selected_l = null;
+            this.updateKeyboard();
             let delay_time = 100;
             // loop through the letters and add celebrate class
             await this.delayedForEach(this.words, (word) => {

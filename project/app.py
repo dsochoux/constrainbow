@@ -61,6 +61,10 @@ def report():
     cursor.executemany('INSERT INTO reported_missing_words (word) VALUES (?)', [(word,) for word in words])
     conn.commit()
     conn.close()
+    # add words to text file
+    with open('./word_files/reported_missing_words.txt', 'a') as f:
+        for word in words:
+            f.write(word + '\n')    
     return '', 200 # will never actually be used
 
 if __name__ == '__main__':

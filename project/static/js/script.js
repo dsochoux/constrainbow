@@ -588,9 +588,11 @@ class Board {
             if (this.flashConflictingConstrainedLetters(key)) {
                 return;
             }
+            let old_letter = this.words[this.selected_w].letters[this.selected_l].current_letter;
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
             // update black letter count map
             this.black_letters_count_map[String.fromCharCode(key)] = this.getWithDefault(this.black_letters_count_map, String.fromCharCode(key), 0) + 1;
+            this.black_letters_count_map[old_letter]--;
         }
         if (this.isSolutionFound()) {
             // document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";

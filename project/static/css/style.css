@@ -232,6 +232,10 @@ h1 {
     text-align: center;
 }
 
+#second-keyboard-row .key, #bottom-keyboard-row .key {
+    width: 34px;
+}
+
 .unavailable {
     background-color: #aaa;
 }

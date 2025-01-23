@@ -151,7 +151,6 @@ class Board {
         this.constraints_to_positions = data["constraints"];
         this.grid = data["grid"];
         this.accepted_words = new Set(data["words"]);
-        console.log(this.accepted_words);
         // this is used to ensure that no constraints can be assigned the same letter
         this.constraints_to_letters = {}
         this.black_letters_count_map = {}
@@ -330,7 +329,6 @@ class Board {
     }
 
     updateKeyboard() {
-        console.log("updating keyboard!!");
         for (let i = 65; i <= 90; i++) {
             let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
             if (key_element) {
@@ -360,8 +358,6 @@ class Board {
         }
         // for each of these letters, except the current letter if there if one, get the key element from the dom
         // and add the unavailable class to the key
-        console.log(unavailable_letters);
-        
         unavailable_letters.forEach(letter => {
             if (this.words[this.selected_w].letters[this.selected_l].current_letter != letter) {
                 let key_element = document.getElementById(`key-${letter}`);
@@ -374,8 +370,7 @@ class Board {
     }
 
     keyPressed(event) {
-        
-        if (this.is_paused) {
+        if (this.selected_w == null || this.selected_l == null || this.is_paused) {
             return;
         }
         if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
@@ -512,8 +507,6 @@ class Board {
     // if the typed letter used anywhere?
 
     flashLetters(positions) {
-        console.log("flashing!");
-        
         positions.forEach(conflicting_letter => {
             let w = conflicting_letter[0];
             let l = conflicting_letter[1];
@@ -542,8 +535,6 @@ class Board {
     }
 
     flashConflictingWildcardLetters(key) {
-        console.log("i am here");
-        
         let conflicting_wildcard_letter_positions = [];
         this.words.forEach(word => {
             word.letters.forEach(letter => {
@@ -562,9 +553,6 @@ class Board {
     
 
     async handleLetterKeyPressed(key) {
-        if (this.selected_w == null || this.selected_l == null) {
-            return;
-        }
         if (this.words[this.selected_w].letters[this.selected_l].current_letter == String.fromCharCode(key)) {
             return;
         }
@@ -624,10 +612,8 @@ class Board {
             if (this.isFull()) {
                 this.moveRight();
             } else {
-                let i = 0;
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && i < 20) {
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "") {
                     this.moveRight();
-                    i++;
                 }
             }
             this.toggleSelected();
@@ -686,9 +672,10 @@ class Board {
             } else {
                 let i = 0;
                 // TODO fix the double delete freeze
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && i < 20) {
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && 
+                    !(this.selected_w == 0 && this.selected_l == 0)) {
                     this.moveLeft();
-                    i++;
+                    // i++;
                 }
             }
             this.toggleSelected();
@@ -870,15 +857,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const game_id = document.getElementById("game-id").value;
-    console.log(game_id);
     
     let endpoint = "/game";
     
     if (game_id != "None") {    
         endpoint = endpoint + `?game-id=${game_id}`;
     }
-    
-    console.log(endpoint);
     
     fetch(endpoint)
     .then(response => response.json())

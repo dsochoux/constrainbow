@@ -1,7 +1,6 @@
 katsu
 taser
 spork
-hypno
 taser
 minty
 whore
@@ -9,4 +8,4 @@ mommy
 futon
 gator
 pacer
-paces
+ascii

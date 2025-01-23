@@ -22,7 +22,7 @@ def index():
 @app.route('/game')
 def game():
     words = []
-    with open('./word_files/stanford-5-letter-words.txt', 'r') as f:
+    with open('./word_files/words.txt', 'r') as f:
         for word in f:
             words.append(word.strip())
     

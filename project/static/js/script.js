@@ -153,12 +153,8 @@ class Board {
         this.accepted_words = new Set(data["words"]);
         console.log(this.accepted_words);
         // this is used to ensure that no constraints can be assigned the same letter
-        this.constraints_to_letters = {
-            '@': '',
-            '#': '',
-            '$': '',
-            '%': ''
-        }
+        this.constraints_to_letters = {}
+        this.black_letters_count_map = {}
         
         this.is_paused = false;
         this.game_has_started = false; // this will only ever be updated once, when the user makes their first click
@@ -170,6 +166,10 @@ class Board {
         this.initBoard();
         this.pause();
 
+    }
+
+    getWithDefault(obj, key, defaultValue) {
+        return key in obj ? obj[key] : defaultValue;
     }
 
     isEmpty() {
@@ -217,6 +217,12 @@ class Board {
                 letter.text_element.style.visibility = 'hidden';
             });
         });
+        for (let i = 65; i <= 90; i++) {
+            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
+            if (key_element) {
+                key_element.classList.add('paused-key');
+            }
+        }
     }
     resume() {
         if (!this.is_paused || this.first_solution_found) {
@@ -236,6 +242,12 @@ class Board {
         if (!this.game_has_started) {
             this.game_has_started = true;
             // need to switch the start message for the timer and get it rolling
+        }
+        for (let i = 65; i <= 90; i++) {
+            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
+            if (key_element) {
+                key_element.classList.remove('paused-key');
+            }
         }
     }
 
@@ -306,8 +318,59 @@ class Board {
             word.is_invalid = false;
         });
         this.constraints_to_letters = {}
+        this.black_letters_count_map = {}
         document.getElementById("how-to-play-button").style.display = "inline-block";
         document.getElementById("report-missing-word-button").style.display = "none";
+        for (let i = 65; i <= 90; i++) {
+            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
+            if (key_element) {
+                key_element.classList.remove('unavailable');
+            }
+        }
+    }
+
+    updateKeyboard() {
+        console.log("updating keyboard!!");
+        for (let i = 65; i <= 90; i++) {
+            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
+            if (key_element) {
+                key_element.classList.remove('unavailable');
+            }
+        }
+        if (this.selected_w == null || this.selected_l == null) {
+            // set all of the keys to be unselected
+            return;
+        }
+        // we have to figure out which letters are unavailable to be played at
+        // the selected letter, and update keyboard keys accordingly
+        // if the selected key is constrained, no letters that are constrained or black can be used
+        let unavailable_letters = [];
+        if(this.selectedIsConstrained()) {
+            // must add the black letters too
+            for (let letter in this.black_letters_count_map) {
+                if (this.black_letters_count_map[letter] > 0) {
+                    unavailable_letters.push(letter);
+                }
+            }
+        }
+        for (let symbol in this.constraints_to_letters) {
+            if (this.getWithDefault(this.constraints_to_letters, symbol, '') != '') {
+                unavailable_letters.push(this.constraints_to_letters[symbol]);
+            }
+        }
+        // for each of these letters, except the current letter if there if one, get the key element from the dom
+        // and add the unavailable class to the key
+        console.log(unavailable_letters);
+        
+        unavailable_letters.forEach(letter => {
+            if (this.words[this.selected_w].letters[this.selected_l].current_letter != letter) {
+                let key_element = document.getElementById(`key-${letter}`);
+                if (key_element) {
+                    key_element.classList.add('unavailable');
+                }
+            }
+        });
+        
     }
 
     keyPressed(event) {
@@ -354,6 +417,7 @@ class Board {
         }
         this.selected_w = new_w;
         this.selected_l = new_l;
+        this.updateKeyboard();
     }
 
     moveUp() {
@@ -363,6 +427,7 @@ class Board {
             new_w = 3;
         }
         this.selected_w = new_w;
+        this.updateKeyboard();
     }
 
     moveRight() {
@@ -376,6 +441,7 @@ class Board {
         }
         this.selected_w = new_w;
         this.selected_l = new_l;
+        this.updateKeyboard();
     }
 
     moveDown() {
@@ -385,6 +451,7 @@ class Board {
             new_w = 0;
         }
         this.selected_w = new_w;
+        this.updateKeyboard();
     }
 
     handleArrowKeyPressed(key) {
@@ -426,6 +493,7 @@ class Board {
             this.selected_w = w;
             this.selected_l = l;
         }
+        this.updateKeyboard();
     }
 
     selectedIsConstrained() {
@@ -521,6 +589,8 @@ class Board {
                 return;
             }
             this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
+            // update black letter count map
+            this.black_letters_count_map[String.fromCharCode(key)] = this.getWithDefault(this.black_letters_count_map, String.fromCharCode(key), 0) + 1;
         }
         if (this.isSolutionFound()) {
             // document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
@@ -549,8 +619,10 @@ class Board {
             if (this.isFull()) {
                 this.moveRight();
             } else {
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "") {
+                let i = 0;
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "" && i < 20) {
                     this.moveRight();
+                    i++;
                 }
             }
             this.toggleSelected();
@@ -579,6 +651,7 @@ class Board {
             })
             this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = '';
         } else {
+            this.black_letters_count_map[this.words[this.selected_w].letters[this.selected_l].current_letter]--;
             this.words[this.selected_w].letters[this.selected_l].updateLetter("");
         }
         this.words[this.selected_w].clearRed();
@@ -606,11 +679,16 @@ class Board {
             if (this.isEmpty()) {
                 this.moveLeft();
             } else {
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "") {
+                let i = 0;
+                // TODO fix the double delete freeze
+                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && i < 20) {
                     this.moveLeft();
+                    i++;
                 }
             }
             this.toggleSelected();
+        } else {
+            this.updateKeyboard();
         }
         
         // if (is_on_blank_letter) {

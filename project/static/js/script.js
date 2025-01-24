@@ -222,6 +222,8 @@ class Board {
                 key_element.classList.add('paused-key');
             }
         }
+        document.getElementById("refresh-key").classList.add('paused-key');
+        document.getElementById("delete-key").classList.add('paused-key');
     }
     resume() {
         if (!this.is_paused || this.first_solution_found) {
@@ -248,6 +250,8 @@ class Board {
                 key_element.classList.remove('paused-key');
             }
         }
+        document.getElementById("refresh-key").classList.remove('paused-key');
+        document.getElementById("delete-key").classList.remove('paused-key');
     }
 
     handleTimerClicked() {
@@ -670,12 +674,10 @@ class Board {
             if (this.isEmpty()) {
                 this.moveLeft();
             } else {
-                let i = 0;
                 // TODO fix the double delete freeze
                 while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && 
                     !(this.selected_w == 0 && this.selected_l == 0)) {
                     this.moveLeft();
-                    // i++;
                 }
             }
             this.toggleSelected();

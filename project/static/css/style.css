@@ -4,7 +4,9 @@ html, body {
     display: flex;
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    background-color: #f0f0f0; /* Optional background */
+    background-color: #f0f0f0;
+    /* background-color: #e0ddcf; */
+    /* background-color: #dad6d6; */
     font-family: Arial, Helvetica, sans-serif;
     overflow-x: hidden;
     padding-top: 10px;
@@ -31,6 +33,10 @@ button {
 h1 {
     margin: 0; /* Remove default margin */
     font-size: 2rem;
+}
+h2 {
+    margin: 0; /* Remove default margin */
+    font-size: 1.5rem;
 }
 
 .description {
@@ -114,18 +120,22 @@ h1 {
 .letter.c1 {
     /* border: 5px solid #D04848; */
     border: 5px solid #c30000;
+    /* border: 5px solid #f34213; */
 }
 .letter.c2 {
     /* border: 5px solid #F3B95F; */
     border: 5px solid #ff9019;
+    /* border: 5px solid #2dd881; */
 }
 .letter.c3 {
     /* border: 5px solid #FDE767; */
     border: 5px solid #d4c600;
+    /* border: 5px solid #1d4e89; */
 }
 .letter.c4 {
     /* border: 5px solid #6895D2; */
     border: 5px solid #3a2fda;
+    /* border: 5px solid #bdbf09; */
 }
 
 .letter.conflict {
@@ -212,6 +222,8 @@ h1 {
     /* box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); */
     gap: 10px; /* Add spacing between rows */
     align-items: center; /* Center align the keyboard rows */
+    /* background-color:#e2e2e2; */
+    /* border-radius: 20px; */
 }
 
 .keyboard-row {
@@ -226,12 +238,12 @@ h1 {
     padding-bottom: 10px;
     font-size: 18px;
     background: #fff;
-    border: 1px solid #aaa;
+    border: 1px solid #dddddd;
     border-radius: 5px;
     cursor: pointer;
     width: 30px;
     text-align: center;
-    box-shadow: 0px 1px 0px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 3px 3px 0 #dddddd;
 }
 
 #second-keyboard-row .key, #bottom-keyboard-row .key {

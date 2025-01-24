@@ -8,3 +8,8 @@ futon
 gator
 pacer
 ascii
+promo
+achoo
+unhip
+panty
+panko

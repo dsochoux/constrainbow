@@ -151,6 +151,7 @@ class Board {
         this.constraints_to_positions = data["constraints"];
         this.grid = data["grid"];
         this.accepted_words = new Set(data["words"]);
+        this.num_possible_solutions = data["num_possible_solutions"];
         // this is used to ensure that no constraints can be assigned the same letter
         this.constraints_to_letters = {}
         this.black_letters_count_map = {}
@@ -211,9 +212,9 @@ class Board {
         }
         this.pauseTimer();
         if (initial) {
-            this.playPauseButton.textContent = "start game";
+            this.playPauseButton.textContent = "Start game";
         } else {
-            this.playPauseButton.textContent = "resume";
+            this.playPauseButton.textContent = "Resume";
         }
         this.is_paused = true;
         // add the paused class to all of the letters
@@ -238,7 +239,7 @@ class Board {
         }
         this.timer_element.style.display = 'inline-block';
         this.startTimer();
-        this.playPauseButton.textContent = "pause";
+        this.playPauseButton.textContent = "Pause";
         this.is_paused = false;
         // remove the paused class from all of the letters
         this.words.forEach((word) => {
@@ -756,7 +757,10 @@ class Board {
         const date = new Date();
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Get the month (0-11), so add 1 and pad to 2 digits
         const day = String(date.getDate()).padStart(2, '0');
-        let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
+        // let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
+        let message = `CONSTRAINBOW ${month}/${day}\n`;
+        message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
+        message += `Solved in ${this.timer_element.textContent}\n`;
         // generate the emojis from the grid
         this.grid.forEach((word) => {
             word.forEach((letter) => {
@@ -765,9 +769,9 @@ class Board {
             message += "\n";
         });
         navigator.clipboard.writeText(message.trim()).then(() => {
-            document.getElementById("copy-results-button").textContent = "copied!";
+            document.getElementById("copy-results-button").textContent = "Copied!";
             setTimeout(() => {
-                document.getElementById("copy-results-button").textContent = "copy results!"
+                document.getElementById("copy-results-button").textContent = "Copy results!"
             }, 1000);
         });
     }

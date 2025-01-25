@@ -57,15 +57,15 @@ def generate_game():
         num_symbols += 1
 
     # ensure no row only has one symbol. Worst case, this adds 2 symbols
-    for i in range(4):
-        # count num dashes
-        num_symbols_in_word = 5 - words[i].count('-')
-        if num_symbols_in_word == 1:
-            # find a dash and replace it with a random symbol
-            random_position = random.choice([j for j in range(0, 5) if words[i][j] == '-'])
-            random_symbol = random.choice(symbols)
-            words[i][random_position] = random_symbol
-            num_symbols += 1
+    # for i in range(4):
+    #     # count num dashes
+    #     num_symbols_in_word = 5 - words[i].count('-')
+    #     if num_symbols_in_word == 1:
+    #         # find a dash and replace it with a random symbol
+    #         random_position = random.choice([j for j in range(0, 5) if words[i][j] == '-'])
+    #         random_symbol = random.choice(symbols)
+    #         words[i][random_position] = random_symbol
+    #         num_symbols += 1
     
     # fill in the rest randomly
     while num_symbols < desired_num_symbols:

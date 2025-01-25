@@ -15,3 +15,5 @@ panty
 panko
 lispy
 asfgf
+rasin
+risin

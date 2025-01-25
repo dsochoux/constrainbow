@@ -1,5 +1,5 @@
 :root {
-    --letter-border-thickness: 3px;
+    --letter-border-thickness: 4px;
     --c1: #c30000;
     --c2: #ff9019;
     --c3: #d4c600;
@@ -13,7 +13,7 @@ html, body {
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
     /* background-color: #f0f0f0; */
-    background-color: white;
+    background-color:snow;
     font-family: Arial, Helvetica, sans-serif;
     overflow-x: hidden;
     padding-top: 10px;
@@ -31,7 +31,12 @@ button {
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center items horizontally */
     text-align: center; /* Center-align text */
-    gap: 20px; /* Add spacing between elements */
+    justify-content: space-between;
+    height: 95dvh;
+    max-height: 650px;
+    /* gap: 20px; Add spacing between elements */
+    /* padding-bottom: env(safe-area-inset-bottom); Dynamic safe area for the bottom */
+    /* padding-top: env(safe-area-inset-top);  */
     /* max-height: 600px; */
     /* overflow-y: auto; */
     /* height: auto; */
@@ -318,13 +323,14 @@ h2 {
 
 .report-missing-word-button-paused {
     display: none;
+    background-color: white;
 }
 
 #play-pause-button {
     border: 1px solid rgb(44, 44, 44);
     padding: 3px;
     border-radius: 5px;
-    width: 80px;
+    background-color: white;
 }
 
 #copy-results-button {
@@ -332,6 +338,7 @@ h2 {
     border: 1px solid black;
     padding: 3px;
     border-radius: 5px;
+    background-color: white;
 }
 
 #refresh-key, #delete-key  {
@@ -381,19 +388,21 @@ h2 {
 
 #timer {
     margin: 0px;
-    border: 2px solid black;
+    border: 1px solid black;
     padding: 3px;
     border-radius: 5px;
+    background-color: white;
 }
 
 #how-to-play-button {
     margin: 0px;
-    border: 2px solid black;
+    border: 1px solid black;
     padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 9px;
     padding-right: 9px;
     border-radius: 5px;
+    background-color: white;
 }
 
 #actions-container {

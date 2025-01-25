@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <input type="hidden" id="game-id" value="{{ game_id }}"" />
+    <input type="hidden" id="game-id" value="{{ game_id }}" />
     <div class="overlay" id="how-to-play-overlay">
         <div class="popup">
             <button id="close-button">&times;</button>
@@ -60,15 +60,19 @@
         </div>
     </div>
     <div id="container">
-        <h2>CONSTRAINBOW</h2>
-        <div>
-            <span id="start-message">Click any tile to start. Click the timer to pause.</span>
-            <button id="timer" class="link-styled-button">00:00</button>
-            <span id="copy-results-span"> | <button class="link-styled-button" id="copy-results-button">copy results 🎉</button></span>
+        <div id="header-div">
+            <h2>CONSTRAINBOW</h2>
+            <p id="timer">00:00</p>
+            <button id="how-to-play-button">?</button>
         </div>
+        <p class="description">Today's puzzle has <span id="num-possible-solutions"></span> unique solutions</p>
         <p id="loading-text">Loading game...</p>
         <div id="board"></div>
-        <button class="key" id="reset-button" data-key=2000>clear all</button>
+        <div id="actions-container">
+            <button id="play-pause-button">⏵ start game</button>
+            <button id="report-missing-word-button">report missing word</button>
+            <button id="copy-results-button">copy results!</button>
+        </div>
         <div id="keyboard-container">
             <div class="keyboard-row">
                 <button class="key" id="key-Q" data-key=81>Q</button>
@@ -81,10 +85,8 @@
                 <button class="key" id="key-I" data-key=73>I</button>
                 <button class="key" id="key-O" data-key=79>O</button>
                 <button class="key" id="key-P" data-key=80>P</button>
-              <!-- Add remaining keys here -->
             </div>
             <div class="keyboard-row" id="second-keyboard-row">
-              <!-- Second row keys -->
                 <button class="key" id="key-A" data-key=65>A</button>
                 <button class="key" id="key-S" data-key=83>S</button>
                 <button class="key" id="key-D" data-key=68>D</button>
@@ -108,11 +110,9 @@
             </div>
         </div>
         <div id="info-div">
-            <p class="description">This puzzle has <span id="num-possible-solutions"></span> unique solutions.</p>
             <p class="description">
                 <!-- <span id="encouraging-message">Good luck finding one.</span>  -->
-                <button class="link-styled-button" id="how-to-play-button">how to play</button>
-                <button class="link-styled-button" id="report-missing-word-button">report missing word</button>
+                <!-- <button class="link-styled-button" id="report-missing-word-button">report missing word</button> -->
             </p>
         </div>
     </div>

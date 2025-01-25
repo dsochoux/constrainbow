@@ -161,9 +161,11 @@ class Board {
         this.total_seconds = 0;
         this.interval_id = null;
         this.timer_element = document.getElementById("timer");
+        this.playPauseButton = document.getElementById("play-pause-button");
+        this.reportMissingWordButton = document.getElementById("report-missing-word-button");
         this.start_instructions_element = document.getElementById("start-message");
         this.initBoard();
-        this.pause();
+        this.pause(true);
 
     }
 
@@ -203,11 +205,16 @@ class Board {
         clearInterval(this.interval_id);
     }
 
-    pause() {
+    pause(initial = false) {
         if (this.is_paused || this.first_solution_found) {
             return;
         }
         this.pauseTimer();
+        if (initial) {
+            this.playPauseButton.textContent = "start game";
+        } else {
+            this.playPauseButton.textContent = "resume";
+        }
         this.is_paused = true;
         // add the paused class to all of the letters
         this.words.forEach((word) => {
@@ -229,9 +236,9 @@ class Board {
         if (!this.is_paused || this.first_solution_found) {
             return;
         }
-        this.start_instructions_element.style.display = 'none';
         this.timer_element.style.display = 'inline-block';
         this.startTimer();
+        this.playPauseButton.textContent = "pause";
         this.is_paused = false;
         // remove the paused class from all of the letters
         this.words.forEach((word) => {
@@ -254,7 +261,7 @@ class Board {
         document.getElementById("delete-key").classList.remove('paused-key');
     }
 
-    handleTimerClicked() {
+    handlePlayPauseClicked() {
         if (this.first_solution_found) {
             return;
         }
@@ -322,7 +329,6 @@ class Board {
         });
         this.constraints_to_letters = {}
         this.black_letters_count_map = {}
-        document.getElementById("how-to-play-button").style.display = "inline-block";
         document.getElementById("report-missing-word-button").style.display = "none";
         for (let i = 65; i <= 90; i++) {
             let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
@@ -588,9 +594,9 @@ class Board {
         }
         if (this.isSolutionFound()) {
             // document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
-            document.getElementById("copy-results-span").style.display = "inline-block";
+            document.getElementById("copy-results-button").style.display = "inline-block";
             this.pauseTimer();
-            this.timer_element.classList.add('end-timer');
+            this.playPauseButton.style.display = "none";
             this.deselectAll();
             this.selected_w = null;
             this.selected_l = null;
@@ -663,7 +669,6 @@ class Board {
                 document.getElementById("report-missing-word-button").textContent = "report missing words";
             }
         } else {
-            document.getElementById("how-to-play-button").style.display = "inline-block";
             document.getElementById("report-missing-word-button").style.display = "none";
         }
         if (this.selected_w == 0 && this.selected_l == 0) {
@@ -715,7 +720,6 @@ class Board {
         });
         if (is_solution_found) {
             this.first_solution_found = true; // can overwrite this only once
-            document.getElementById("how-to-play-button").style.display = "inline-block";
             document.getElementById("report-missing-word-button").style.display = "none";
         } else {
             let one_invalid = false;
@@ -725,7 +729,6 @@ class Board {
                 }
             });
             if (num_invalid_words > 0) {
-                document.getElementById("how-to-play-button").style.display = "none";
                 if (num_invalid_words == 1) {
                     document.getElementById("report-missing-word-button").textContent = "report missing word";
                     
@@ -734,7 +737,6 @@ class Board {
                 }
                 document.getElementById("report-missing-word-button").style.display = "inline-block";
             } else {
-                document.getElementById("how-to-play-button").style.display = "inline-block";
                 document.getElementById("report-missing-word-button").style.display = "none";
             }
         }
@@ -765,7 +767,7 @@ class Board {
         navigator.clipboard.writeText(message.trim()).then(() => {
             document.getElementById("copy-results-button").textContent = "copied!";
             setTimeout(() => {
-                document.getElementById("copy-results-button").textContent = "copy results 🎉"
+                document.getElementById("copy-results-button").textContent = "copy results!"
             }, 1000);
         });
     }
@@ -793,7 +795,6 @@ class Board {
             setTimeout(() => {
                 document.getElementById("report-missing-word-button").textContent = "report missing words";
                 document.getElementById("report-missing-word-button").style.display = "none";
-                document.getElementById("how-to-play-button").style.display = "inline-block";
             }, 1000);
         });
     }
@@ -808,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const howToPlayButton = document.getElementById("how-to-play-button");
     const reportMissingWordButton = document.getElementById("report-missing-word-button");
     const closeButton = document.getElementById("close-button");
-    const timerButton = document.getElementById("timer");
+    const playPauseButton = document.getElementById("play-pause-button");
     // const keyboard = document.getElementById("keyboard-container");
     const keys = document.querySelectorAll(".key");
 
@@ -845,8 +846,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // board.resume();
     });
 
-    timerButton.addEventListener("click", () => {
-        board.handleTimerClicked();
+    playPauseButton.addEventListener("click", () => {
+        board.handlePlayPauseClicked();
     });
 
 
@@ -854,7 +855,6 @@ document.addEventListener('DOMContentLoaded', () => {
     overlay.addEventListener("click", (event) => {
         if (event.target === overlay) {
             overlay.style.visibility = 'hidden';
-            // board.resume();
         }
     });
 

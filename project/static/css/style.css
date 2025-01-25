@@ -1,14 +1,20 @@
+:root {
+    --letter-border-thickness: 3px;
+    --c1: #c30000;
+    --c2: #ff9019;
+    --c3: #d4c600;
+    --c4: #3a2fda;
+}
+
 html, body {
     margin: 0;
     height: 100vh; /* Full viewport height */
     display: flex;
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    background-color: #f0f0f0;
-    /* background-color: #e0ddcf; */
-    /* background-color: #dad6d6; */
+    /* background-color: #f0f0f0; */
+    background-color: white;
     font-family: Arial, Helvetica, sans-serif;
-    /* font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
     overflow-x: hidden;
     padding-top: 10px;
 }
@@ -25,7 +31,7 @@ button {
     flex-direction: column; /* Stack elements vertically */
     align-items: center; /* Center items horizontally */
     text-align: center; /* Center-align text */
-    gap: 12px; /* Add spacing between elements */
+    gap: 20px; /* Add spacing between elements */
     /* max-height: 600px; */
     /* overflow-y: auto; */
     /* height: auto; */
@@ -41,10 +47,9 @@ h2 {
     /* background-color: white;
     padding: 5px;
     border-radius: 5px; */
-    /* background: linear-gradient(to right, #c30000, #ff9019, #d4c600, #3a2fda, #c30000, #ff9019, #d4c600, #3a2fda, #c30000, #ff9019, #d4c600, #3a2fda);
-    -webkit-background-clip: text;
-    /* background-clip: border-box; */
-    /* -webkit-text-fill-color: transparent; */
+    background-image: linear-gradient(to right, var(--c1), var(--c2), var(--c3), var(--c4)); /* Define gradient */
+    -webkit-background-clip: text; /* Clip the gradient to the text */
+    -webkit-text-fill-color: transparent; /* Make the text itself transparent */
 }
 
 /* #rainbow {
@@ -53,9 +58,8 @@ h2 {
 
 .description {
     margin: 0;
-    margin-bottom: 10px;
     font-size: 1rem;
-    color: #666; /* Optional: light gray text */
+    color: #000000; /* Optional: light gray text */
 }
 
 #board {
@@ -69,9 +73,10 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 5px solid #000;
+    border: var(--letter-border-thickness) solid black;
     border-radius: 10px;
-    background-color: #e6e6e6;
+    /* background-color: #e6e6e6; */
+    background-color: white;
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
@@ -104,9 +109,9 @@ h2 {
         align-items: center;
         padding-top: 0px;
     }
-    #container {
-        gap: 25px;
-    }
+    /* #container {
+        gap: 30px;
+    } */
     /* #board {
         grid-template-columns: repeat(5, 70px);
     } */
@@ -117,37 +122,36 @@ h2 {
     } */
 }
 
-
-
-
 .letter.selected {
     /* border: 5.5px solid black; */
     /* background-color: rgb(133, 132, 132);
     color: #e6e6e6; */
     /* box-shadow: 0 10px 16px rgba(0, 0, 0, 0.5); */
     /* border: 4.5px solid #000; */
-    background-color: #bcbcbc;
+    /* background-color: #bcbcbc; */
+    background-color: #dcdcdc;
+    /* box-shadow: 0px 3px 3px 0 #dddddd; */
     /* background-color: white; */
 }
 
 .letter.c1 {
     /* border: 5px solid #D04848; */
-    border: 5px solid #c30000;
+    border: var(--letter-border-thickness) solid var(--c1);
     /* border: 5px solid #f34213; */
 }
 .letter.c2 {
     /* border: 5px solid #F3B95F; */
-    border: 5px solid #ff9019;
+    border: var(--letter-border-thickness) solid var(--c2);
     /* border: 5px solid #2dd881; */
 }
 .letter.c3 {
     /* border: 5px solid #FDE767; */
-    border: 5px solid #d4c600;
+    border: var(--letter-border-thickness) solid var(--c3);
     /* border: 5px solid #1d4e89; */
 }
 .letter.c4 {
     /* border: 5px solid #6895D2; */
-    border: 5px solid #3a2fda;
+    border: var(--letter-border-thickness) solid var(--c4);
     /* border: 5px solid #bdbf09; */
 }
 
@@ -160,12 +164,14 @@ h2 {
     color: rgb(255, 76, 76);
 }
 .letter.celebrate {
-    border: 5px solid green;
+    border: var(--letter-border-thickness) solid green;
     background-color: #525252;
     color: white;
 }
 .letter.paused {
-    border: 5px solid #7f7f7f;
+    /* border: 5px solid #b4b4b4; */
+    border: 2px solid rgb(44, 44, 44);
+    background-color: white;
 }
 
 .text {
@@ -206,18 +212,16 @@ h2 {
     text-decoration: underline; /* Optional: Adds an underline, since buttons usually stand out with something like this */
 }
 
-#timer {
+/* #timer {
     color: black;
     display: none;
     font-weight: bold;
     margin: 0;
     padding: 0;
-    /* font-size: 1rem; */
-}
+} */
 
 .end-timer {
-    text-decoration: none;
-    cursor: default;
+    display: none;
 }
 
 #start-message {
@@ -231,12 +235,12 @@ h2 {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding: 10px;
     /* box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); */
-    gap: 10px; /* Add spacing between rows */
+    gap: 5px; /* Add spacing between rows */
     align-items: center; /* Center align the keyboard rows */
     /* background-color:#e2e2e2; */
     /* border-radius: 20px; */
+    padding: 0px;
 }
 
 .keyboard-row {
@@ -247,16 +251,16 @@ h2 {
 
 .key {
     margin: 0; /* Remove margins */
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     font-size: 18px;
     background: #fff;
-    border: 1px solid #dddddd;
+    border: 1px solid #000000;
     border-radius: 5px;
     cursor: pointer;
     width: 30px;
     text-align: center;
-    box-shadow: 0px 3px 3px 0 #dddddd;
+    /* box-shadow: 0px 3px 3px 0 #dddddd; */
 }
 
 #second-keyboard-row .key, #bottom-keyboard-row .key {
@@ -264,7 +268,7 @@ h2 {
 }
 
 .unavailable {
-    background-color: #aaa;
+    background-color: #b4b4b4;
     box-shadow: none;
 }
 .paused-key {
@@ -304,14 +308,30 @@ h2 {
     padding: 0px;
 }
 
-#copy-results-span {
-    display: none;
-    color: black;
-}
-
 #report-missing-word-button {
     display: none;
-    color: rgb(255, 76, 76);
+    /* color: rgb(255, 76, 76); */
+    border: 1px solid red;
+    padding: 3px;
+    border-radius: 5px;
+}
+
+.report-missing-word-button-paused {
+    display: none;
+}
+
+#play-pause-button {
+    border: 1px solid rgb(44, 44, 44);
+    padding: 3px;
+    border-radius: 5px;
+    width: 80px;
+}
+
+#copy-results-button {
+    display: none;
+    border: 1px solid black;
+    padding: 3px;
+    border-radius: 5px;
 }
 
 #refresh-key, #delete-key  {
@@ -321,7 +341,7 @@ h2 {
 }
 
 @media screen and (max-height: 645px) {
-    h1 {
+    /* h1 {
         font-size: 1.3rem;
     }
     #board {
@@ -331,15 +351,53 @@ h2 {
     .letter {
         width: 60px;
         height: 60px;
-    }
+    } */
     #container {
-        gap: 5px;
+        gap: 10px;
     }
-    #keyboard-container {
-        gap: 5px;
+    .key {
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
-    .description {
+    /* .description {
         margin-bottom: 5px;
-    }
+    } */
     
+}
+
+#header-div {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+/* h2 {
+    border: 3px solid black;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: white;
+} */
+
+#timer {
+    margin: 0px;
+    border: 2px solid black;
+    padding: 3px;
+    border-radius: 5px;
+}
+
+#how-to-play-button {
+    margin: 0px;
+    border: 2px solid black;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 9px;
+    padding-right: 9px;
+    border-radius: 5px;
+}
+
+#actions-container {
+    display: flex;
+    gap: 10px;
+    /* padding-bottom: 15px; */
 }

@@ -29,7 +29,7 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          # mkdir -p ~/.ssh  # Ensure the .ssh directory exists
-          # echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          # chmod 600 ~/.ssh/id_rsa
+          mkdir -p ~/.ssh  # Ensure the .ssh directory exists
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} root@165.22.5.124 'bash -s' < deploy.sh

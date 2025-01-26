@@ -25,7 +25,7 @@ jobs:
       - name: Minify JavaScript
         run: |
           npm install -g terser
-          terser static/js/*.js -o static/js/*.min.js  # Adjust path based on where your JS is
+          terser project/static/js/*.js -o project/static/js/*.min.js  # Adjust path based on where your JS is
 
       - name: Deploy to Server
         run: |

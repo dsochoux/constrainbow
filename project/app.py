@@ -1,49 +1,76 @@
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, make_response
 import os
 import random
 import json
 import glob
 import fnmatch
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 
 db_path = "database.db"
 
+words = []
+with open('./word_files/words.txt', 'r') as f:
+    for word in f:
+        words.append(word.strip())
+
+# folder to look for the games
+generated_game_folder = './generated_games'
+files = [f for f in os.listdir(generated_game_folder)]
 
 # return a random game
 @app.route('/')
 def index():
+    # a game-id can be provided as a query parameter (this is a secret feature)
+    # people will hit the normal endpoint
+    # if no game-id is provided, get the game id for today's game and pass it to the index.html
+    # then, when the user hits the game endpoint, it will get the game with that game id
     game_id = request.args.get("game-id", None)
-    return render_template('index.html', game_id=game_id)
+    if game_id is not None:
+        # verify it is valid
+       if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
+           return redirect('/')
+    else:
+        game_id = datetime.now().strftime("%m%d%Y")
+    return render_template('index.html', game_id=game_id, date=datetime.now().strftime("%m/%d"))
 
 # returns a game based on the query parameter game-id
 # if no game-id is provided, redirect to the index, which will give a random game
 @app.route('/game')
 def game():
-    words = []
-    with open('./word_files/words.txt', 'r') as f:
-        for word in f:
-            words.append(word.strip())
+    global words
+    global files
     
-    game_id = request.args.get("game-id", None)
-    print(game_id)
-    generated_game_folder = './generated_games'
-    files = [f for f in os.listdir(generated_game_folder)]
-    if game_id is None:
-        selected_game_file = random.choice(files)
-    else:
-        # get the file that starts with game_id
-        generated_game_folder = './generated_games'
-        matching_files = [f for f in os.listdir(generated_game_folder) if fnmatch.fnmatch(f, str(game_id) + '*')]
-        selected_game_file = matching_files[0]
+    # game id in hidden input supplied by /
+    game_id = request.args.get("game-id", datetime.now().strftime("%m%d%Y")) # should never fall back to this, but just in case
     
-    # selected_game_file will be a json file. load into a python dict
+    # game id in the cookie, if it exists
+    saved_game_id = request.cookies.get('game_id', '')
+    selected_game_file = game_id + '.json'
+    
+    # convert the json file to a dictionary
     file_path = os.path.join(generated_game_folder, selected_game_file)
     with open(file_path, 'r') as f:
         game_object = json.load(f)
 
+
+    # make sure all the cookies are present
+    should_use_saved_game = (
+        game_id == saved_game_id and 
+        'total_seconds' in request.cookies and
+        'word0' in request.cookies and
+        'word1' in request.cookies and
+        'word2' in request.cookies and
+        'word3' in request.cookies and
+        'first_solution_found' in request.cookies
+    )
+    print("should use saved game", should_use_saved_game, request.cookies)
+
     return jsonify({
+        "use_saved_game": should_use_saved_game,
+        "game_id": game_id,
         "constraints": game_object["constraints"],
         "grid": game_object["grid"],
         "num_valid_constraint_assignments": game_object["num_valid_constraint_assignments"],
@@ -66,6 +93,17 @@ def report():
         for word in words:
             f.write(word + '\n')    
     return '', 200 # will never actually be used
+
+@app.route('/clear_all_cookies', methods=['GET'])
+def clear_all_cookies():
+    # Create a response object
+    response = make_response(redirect('/'))
+    
+    # Iterate over all cookies and clear them
+    for cookie in request.cookies:
+        response.set_cookie(cookie, '', expires=0)
+    
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

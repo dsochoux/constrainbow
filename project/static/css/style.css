@@ -101,7 +101,7 @@ h2 {
     box-shadow: 3px 3px black;
     border-radius: 10px;
     /* background-color: #e6e6e6; */
-    /* background-color: white; */
+    background-color: white;
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
@@ -202,13 +202,14 @@ h2 {
 }
 .letter.celebrate {
     border: var(--letter-border-thickness) solid green;
+    box-shadow: 3px 3px green;
     background-color: #525252;
     color: white;
 }
 .letter.paused {
     /* border: 5px solid #b4b4b4; */
     border: 2px solid rgb(44, 44, 44);
-    background-color: white;
+    background-color: snow;
     box-shadow: none;
 }
 
@@ -292,7 +293,7 @@ h2 {
     padding-top: 12px;
     padding-bottom: 12px;
     font-size: 18px;
-    background: #fff;
+    background-color: white;
     border: 1px solid #000000;
     border-radius: 5px;
     cursor: pointer;
@@ -311,7 +312,7 @@ h2 {
     box-shadow: none;
 }
 .paused-key {
-    background-color: #fff;
+    background-color: snow;
     box-shadow: none;
 }
 

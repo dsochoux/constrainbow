@@ -11,7 +11,7 @@ symbols = ('@', '#', '$', '%')
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
-words = []
+# words = []
 
 result = {
     "constraint_symbols" : list(symbols),
@@ -77,6 +77,39 @@ def generate_game():
         words[random_word][random_position] = random_symbol
         num_symbols += 1
 
+    return words
+
+def generate_game_new(desired):
+    words = [
+        ['-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-'],
+    ]
+
+    shuffled_symbols = list(symbols)
+    random.shuffle(shuffled_symbols)
+    guaranteed_symbols = [
+        [shuffled_symbols[3], shuffled_symbols[0]], 
+        [shuffled_symbols[0], shuffled_symbols[1]], 
+        [shuffled_symbols[1], shuffled_symbols[2]], 
+        [shuffled_symbols[2], shuffled_symbols[3]]
+    ]
+    for i in range(4):
+        positions = random.sample(range(5), 2)
+        words[i][positions[0]] = guaranteed_symbols[i][0]
+        words[i][positions[1]] = guaranteed_symbols[i][1]
+    total = 8
+    # fill in the rest randomly
+    _symbols = list(symbols)
+    while total < desired:
+        random_word = random.choice([j for j in range(0, 4)])
+        random_position = random.choice([j for j in range(0, 5)])
+        if words[random_word][random_position] != '-': continue
+        random_symbol = random.choice(_symbols)
+        _symbols.remove(random_symbol)
+        words[random_word][random_position] = random_symbol
+        total += 1
     return words
 
 num_valid_symbol_assignments = 0
@@ -257,8 +290,10 @@ def find_solution(symbol):
     del symbol_to_letter[symbols[symbol]]
 
 def main():
+    global words
     start = time.time()
-    words = generate_game()
+    words = generate_game_new(10)
+    # words = generate_game()
     result["grid"] = words
     result["constraints"] = {}
     for i in range(len(words)):
@@ -271,16 +306,24 @@ def main():
     end = time.time()
     result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
     result["num_possible_solutions"] = num_possible_boards
-    result["solutions"] = solutions_result
+    # result["solutions"] = solutions_result
 
-    output_file = f"generated_games/{desired_num_symbols}.{num_possible_boards}.{''.join([''.join(word) for word in words])}.json"
+    # TODO: when generating, automatically save the game to a file with the date (game id) as the name
+
+    output_file = f"generated_games/01262025.json"
     # output_file = f"generated_games/solution.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
 
     print(f"game generated, solved, and saved to {output_file} in {end - start} seconds")
     print(result['constraints'])
+    
+    result["solutions"] = solutions_result
+    output_file = f"generated_games_solutions/01262025.json"
+    with open(output_file, "w") as f:
+        json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
     main()
+    # print(generate_game_new(10))
     conn.close()

@@ -1,3 +1,15 @@
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        // Remove leading spaces and split into key-value
+        const [key, value] = cookie.trim().split('=');
+        if (key === name) {
+            return decodeURIComponent(value); // Decode the cookie value
+        }
+    }
+    return null; // Return null if the cookie is not found
+}
+
 class Letter {
     // w: index of word, l: index of letter
     constructor(w, l, constraint_symbol, click_handler) {
@@ -108,10 +120,14 @@ class Word {
     getWordString() {
         let word = "";
         this.letters.forEach(letter => {
+            if (letter.current_letter == "") {
+                word = word + "-";
+                return;
+            }
             word = word + letter.current_letter;
         });
         return word.toLowerCase();
-    } // will only be called for full words, guaranteed
+    }
 
     turnRed(w, constraint_symbol) {
         if (w != this.index) {
@@ -126,6 +142,9 @@ class Word {
                 return;
             }
         }
+        this._turnRed();
+    }
+    _turnRed() {
         this.letters.forEach(letter => {
             letter.element.classList.add('incorrect');
         });
@@ -148,6 +167,7 @@ class Board {
         this.selected_w = null;
         this.selected_l = null;
         
+        this.game_id = data["game_id"];
         this.constraints_to_positions = data["constraints"];
         this.grid = data["grid"];
         this.accepted_words = new Set(data["words"]);
@@ -166,9 +186,24 @@ class Board {
         this.playPauseButton = document.getElementById("play-pause-button");
         this.reportMissingWordButton = document.getElementById("report-missing-word-button");
         this.start_instructions_element = document.getElementById("start-message");
-        this.initBoard();
-        this.pause(true);
+        this.initBoard(data["use_saved_game"]);
+        this.pause(!data["use_saved_game"]);
+    }
 
+    writeBoardDataToCookie() {
+        // want to save:
+        // each of the four words (with dashes for empty letters)
+        // the value of this.first_solution_found
+        // the total_seconds
+        // the game id
+
+        // words cookies
+        for (let w = 0; w < this.num_words; w++) {
+            let word = this.words[w].getWordString();
+            document.cookie = `word${w}=${word};path=/;max-age=${60 * 60 * 24}`;
+        }
+        // first_solution_found cookie
+        document.cookie = `first_solution_found=${this.first_solution_found};path=/;max-age=${60 * 60 * 24}`;
     }
 
     getWithDefault(obj, key, defaultValue) {
@@ -199,6 +234,8 @@ class Board {
     startTimer() {
         this.interval_id = setInterval(() => {
             this.total_seconds++;
+            // total_seconds cookie
+            document.cookie = `total_seconds=${this.total_seconds};path=/;max-age=${60 * 60 * 24}`;
             this.updateTimerDisplay();
         }, 1000);
     }
@@ -277,7 +314,8 @@ class Board {
         }
     }
 
-    initBoard() {
+    initBoard(use_saved_game) {
+
         document.addEventListener('keydown', (event) => {
             this.keyPressed(event);
         });
@@ -298,17 +336,84 @@ class Board {
                 let l = constrained_letter[1];
                 this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
             });
-            // for (let constrained_letter in this.constraints[constraint]) {
-            //     console.log(constrained_letter);
-                
-            //     let w = constrained_letter[0];
-            //     let l = constrained_letter[1];
-            //     console.log(w);
-            //     console.log(l);
-                
-            //     this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
-            // }
         }
+        if (use_saved_game) {
+            this.loadSavedGame();
+        } else {
+            // write gameid to cookie
+            document.cookie = `game_id=${this.game_id};path=/;max-age=${60 * 60 * 24}`;
+        }
+    }
+
+
+    loadSavedGame() {
+        // use the information in the cookie to put the board into the saved state
+        // need to update the following:
+        // convert words into a word grid
+        let saved_words = []
+        for (let w = 0; w < this.num_words; w++) {
+            let word = [];
+            getCookie(`word${w}`).split('').forEach((letter, i) => {
+                if (letter != '-') {
+                    word.push(letter.toUpperCase());
+                } else {
+                    word.push("");
+                }
+            });
+            saved_words.push(word);
+        }
+        // this.words
+        for (let w = 0; w < this.num_words; w++) {
+            saved_words[w].forEach((letter, l) => {
+                this.words[w].letters[l].updateLetter(letter);
+            });
+        }
+        this.words.forEach(word => {
+            // is_solution_found = is_solution_found && word.isAllLettersFilled();
+            if (word.isAllLettersFilled()) {
+                let is_valid_word = this.accepted_words.has(word.getWordString());
+                if (!is_valid_word) {
+                    // color the word red for a second
+                    word._turnRed();
+                } else {
+                    word.clearRed();
+                }
+            }
+        });
+        // this.constraints_to_letters
+        for (let constraint in this.constraints_to_positions) {
+            // grab the first position of the constraint
+            let w = this.constraints_to_positions[constraint][0][0];
+            let l = this.constraints_to_positions[constraint][0][1];
+            if (saved_words[w][l] != "") {
+                this.constraints_to_letters[constraint] = saved_words[w][l];
+            }
+        }
+        // this.black_letters_count_map
+        for (let w = 0; w < this.num_words; w++) {
+            for (let l = 0; l < 5; l++) {
+                let symbol = this.grid[w][l];
+                let letter = saved_words[w][l];
+                if (symbol == "-" && letter != "") {
+                    this.black_letters_count_map[letter] = this.getWithDefault(this.black_letters_count_map, letter, 0) + 1;
+                }
+            }
+        }
+        // this.game_has_started = true;
+        this.game_has_started = true;
+        // this.first_solution_found;
+        this.first_solution_found = (getCookie("first_solution_found") == "true");
+        // show the copy results button if the solution has been found
+        if (this.first_solution_found) {
+            document.getElementById("copy-results-button").style.display = "inline-block";
+            this.playPauseButton.style.display = "none";
+            this.date_element.style.display = 'none';
+            this.timer_element.style.display = 'inline-block';
+
+        }
+        // this.total_seconds;
+        this.total_seconds = parseInt(getCookie("total_seconds"));
+        this.updateTimerDisplay();
     }
 
     deselectAll() {
@@ -341,6 +446,7 @@ class Board {
                 key_element.classList.remove('unavailable');
             }
         }
+        this.writeBoardDataToCookie();
     }
 
     updateKeyboard() {
@@ -662,6 +768,7 @@ class Board {
             this.words[this.selected_w].letters[this.selected_l].updateLetter("");
         }
         this.words[this.selected_w].clearRed();
+        this.writeBoardDataToCookie();
         let num_invalid = 0;
         this.words.forEach(word => {        
             if (word.is_invalid) {
@@ -722,12 +829,6 @@ class Board {
             this.first_solution_found = true; // can overwrite this only once
             document.getElementById("report-missing-word-button").style.display = "none";
         } else {
-            let one_invalid = false;
-            this.words.forEach(word => {        
-                if (word.is_invalid) {
-                    one_invalid = true;
-                }
-            });
             if (num_invalid_words > 0) {
                 if (num_invalid_words == 1) {
                     document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
@@ -740,6 +841,7 @@ class Board {
                 document.getElementById("report-missing-word-button").style.display = "none";
             }
         }
+        this.writeBoardDataToCookie();
         return is_solution_found;
     }
 
@@ -758,7 +860,6 @@ class Board {
         const day = String(date.getDate()).padStart(2, '0');
         // let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
         let message = `CONSTRAINBOW ${month}/${day}\n`;
-        message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
         message += `Solved in ${this.timer_element.textContent}\n`;
         // generate the emojis from the grid
         this.grid.forEach((word) => {
@@ -767,6 +868,7 @@ class Board {
             });
             message += "\n";
         });
+        message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
         navigator.clipboard.writeText(message.trim()).then(() => {
             document.getElementById("copy-results-button").textContent = "COPIED!";
             setTimeout(() => {
@@ -801,6 +903,17 @@ class Board {
             }, 1000);
         });
     }
+}
+
+function deleteAllCookies() {
+    // Get all cookies
+    const cookies = document.cookie.split(';');
+
+    // Loop through all cookies and delete each one
+    cookies.forEach(cookie => {
+        const cookieName = cookie.split('=')[0].trim();
+        document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

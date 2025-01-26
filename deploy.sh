@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Navigate to your project directory
-cd /path/to/your/project
+cd project
 
 # Pull the latest code
 git pull origin deploy

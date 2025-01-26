@@ -29,4 +29,6 @@ jobs:
 
       - name: Deploy to Server
         run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} user@your-server-ip 'bash -s' < deploy.sh

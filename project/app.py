@@ -27,13 +27,14 @@ def index():
     # people will hit the normal endpoint
     # if no game-id is provided, get the game id for today's game and pass it to the index.html
     # then, when the user hits the game endpoint, it will get the game with that game id
-    game_id = request.args.get("game-id", None)
-    if game_id is not None:
-        # verify it is valid
-       if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
-           return redirect('/')
-    else:
-        game_id = datetime.now().strftime("%m%d%Y")
+    # game_id = request.args.get("game-id", None)
+    # if game_id is not None:
+    #     # verify it is valid
+    #    if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
+    #        return redirect('/')
+    # else:
+    #     game_id = datetime.now().strftime("%m%d%Y")
+    game_id = datetime.now().strftime("%m%d%Y")
     return render_template('index.html', game_id=game_id, date=datetime.now().strftime("%m/%d"))
 
 # returns a game based on the query parameter game-id
@@ -73,7 +74,6 @@ def game():
         "game_id": game_id,
         "constraints": game_object["constraints"],
         "grid": game_object["grid"],
-        "num_valid_constraint_assignments": game_object["num_valid_constraint_assignments"],
         "num_possible_solutions": game_object["num_possible_solutions"],
         "words": words
     })

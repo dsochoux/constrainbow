@@ -308,6 +308,12 @@ class Board {
             return;
         }
         if (this.is_paused) {
+            // if there is no currently selected letter, select the first letter of the first word
+            if (this.selected_w == null && this.selected_l == null) {
+                this.selected_w = 0;
+                this.selected_l = 0;
+                this.toggleSelected();
+            }
             this.resume();
         } else {
             this.pause();

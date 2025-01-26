@@ -11,22 +11,19 @@
     <div class="overlay" id="how-to-play-overlay">
         <div class="popup">
             <button id="close-button">&times;</button>
-            <h2>How to play CONSTRAINBOW</h2>
-            <p>Your goal is to create four five-letter words that meet these rules:</p>
-            <ol>
-                <li>Each tile's border color represents a constraint:</li>
-                <ul>
-                    <li><strong>Colored tiles (non-black)</strong> must all contain the <i>same letter</i>.</li>
-                    <li><strong>Black tiles</strong> can be any letter that <i>isn’t assigned</i> to a colored tile.</li>
-                </ul>
-                <li>Each letter can belong to only one color group (including black).</li>
-                <li>Black tiles can repeat letters, but colored tiles cannot share letters with black tiles or other colors.</li>
-            </ol>
+            <h2>How to play <span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span></h2>
+            <p>Your goal is to create four five-letter words, filling in the letters in any order that you wish. However, there are a couple of constraints:</p>
+            <p>Two tiles of different color (including black) may NEVER share a letter.</p>
+            <p>Colored tiles (excluding black) MUST all be the same letter.</p>
+            <p>Black tiles can repeat letters.</p>
+            <p>The keyboard will reflect what letters the currently selected tile can be.</p>
+            <p>You can, and most certainly will, change your board as much as you'd like. To select a tile, tap, click, or navigate with the arrow keys.</p>
+            <p>Good luck!</p>
         </div>
     </div>
     <div id="container">
         <div id="header-div">
-            <h2><span id="t0">C</span><span id="t1">O</span><span id="t2">N</span><span id="t3">S</span><span id="t4">T</span><span id="t5">R</span><span id="t6">A</span><span id="t7">I</span><span id="t8">N</span><span id="t9">B</span><span id="t10">O</span><span id="t11">W</span>
+            <h2><span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span>
             </h2>
             <h2 id="date">{{ date }}</h2>
             <p id="timer">00:00</p>
@@ -75,12 +72,6 @@
                 <button class="key" id="key-M" data-key=77>M</button>
                 <button class="key" id="delete-key" data-key=8>⌫</button>
             </div>
-        </div>
-        <div id="info-div">
-            <p class="description">
-                <!-- <span id="encouraging-message">Good luck finding one.</span>  -->
-                <!-- <button class="link-styled-button" id="report-missing-word-button">report missing word</button> -->
-            </p>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

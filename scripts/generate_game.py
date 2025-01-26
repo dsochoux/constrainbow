@@ -2,6 +2,7 @@ import sqlite3
 import random
 import json
 import time
+import sys
 
 db_path = "database.db"
 conn = sqlite3.connect(db_path)
@@ -11,14 +12,8 @@ symbols = ('@', '#', '$', '%')
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
-# words = []
-
-result = {
-    "constraint_symbols" : list(symbols),
-    "no_constraint_symbol": '-'
-} # the result object that will be converted to JSON at the end
-solutions_result = []
 desired_num_symbols = 10 # must be greater than 8
+solutions_result = []
 
 # between any two words, there MUST be a position that has differing symbols
 # otherwise, there is the risk that the same word can be used multiple times
@@ -289,7 +284,13 @@ def find_solution(symbol):
     # remove symbol from map before returning
     del symbol_to_letter[symbols[symbol]]
 
-def main():
+
+
+def main(game_id):
+    result = {
+    "constraint_symbols" : list(symbols),
+    "no_constraint_symbol": '-'
+    } # the result object that will be converted to JSON at the end
     global words
     start = time.time()
     words = generate_game_new(10)
@@ -304,13 +305,15 @@ def main():
             result["constraints"][words[i][j]] = l
     find_solution(0)
     end = time.time()
-    result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
+    # result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
+    if num_possible_boards == 0:
+        return
     result["num_possible_solutions"] = num_possible_boards
     # result["solutions"] = solutions_result
 
     # TODO: when generating, automatically save the game to a file with the date (game id) as the name
 
-    output_file = f"generated_games/01262025.json"
+    output_file = f"generated_games/{game_id}.json"
     # output_file = f"generated_games/solution.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
@@ -319,11 +322,12 @@ def main():
     print(result['constraints'])
     
     result["solutions"] = solutions_result
-    output_file = f"generated_games_solutions/01262025.json"
+    output_file = f"generated_games_solutions/{game_id}.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
-    main()
-    # print(generate_game_new(10))
+    while num_possible_boards == 0:
+        main(sys.argv[1])
+    print(num_possible_boards)
     conn.close()

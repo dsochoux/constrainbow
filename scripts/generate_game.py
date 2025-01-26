@@ -11,6 +11,7 @@ symbols = ('@', '#', '$', '%')
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
+words = []
 
 result = {
     "constraint_symbols" : list(symbols),
@@ -77,51 +78,6 @@ def generate_game():
         num_symbols += 1
 
     return words
-# words = [
-#         ['#', '%', '%', '$', '@'],
-#         ['-', '-', '-', '-', '#'],
-#         ['-', '-', '-', '-', '$'],
-#         ['@', '%', '-', '-', '%'],
-#     ]
-# words = [
-#         [
-#             "#",
-#             "%",
-#             "%",
-#             "$",
-#             "@"
-#         ],
-#         [
-#             "-",
-#             "-",
-#             "-",
-#             "-",
-#             "#"
-#         ],
-#         [
-#             "-",
-#             "-",
-#             "-",
-#             "-",
-#             "$"
-#         ],
-#         [
-#             "@",
-#             "%",
-#             "-",
-#             "-",
-#             "%"
-#         ]
-#     ],
-
-# result["constraints"] = {
-#     "word_1": "".join(words[0]),
-#     "word_2": "".join(words[1]),
-#     "word_3": "".join(words[2]),
-#     "word_4": "".join(words[3]),
-# }
-
-
 
 num_valid_symbol_assignments = 0
 num_possible_boards = 0
@@ -187,7 +143,7 @@ def verify_word_query(query_stub, word):
     query_stub += ";"
     return query_stub, query_args
 
-# check to see if there are any solutions for the ith word in the words list
+# check to see if there are any potential solutions for the ith word in the words list
 def is_solution_for(i):
     word = words[i]
 
@@ -199,7 +155,6 @@ def is_solution_for(i):
     query, query_args = verify_constraints_query(query_stub, word)
     cursor.execute(query, query_args)
     return cursor.fetchone()[0] > 0
-
 
 # this function will be called when we want to generate all solutions to a promising
 # constraint assignment where the wildcards are not allowed to be the same letter
@@ -273,7 +228,7 @@ def find_solution(symbol):
         # this assignment is promisng -- there are words that would satisfy the 
         # constraints if the wildcard letters could by ANYTHING. However, I am messing
         # around with the idea that wildcards cannnot be the same letter as another symbol.
-        # therefore, I must now checkk to make sure that for each word, there is a solution
+        # therefore, I must now check to make sure that for each word, there is a solution
         # where the wildcards are not the same as any of the symbols
         # generate_solutions_wildcards_free()
         generate_solutions_wildcards_constrained()
@@ -284,7 +239,7 @@ def find_solution(symbol):
     for letter in alphabet:
         # cannot re-use letters
         if letter in symbol_to_letter.values(): continue
-        # assign <symbol> to that letter
+        # assign letter to that symbol
         symbol_to_letter[symbols[symbol]] = letter
         # check if there are solutions for all words
         solutions_exist = True
@@ -301,26 +256,31 @@ def find_solution(symbol):
     # remove symbol from map before returning
     del symbol_to_letter[symbols[symbol]]
 
-start = time.time()
-words = generate_game()
-result["grid"] = words
-result["constraints"] = {}
-for i in range(len(words)):
-    for j in range(len(words[i])):
-        if words[i][j] == '-': continue
-        l = result["constraints"].get(words[i][j], [])
-        l.append([i, j])
-        result["constraints"][words[i][j]] = l
-find_solution(0)
-end = time.time()
-result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
-result["num_possible_solutions"] = num_possible_boards
-result["solutions"] = solutions_result
+def main():
+    start = time.time()
+    words = generate_game()
+    result["grid"] = words
+    result["constraints"] = {}
+    for i in range(len(words)):
+        for j in range(len(words[i])):
+            if words[i][j] == '-': continue
+            l = result["constraints"].get(words[i][j], [])
+            l.append([i, j])
+            result["constraints"][words[i][j]] = l
+    find_solution(0)
+    end = time.time()
+    result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
+    result["num_possible_solutions"] = num_possible_boards
+    result["solutions"] = solutions_result
 
-output_file = f"generated_games/{desired_num_symbols}.{num_possible_boards}.{''.join([''.join(word) for word in words])}.json"
-# output_file = f"generated_games/solution.json"
-with open(output_file, "w") as f:
-    json.dump(result, f, indent=4)
+    output_file = f"generated_games/{desired_num_symbols}.{num_possible_boards}.{''.join([''.join(word) for word in words])}.json"
+    # output_file = f"generated_games/solution.json"
+    with open(output_file, "w") as f:
+        json.dump(result, f, indent=4)
 
-print(f"game generated, solved, and saved to {output_file} in {end - start} seconds")
-print(result['constraints'])
+    print(f"game generated, solved, and saved to {output_file} in {end - start} seconds")
+    print(result['constraints'])
+
+if __name__ == "__main__":
+    main()
+    conn.close()

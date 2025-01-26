@@ -162,6 +162,7 @@ class Board {
         this.total_seconds = 0;
         this.interval_id = null;
         this.timer_element = document.getElementById("timer");
+        this.date_element = document.getElementById("date");
         this.playPauseButton = document.getElementById("play-pause-button");
         this.reportMissingWordButton = document.getElementById("report-missing-word-button");
         this.start_instructions_element = document.getElementById("start-message");
@@ -210,11 +211,13 @@ class Board {
         if (this.is_paused || this.first_solution_found) {
             return;
         }
+        this.timer_element.style.display = 'none';
+        this.date_element.style.display = 'inline-block';
         this.pauseTimer();
         if (initial) {
-            this.playPauseButton.textContent = "Start game";
+            this.playPauseButton.textContent = "START GAME";
         } else {
-            this.playPauseButton.textContent = "Resume";
+            this.playPauseButton.textContent = "RESUME";
         }
         this.is_paused = true;
         // add the paused class to all of the letters
@@ -238,8 +241,9 @@ class Board {
             return;
         }
         this.timer_element.style.display = 'inline-block';
+        this.date_element.style.display = 'none'
         this.startTimer();
-        this.playPauseButton.textContent = "Pause";
+        this.playPauseButton.textContent = "PAUSE";
         this.is_paused = false;
         // remove the paused class from all of the letters
         this.words.forEach((word) => {
@@ -381,15 +385,16 @@ class Board {
     }
 
     keyPressed(event) {
+        if (event.keyCode == 2000 && !this.is_paused) {
+            // special clear board case
+            this.clearBoard();
+            return;
+        }
         if (this.selected_w == null || this.selected_l == null || this.is_paused) {
             return;
         }
         if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
             return;
-        }
-        if (event.keyCode == 2000) {
-            // special clear board case
-            this.clearBoard();
         }
         if (event.keyCode == 32) {
             this.handleArrowKeyPressed(39)
@@ -665,9 +670,9 @@ class Board {
         });
         if (num_invalid) {
             if (num_invalid == 1) {
-                document.getElementById("report-missing-word-button").textContent = "report missing word";
+                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
             } else {
-                document.getElementById("report-missing-word-button").textContent = "report missing words";
+                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORDS";
             }
         } else {
             document.getElementById("report-missing-word-button").style.display = "none";
@@ -690,12 +695,6 @@ class Board {
         } else {
             this.updateKeyboard();
         }
-        
-        // if (is_on_blank_letter) {
-            
-            
-            
-        // }
     }
 
     isSolutionFound() {
@@ -731,10 +730,10 @@ class Board {
             });
             if (num_invalid_words > 0) {
                 if (num_invalid_words == 1) {
-                    document.getElementById("report-missing-word-button").textContent = "report missing word";
+                    document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
                     
                 } else {
-                    document.getElementById("report-missing-word-button").textContent = "report missing words";
+                    document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORDS";
                 }
                 document.getElementById("report-missing-word-button").style.display = "inline-block";
             } else {
@@ -769,9 +768,9 @@ class Board {
             message += "\n";
         });
         navigator.clipboard.writeText(message.trim()).then(() => {
-            document.getElementById("copy-results-button").textContent = "Copied!";
+            document.getElementById("copy-results-button").textContent = "COPIED!";
             setTimeout(() => {
-                document.getElementById("copy-results-button").textContent = "Copy results!"
+                document.getElementById("copy-results-button").textContent = "COPY RESULTS!"
             }, 1000);
         });
     }
@@ -785,7 +784,7 @@ class Board {
                 incorect_words.push(word.getWordString());
             }
         });
-        document.getElementById("report-missing-word-button").textContent = "reporting...";
+        document.getElementById("report-missing-word-button").textContent = "REPORTING...";
         fetch("/report-missing-word", {
             method: "POST",
             headers: {
@@ -795,9 +794,9 @@ class Board {
                 "words": incorect_words,
             })
         }).then(() => {
-            document.getElementById("report-missing-word-button").textContent = "reported!";
+            document.getElementById("report-missing-word-button").textContent = "REPORTED!";
             setTimeout(() => {
-                document.getElementById("report-missing-word-button").textContent = "report missing words";
+                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
                 document.getElementById("report-missing-word-button").style.display = "none";
             }, 1000);
         });

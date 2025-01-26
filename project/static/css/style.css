@@ -1,5 +1,5 @@
 :root {
-    --letter-border-thickness: 4px;
+    --letter-border-thickness: 2px;
     --c1: #c30000;
     --c2: #ff9019;
     --c3: #d4c600;
@@ -48,14 +48,30 @@ h1 {
 }
 h2 {
     margin: 0; /* Remove default margin */
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     /* background-color: white;
     padding: 5px;
     border-radius: 5px; */
-    background-image: linear-gradient(to right, var(--c1), var(--c2), var(--c3), var(--c4)); /* Define gradient */
-    -webkit-background-clip: text; /* Clip the gradient to the text */
-    -webkit-text-fill-color: transparent; /* Make the text itself transparent */
+    /* background-image: linear-gradient(to right, var(--c1), var(--c2), var(--c3), var(--c4)); /* Define gradient */
+    /*-webkit-background-clip: text; /* Clip the gradient to the text */
+    /*-webkit-text-fill-color: transparent; Make the text itself transparent */
 }
+/* h2 span {
+    margin: 0; 
+    padding: 0;
+} */
+ #t0, #t4, #t8 {
+    text-shadow: 1px 1px var(--c1);
+ }
+ #t1, #t5, #t9 {
+    text-shadow: 1px 1px var(--c2);
+ }
+ #t2, #t6, #t10 {
+    text-shadow: 1px 1px var(--c3);
+ }
+ #t3, #t7, #t11 {
+    text-shadow: 1px 1px var(--c4);
+ }
 
 /* #rainbow {
     
@@ -71,6 +87,8 @@ h2 {
     display: grid;
     grid-template-columns: repeat(5, 67px);
     grid-gap: 8px;
+    overflow: visible;
+    padding: 3px;
 }
 .letter {
     width: 67px;
@@ -79,9 +97,11 @@ h2 {
     align-items: center;
     justify-content: center;
     border: var(--letter-border-thickness) solid black;
+    /* text-shadow: 1px 1px gray; */
+    box-shadow: 3px 3px black;
     border-radius: 10px;
     /* background-color: #e6e6e6; */
-    background-color: white;
+    /* background-color: white; */
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
@@ -96,7 +116,7 @@ h2 {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px); /* Blur effect */
     display: flex;
     justify-content: center;
@@ -141,22 +161,34 @@ h2 {
 
 .letter.c1 {
     /* border: 5px solid #D04848; */
+    /* border: var(--letter-border-thickness) solid var(--c1); */
     border: var(--letter-border-thickness) solid var(--c1);
+    /* text-shadow: 1px 1px var(--c1); */
+    box-shadow: 3px 3px var(--c1);
     /* border: 5px solid #f34213; */
 }
 .letter.c2 {
     /* border: 5px solid #F3B95F; */
+    /* border: var(--letter-border-thickness) solid var(--c2);*/
     border: var(--letter-border-thickness) solid var(--c2);
+    /* text-shadow: 1px 1px var(--c2); */
+    box-shadow: 3px 3px var(--c2);
     /* border: 5px solid #2dd881; */
 }
 .letter.c3 {
     /* border: 5px solid #FDE767; */
+    /* border: var(--letter-border-thickness) solid var(--c3); */
     border: var(--letter-border-thickness) solid var(--c3);
+    /* text-shadow: 1px 1px var(--c3); */
+    box-shadow: 3px 3px var(--c3);
     /* border: 5px solid #1d4e89; */
 }
 .letter.c4 {
     /* border: 5px solid #6895D2; */
+    /* border: var(--letter-border-thickness) solid var(--c4); */
     border: var(--letter-border-thickness) solid var(--c4);
+    /* text-shadow: 1px 1px var(--c4); */
+    box-shadow: 3px 3px var(--c4);
     /* border: 5px solid #bdbf09; */
 }
 
@@ -177,6 +209,7 @@ h2 {
     /* border: 5px solid #b4b4b4; */
     border: 2px solid rgb(44, 44, 44);
     background-color: white;
+    box-shadow: none;
 }
 
 .text {
@@ -265,6 +298,7 @@ h2 {
     cursor: pointer;
     width: 30px;
     text-align: center;
+    box-shadow: 1px 1px black;
     /* box-shadow: 0px 3px 3px 0 #dddddd; */
 }
 
@@ -316,9 +350,10 @@ h2 {
 #report-missing-word-button {
     display: none;
     /* color: rgb(255, 76, 76); */
-    border: 1px solid red;
+    border: 1px solid black;
     padding: 3px;
     border-radius: 5px;
+    box-shadow: 1px 1px red;
 }
 
 .report-missing-word-button-paused {
@@ -328,9 +363,13 @@ h2 {
 
 #play-pause-button {
     border: 1px solid rgb(44, 44, 44);
-    padding: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
     border-radius: 5px;
     background-color: white;
+    box-shadow: 1px 1px purple;
 }
 
 #copy-results-button {
@@ -339,6 +378,7 @@ h2 {
     padding: 3px;
     border-radius: 5px;
     background-color: white;
+    box-shadow: 1px 1px green;
 }
 
 #refresh-key, #delete-key  {
@@ -392,6 +432,8 @@ h2 {
     padding: 3px;
     border-radius: 5px;
     background-color: white;
+    display: none;
+    box-shadow: 1px 1px skyblue;
 }
 
 #how-to-play-button {
@@ -403,10 +445,15 @@ h2 {
     padding-right: 9px;
     border-radius: 5px;
     background-color: white;
+    box-shadow: 1px 1px purple;
 }
 
 #actions-container {
     display: flex;
     gap: 10px;
     /* padding-bottom: 15px; */
+}
+
+#date {
+    text-shadow: 1px 1px skyblue;
 }

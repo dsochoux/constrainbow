@@ -434,7 +434,7 @@ class Board {
         this.deselectAll();
         this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
     }
-
+    //
     clearBoard() {  
         this.words.forEach((word) => {
             word.letters.forEach((letter) => {

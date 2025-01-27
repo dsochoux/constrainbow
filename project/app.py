@@ -1,15 +1,13 @@
 from flask import Flask, render_template, jsonify, request, redirect, make_response
 import os
-import random
 import json
-import glob
-import fnmatch
-import sqlite3
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 
 db_path = "database.db"
+eastern = ZoneInfo("America/New_York")
 
 words = []
 with open('./word_files/words.txt', 'r') as f:
@@ -34,7 +32,7 @@ def index():
     #        return redirect('/')
     # else:
     #     game_id = datetime.now().strftime("%m%d%Y")
-    game_id = datetime.now().strftime("%m%d%Y")
+    game_id = datetime.now(eastern).strftime("%m%d%Y")
     return render_template('index.html', game_id=game_id, date=datetime.now().strftime("%m/%d"))
 
 # returns a game based on the query parameter game-id
@@ -45,7 +43,7 @@ def game():
     global files
     
     # game id in hidden input supplied by /
-    game_id = request.args.get("game-id", datetime.now().strftime("%m%d%Y")) # should never fall back to this, but just in case
+    game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
     
     # game id in the cookie, if it exists
     saved_game_id = request.cookies.get('game_id', '')
@@ -80,14 +78,8 @@ def game():
 
 @app.route('/report-missing-word', methods=['POST'])
 def report():
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
     data = request.get_json()
     words = data['words']
-    # insert the words into the database
-    cursor.executemany('INSERT INTO reported_missing_words (word) VALUES (?)', [(word,) for word in words])
-    conn.commit()
-    conn.close()
     # add words to text file
     with open('./word_files/reported_missing_words.txt', 'a') as f:
         for word in words:

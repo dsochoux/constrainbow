@@ -455,8 +455,11 @@ h2 {
 
 #refresh-key, #delete-key  {
     color: rgb(255, 76, 76);
-    /* width: 45px;
-    font-size: 24px; */
+}
+
+#refresh-key {
+    font-size: 8px;
+    font-weight: bolder;
 }
 
 @media screen and (max-height: 645px) {

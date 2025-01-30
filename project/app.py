@@ -32,6 +32,7 @@ def index():
            return redirect('/')
     else:
         game_id = datetime.now(eastern).strftime("%m%d%Y")
+        print(game_id)
     # game_id = datetime.now(eastern).strftime("%m%d%Y")
     return render_template('index.html', game_id=game_id, date=datetime.now(eastern).strftime("%m/%d"))
 

@@ -347,6 +347,7 @@ class Board {
             this.loadSavedGame();
         } else {
             // write gameid to cookie
+            deleteAllCookies();
             document.cookie = `game_id=${this.game_id};path=/;max-age=${60 * 60 * 24}`;
         }
     }

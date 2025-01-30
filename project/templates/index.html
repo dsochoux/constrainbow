@@ -11,7 +11,7 @@
     <div class="overlay" id="how-to-play-overlay">
         <div class="popup">
             <button id="close-button">&times;</button>
-            <h2>How to play <span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span></h2>
+            <h2>How to play <span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span> (beta)</h2>
             <p>The object of the game is to come up with four five-letter English words (no plurals or past tense) that fit the colored constraints.</p>
             <p>Tiles of the same color must be the same letter. Different colored tiles may not be the same letter. For example, if one orange is an F, all of the oranges must be F. The red and the orange tiles may not both be F.</p>
             <div id="example-board">
@@ -82,12 +82,14 @@
                 <div class="example-letter c4">I</div>
                 <div class="example-letter">L</div>
             </div>
-            <p>This is a solution! Four words that fit the constraints. (BTW, you don't have to fill the tiles in any particular order. It's totally up to you).</p>
+            <p>This is a solution! Four words that fit the constraints. (BTW, you don't have to fill the tiles in any particular order. It's totally up to you.)</p>
             <p>For each puzzle, which comes out at 12:00am Eastern, there are many different solutions. In fact, this example puzzle has 23,062. You just need to find one as quickly as possible. Yours will look different than your friend's, so don't forget to compare!</p>
             <div style="display: flex; justify-content: center;">
                 <button id="got-it-button">GOT IT!</button>
             </div>
-            <p>Made by Daniel Sochoux. All rights reserved.</p>
+            <p>© 2025 Daniel Sochoux. All rights reserved.</p>
+            <p>For feedback or support, contact <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
+            <p>Seeing weird things? <a href="/clear_all_cookies">Clear all cookies</a></p>
         </div>
     </div>
     <div id="container">
@@ -131,7 +133,8 @@
                 <button class="key" id="key-L" data-key=76>L</button>
             </div>
             <div class="keyboard-row" id="bottom-keyboard-row">
-                <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button>
+                <!-- <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button> -->
+                <button class="key" id="refresh-key" data-key=2000>CLEAR BOARD</button>
                 <button class="key" id="key-Z" data-key=90>Z</button>
                 <button class="key" id="key-X" data-key=88>X</button>
                 <button class="key" id="key-C" data-key=67>C</button>

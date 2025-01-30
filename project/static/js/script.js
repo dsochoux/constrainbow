@@ -860,21 +860,27 @@ class Board {
             '%': '🟦',
             '-': '⬛️'
         }
-
-        const date = new Date();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Get the month (0-11), so add 1 and pad to 2 digits
-        const day = String(date.getDate()).padStart(2, '0');
         // let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
-        let message = `CONSTRAINBOW ${month}/${day}\n`;
-        message += `Solved in ${this.timer_element.textContent}\n`;
-        // generate the emojis from the grid
+        // let message = `CONSTRAINBOW ${this.game_id[0]}${this.game_id[1]}/${this.game_id[2]}${this.game_id[3]}\n`;
+        // message += `Solved in ${this.timer_element.textContent}\n`;
+        // // generate the emojis from the grid
+        // this.grid.forEach((word) => {
+        //     word.forEach((letter) => {
+        //         message += symbol_to_emoji_map[letter];
+        //     });
+        //     message += "\n";
+        // });
+        // message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
+        // message += "https://constrainbow.com";
+        let message = "constrainbow.com\n";
+        message += `${this.game_id[0]}${this.game_id[1]}/${this.game_id[2]}${this.game_id[3]} | ${this.timer_element.textContent}\n`;
         this.grid.forEach((word) => {
             word.forEach((letter) => {
                 message += symbol_to_emoji_map[letter];
             });
             message += "\n";
         });
-        message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
+        message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;
         navigator.clipboard.writeText(message.trim()).then(() => {
             document.getElementById("copy-results-button").textContent = "COPIED!";
             setTimeout(() => {
@@ -931,6 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const howToPlayButton = document.getElementById("how-to-play-button");
     const reportMissingWordButton = document.getElementById("report-missing-word-button");
     const closeButton = document.getElementById("close-button");
+    const gotItButton = document.getElementById("got-it-button");
     const playPauseButton = document.getElementById("play-pause-button");
     // const keyboard = document.getElementById("keyboard-container");
     const keys = document.querySelectorAll(".key");
@@ -967,6 +974,9 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.style.visibility = 'hidden';
         // board.resume();
     });
+    gotItButton.addEventListener("click", () => {
+        overlay.style.visibility = 'hidden';
+    });
 
     playPauseButton.addEventListener("click", () => {
         board.handlePlayPauseClicked();
@@ -1000,5 +1010,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("copy-results-button").addEventListener("click", () => {
         board.copyResults();
     });
+
+    // show the instructions to the user if they have not visited the site before
+    if (!localStorage.getItem("visited")) {
+        overlay.style.visibility = 'visible'; // Show instructions
+        localStorage.setItem("visited", "true"); // Mark as visited
+    }
     
 });

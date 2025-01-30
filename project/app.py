@@ -25,15 +25,15 @@ def index():
     # people will hit the normal endpoint
     # if no game-id is provided, get the game id for today's game and pass it to the index.html
     # then, when the user hits the game endpoint, it will get the game with that game id
-    # game_id = request.args.get("game-id", None)
-    # if game_id is not None:
-    #     # verify it is valid
-    #    if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
-    #        return redirect('/')
-    # else:
-    #     game_id = datetime.now().strftime("%m%d%Y")
-    game_id = datetime.now(eastern).strftime("%m%d%Y")
-    return render_template('index.html', game_id=game_id, date=datetime.now().strftime("%m/%d"))
+    game_id = request.args.get("game-id", None)
+    if game_id is not None:
+        # verify it is valid
+       if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
+           return redirect('/')
+    else:
+        game_id = datetime.now(eastern).strftime("%m%d%Y")
+    # game_id = datetime.now(eastern).strftime("%m%d%Y")
+    return render_template('index.html', game_id=game_id, date=datetime.now(eastern).strftime("%m/%d"))
 
 # returns a game based on the query parameter game-id
 # if no game-id is provided, redirect to the index, which will give a random game
@@ -65,7 +65,6 @@ def game():
         'word3' in request.cookies and
         'first_solution_found' in request.cookies
     )
-    print("should use saved game", should_use_saved_game, request.cookies)
 
     return jsonify({
         "use_saved_game": should_use_saved_game,

@@ -1,5 +1,6 @@
 :root {
     --letter-border-thickness: 2px;
+    --example-letter-border-thickness: 2px;
     --c1: #c30000;
     --c2: #ff9019;
     --c3: #d4c600;
@@ -90,6 +91,13 @@ h2 {
     overflow: visible;
     padding: 3px;
 }
+#example-board {
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    grid-gap: 3px;
+    overflow: visible;
+    padding: 1px;
+}
 .letter {
     width: 67px;
     height: 67px;
@@ -105,6 +113,26 @@ h2 {
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
+    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
+    /* box-shadow: 0px 2px 2px 0 rgba(0, 0, 0, 0.5); */
+}
+
+.example-letter {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--example-letter-border-thickness) solid black;
+    /* text-shadow: 1px 1px gray; */
+    /* box-shadow: 1px 1px black; */
+    border-radius: 5px;
+    /* background-color: #e6e6e6; */
+    background-color: white;
+    cursor: pointer;
+    box-sizing: border-box; /* Ensure padding and border are included in the tile size */
+    font-weight: bold;
+    font-size: 1.7rem;
     /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
     /* box-shadow: 0px 2px 2px 0 rgba(0, 0, 0, 0.5); */
 }
@@ -167,12 +195,30 @@ h2 {
     box-shadow: 3px 3px var(--c1);
     /* border: 5px solid #f34213; */
 }
+
+.example-letter.c1 {
+    /* border: 5px solid #D04848; */
+    /* border: var(--letter-border-thickness) solid var(--c1); */
+    border: var(--example-letter-border-thickness) solid var(--c1);
+    /* text-shadow: 1px 1px var(--c1); */
+    /* box-shadow: 1px 1px var(--c1); */
+    /* border: 5px solid #f34213; */
+}
+
 .letter.c2 {
     /* border: 5px solid #F3B95F; */
     /* border: var(--letter-border-thickness) solid var(--c2);*/
     border: var(--letter-border-thickness) solid var(--c2);
     /* text-shadow: 1px 1px var(--c2); */
     box-shadow: 3px 3px var(--c2);
+    /* border: 5px solid #2dd881; */
+}
+.example-letter.c2 {
+    /* border: 5px solid #F3B95F; */
+    /* border: var(--letter-border-thickness) solid var(--c2);*/
+    border: var(--example-letter-border-thickness) solid var(--c2);
+    /* text-shadow: 1px 1px var(--c2); */
+    /* box-shadow: 1px 1px var(--c2); */
     /* border: 5px solid #2dd881; */
 }
 .letter.c3 {
@@ -183,6 +229,14 @@ h2 {
     box-shadow: 3px 3px var(--c3);
     /* border: 5px solid #1d4e89; */
 }
+.example-letter.c3 {
+    /* border: 5px solid #FDE767; */
+    /* border: var(--letter-border-thickness) solid var(--c3); */
+    border: var(--example-letter-border-thickness) solid var(--c3);
+    /* text-shadow: 1px 1px var(--c3); */
+    /* box-shadow: 1px 1px var(--c3); */
+    /* border: 5px solid #1d4e89; */
+}
 .letter.c4 {
     /* border: 5px solid #6895D2; */
     /* border: var(--letter-border-thickness) solid var(--c4); */
@@ -191,7 +245,14 @@ h2 {
     box-shadow: 3px 3px var(--c4);
     /* border: 5px solid #bdbf09; */
 }
-
+.example-letter.c4 {
+    /* border: 5px solid #6895D2; */
+    /* border: var(--letter-border-thickness) solid var(--c4); */
+    border: var(--example-letter-border-thickness) solid var(--c4);
+    /* text-shadow: 1px 1px var(--c4); */
+    /* box-shadow: 1px 1px var(--c4); */
+    /* border: 5px solid #bdbf09; */
+}
 .letter.conflict {
     background-color: rgb(255, 172, 172);
     /* color: rgb(255, 76, 76); */
@@ -223,10 +284,13 @@ h2 {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    width: 400px;
+    width: 600px;
     max-width: 90%;
     text-align: left;
     position: relative;
+
+    max-height: 80vh; /* Limit height to 80% of viewport */
+    overflow-y: auto; /* Enable scrolling if content overflows */
 }
 
 /* The close button */
@@ -355,11 +419,18 @@ h2 {
     padding: 3px;
     border-radius: 5px;
     box-shadow: 1px 1px red;
+    background-color: white;
+}
+#got-it-button {
+    border: 1px solid black;
+    padding: 3px;
+    border-radius: 5px;
+    box-shadow: 1px 1px green;
+    background-color: white;
 }
 
 .report-missing-word-button-paused {
     display: none;
-    background-color: white;
 }
 
 #play-pause-button {

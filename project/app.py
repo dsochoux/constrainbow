@@ -34,7 +34,7 @@ def index():
         game_id = datetime.now(eastern).strftime("%m%d%Y")
         print(game_id)
     # game_id = datetime.now(eastern).strftime("%m%d%Y")
-    return render_template('index.html', game_id=game_id, date=datetime.now(eastern).strftime("%m/%d"))
+    return render_template('index.html', game_id=game_id, date=f"{game_id[0]}{game_id[1]}/{game_id[2]}{game_id[3]}")
 
 # returns a game based on the query parameter game-id
 # if no game-id is provided, redirect to the index, which will give a random game

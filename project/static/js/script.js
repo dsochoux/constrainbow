@@ -188,6 +188,9 @@ class Board {
         this.start_instructions_element = document.getElementById("start-message");
         this.initBoard(data["use_saved_game"]);
         this.pause(!data["use_saved_game"]);
+
+        this.copyButton = document.getElementById("copy-results-button");
+        this.copyResultsTimeout = null
     }
 
     writeBoardDataToCookie() {
@@ -446,7 +449,10 @@ class Board {
         });
         this.constraints_to_letters = {}
         this.black_letters_count_map = {}
-        document.getElementById("report-missing-word-button").style.display = "none";
+        this.reportMissingWordButton.style.display = "none";
+        if (this.first_solution_found) {
+            this.copyButton.style.display = "inline-block";
+        }
         for (let i = 65; i <= 90; i++) {
             let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
             if (key_element) {
@@ -784,12 +790,15 @@ class Board {
         });
         if (num_invalid) {
             if (num_invalid == 1) {
-                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
+                this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
             } else {
-                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORDS";
+                this.reportMissingWordButton.textContent = "REPORT MISSING WORDS";
             }
         } else {
-            document.getElementById("report-missing-word-button").style.display = "none";
+            this.reportMissingWordButton.style.display = "none";
+            if (this.first_solution_found) {
+                this.copyButton.style.display = "inline-block";
+            }
         }
         if (this.selected_w == 0 && this.selected_l == 0) {
             return;
@@ -834,18 +843,25 @@ class Board {
         });
         if (is_solution_found) {
             this.first_solution_found = true; // can overwrite this only once
-            document.getElementById("report-missing-word-button").style.display = "none";
+            this.reportMissingWordButton.style.display = "none";
+            if (this.first_solution_found) {
+                this.copyButton.style.display = "inline-block";
+            } // feels redundant lol
         } else {
             if (num_invalid_words > 0) {
                 if (num_invalid_words == 1) {
-                    document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
+                    this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
                     
                 } else {
-                    document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORDS";
+                    this.reportMissingWordButton.textContent = "REPORT MISSING WORDS";
                 }
-                document.getElementById("report-missing-word-button").style.display = "inline-block";
+                this.reportMissingWordButton.style.display = "inline-block";
+                this.copyButton.style.display = "none";
             } else {
-                document.getElementById("report-missing-word-button").style.display = "none";
+                this.reportMissingWordButton.style.display = "none";
+                if (this.first_solution_found) {
+                    this.copyButton.style.display = "inline-block";
+                }
             }
         }
         this.writeBoardDataToCookie();
@@ -853,7 +869,10 @@ class Board {
     }
 
     copyResults() {
-
+        if (this.copyResultsTimeout) {
+            clearTimeout(this.copyResultsTimeout);
+        }
+        const include_solution = this.copyButton.textContent != "COPY RESULTS!";
         let symbol_to_emoji_map = {
             '@': '🟥',
             '#': '🟧',
@@ -861,18 +880,6 @@ class Board {
             '%': '🟦',
             '-': '⬛️'
         }
-        // let message = `CONSTRAINBOW ${month}/${day}\n${this.timer_element.textContent}\n`;
-        // let message = `CONSTRAINBOW ${this.game_id[0]}${this.game_id[1]}/${this.game_id[2]}${this.game_id[3]}\n`;
-        // message += `Solved in ${this.timer_element.textContent}\n`;
-        // // generate the emojis from the grid
-        // this.grid.forEach((word) => {
-        //     word.forEach((letter) => {
-        //         message += symbol_to_emoji_map[letter];
-        //     });
-        //     message += "\n";
-        // });
-        // message += `${this.num_possible_solutions.toLocaleString()} possible solutions\n`;
-        // message += "https://constrainbow.com";
         let message = "constrainbow.com\n";
         message += `${this.game_id[0]}${this.game_id[1]}/${this.game_id[2]}${this.game_id[3]} | ${this.timer_element.textContent}\n`;
         this.grid.forEach((word) => {
@@ -882,12 +889,25 @@ class Board {
             message += "\n";
         });
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;
-        navigator.clipboard.writeText(message.trim()).then(() => {
-            document.getElementById("copy-results-button").textContent = "COPIED!";
-            setTimeout(() => {
-                document.getElementById("copy-results-button").textContent = "COPY RESULTS!"
-            }, 1000);
-        });
+        if (include_solution) {
+            message += "\n"
+            this.words.forEach((word) => {
+                message += word.getWordString().toUpperCase() + "\n";
+            });
+            navigator.clipboard.writeText(message.trim()).then(() => {
+                this.copyButton.textContent = "COPIED WITH SOLUTION!";
+                this.copyResultsTimeout = setTimeout(() => {
+                    this.copyButton.textContent = "COPY RESULTS!"
+                }, 2000);
+            });
+        } else {
+            navigator.clipboard.writeText(message.trim()).then(() => {
+                this.copyButton.textContent = "COPIED! INCLUDE SOLUTION?";
+                this.copyResultsTimeout = setTimeout(() => {
+                    this.copyButton.textContent = "COPY RESULTS!"
+                }, 5000);
+            });
+        }
     }
 
     // this function will be called when the user clicks the report missing word button
@@ -899,7 +919,7 @@ class Board {
                 incorect_words.push(word.getWordString());
             }
         });
-        document.getElementById("report-missing-word-button").textContent = "REPORTING...";
+        this.reportMissingWordButton.textContent = "REPORTING...";
         fetch("/report-missing-word", {
             method: "POST",
             headers: {
@@ -909,10 +929,13 @@ class Board {
                 "words": incorect_words,
             })
         }).then(() => {
-            document.getElementById("report-missing-word-button").textContent = "REPORTED!";
+            this.reportMissingWordButton.textContent = "REPORTED!";
             setTimeout(() => {
-                document.getElementById("report-missing-word-button").textContent = "REPORT MISSING WORD";
-                document.getElementById("report-missing-word-button").style.display = "none";
+                this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
+                this.reportMissingWordButton.style.display = "none";
+                if (this.first_solution_found) {
+                    this.copyButton.style.display = "inline-block";
+                }
             }, 1000);
         });
     }

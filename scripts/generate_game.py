@@ -9,6 +9,7 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 symbols = ('@', '#', '$', '%')
+# symbols = ('@', '$')
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
@@ -294,6 +295,12 @@ def main(game_id):
     global words
     start = time.time()
     words = generate_game_new(9)
+    # words = [
+    #     ['-', '@', '-', '@', '-'],
+    #     ['@', '-', '$', '-', '@'],
+    #     ['-', '@', '-', '@', '-'],
+    #     ['-', '-', '@', '-', '-'],
+    # ]
     # words = generate_game()
     result["grid"] = words
     result["constraints"] = {}
@@ -327,7 +334,8 @@ def main(game_id):
         json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
-    while num_possible_boards == 0:
-        main(sys.argv[1])
+    # while num_possible_boards == 0:
+    #     main(sys.argv[1])
+    main(sys.argv[1])
     print(num_possible_boards)
     conn.close()

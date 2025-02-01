@@ -99,22 +99,38 @@ h2 {
     padding: 1px;
 }
 .letter {
+    position: relative; /* Ensures child elements position relative to the tile */
+    font-size: 40px;
     width: 67px;
     height: 67px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: var(--letter-border-thickness) solid black;
-    /* text-shadow: 1px 1px gray; */
     box-shadow: 3px 3px black;
     border-radius: 10px;
-    /* background-color: #e6e6e6; */
     background-color: white;
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
-    /* box-shadow: 0px 2px 2px 0 rgba(0, 0, 0, 0.5); */
+}
+
+.letter-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Keeps letter centered */
+    font-weight: bold;
+}
+
+.letter-points {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 12px; /* Slightly smaller than the letter */
+    color: black;
+    font-weight: bold;
+    pointer-events: none; /* Ensures clicks still register on the .letter div */
 }
 
 .example-letter {
@@ -274,9 +290,9 @@ h2 {
     box-shadow: none;
 }
 
-.text {
+/* .text {
     font-size: 40px;
-}
+} */
 
 /* The popup window */
 .popup {

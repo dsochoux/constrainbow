@@ -1,3 +1,34 @@
+const letters_to_points = {
+    "A": 1,
+    "B": 3,
+    "C": 3,
+    "D": 2,
+    "E": 1,
+    "F": 4,
+    "G": 2,
+    "H": 4,
+    "I": 1,
+    "J": 8,
+    "K": 5,
+    "L": 1,
+    "M": 3,
+    "N": 1,
+    "O": 1,
+    "P": 3,
+    "Q": 10,
+    "R": 1,
+    "S": 1,
+    "T": 1,
+    "U": 1,
+    "V": 4,
+    "W": 4,
+    "X": 8,
+    "Y": 4,
+    "Z": 10,
+    "-": 0,
+    "": 0
+}
+
 function getCookie(name) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -19,27 +50,33 @@ class Letter {
         this.l = l;
         this.constraint_symbol = constraint_symbol;
         this.click_handler = click_handler;
-        this.text_element = this.createTextElement();
+        [this.text_element, this.points_element] = this.createTextElement();
         
         // the first letter of the first word will begin in the selected state
         // this.is_selected = (w == 0 && l == 0);
         this.is_selected = false;
-        this.element = this.createLetterElement(this.text_element, this.is_selected);
+        this.element = this.createLetterElement(this.text_element, this.points_element, this.is_selected);
         
         this.current_letter = "";
     }
 
     createTextElement() {
-        const span = document.createElement('span');
-        span.classList.add('text');
-        span.style.visibility = 'hidden';
-        span.textContent = '';
-        return span;
+        const letter_span = document.createElement('span');
+        letter_span.classList.add('letter-text');
+        letter_span.style.visibility = 'hidden';
+        letter_span.textContent = '';
+        const point_span = document.createElement('span');
+        point_span.classList.add('letter-points');
+        point_span.visibility = 'hidden';
+        point_span.textContent = '';
+
+        return [letter_span, point_span];
     }
 
-    createLetterElement(text_element, is_selected) {
+    createLetterElement(text_element, points_element, is_selected) {
         const div = document.createElement('div');
         div.appendChild(text_element);
+        div.appendChild(points_element);
         div.classList.add('letter');
         
         if (is_selected) {
@@ -73,7 +110,25 @@ class Letter {
     updateLetter(letter) {
         this.current_letter = letter;
         this.text_element.textContent = letter;
+        let points = letters_to_points[letter];
+        if (points == 0) {
+            this.points_element.textContent = "";
+        } else {
+            this.points_element.textContent = points.toString();
+        }
+       
         this.text_element.style.visibility = 'visible';
+        this.points_element.style.visibility = 'visible';
+    }
+    pause() {
+        this.element.classList.add('paused');
+        this.text_element.style.visibility = 'hidden';
+        this.points_element.style.visibility = 'hidden';
+    }
+    resume() {
+        this.element.classList.remove('paused');
+        this.text_element.style.visibility = 'visible';
+        this.points_element.style.visibility = 'visible';
     }
 }
 
@@ -263,8 +318,7 @@ class Board {
         // add the paused class to all of the letters
         this.words.forEach((word) => {
             word.letters.forEach((letter) => {
-                letter.element.classList.add('paused');
-                letter.text_element.style.visibility = 'hidden';
+                letter.pause();
             });
         });
         for (let i = 65; i <= 90; i++) {
@@ -288,8 +342,7 @@ class Board {
         // remove the paused class from all of the letters
         this.words.forEach((word) => {
             word.letters.forEach((letter) => {
-                letter.element.classList.remove('paused');
-                letter.text_element.style.visibility = 'visible';
+                letter.resume();
             });
         });
         if (!this.game_has_started) {

@@ -353,9 +353,11 @@ h2 {
 }
 
 .key {
+    position: relative;
     margin: 0; /* Remove margins */
-    padding-top: 12px;
-    padding-bottom: 12px;
+    /* padding-top: 12px;
+    padding-bottom: 12px; */
+    height: 50px; /* Ensure consistent height */
     font-size: 18px;
     background-color: white;
     border: 1px solid #000000;
@@ -365,6 +367,27 @@ h2 {
     text-align: center;
     box-shadow: 1px 1px black;
     /* box-shadow: 0px 3px 3px 0 #dddddd; */
+}
+
+.key-letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Keeps letter perfectly centered */
+    /* font-weight: bold; */
+}
+
+.key-points {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 10px;
+    color: black;
+    font-weight: bold;
+}
+.key-letter,
+.key-points {
+    pointer-events: none;
 }
 
 #second-keyboard-row .key, #bottom-keyboard-row .key {

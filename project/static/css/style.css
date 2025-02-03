@@ -112,7 +112,7 @@ h2 {
     background-color: white;
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
-    font-weight: bold;
+    /* font-weight: bold; */
 }
 
 .letter-text {
@@ -129,8 +129,9 @@ h2 {
     right: 3px;
     font-size: 12px; /* Slightly smaller than the letter */
     color: black;
-    font-weight: bold;
+    /* font-weight: bold; */
     pointer-events: none; /* Ensures clicks still register on the .letter div */
+    /* display: none; */
 }
 
 .example-letter {
@@ -399,7 +400,8 @@ h2 {
     right: 3px;
     font-size: 10px;
     color: black;
-    font-weight: bold;
+    /* font-weight: bold; */
+    /* display: none; */
 }
 .key-letter,
 .key-points {

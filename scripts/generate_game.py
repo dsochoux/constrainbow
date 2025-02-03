@@ -3,6 +3,7 @@ import random
 import json
 import time
 import sys
+import pdb
 
 db_path = "database.db"
 conn = sqlite3.connect(db_path)
@@ -10,11 +11,28 @@ cursor = conn.cursor()
 
 symbols = ('@', '#', '$', '%')
 # symbols = ('@', '$')
+
+num_constraints = 4
+constraints = []
+for i in range(num_constraints):
+    constraints.append(i + 1)
+
+constraint_assignments = ['' for _ in range(num_constraints)]
+
+word_length = 5
+
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
 desired_num_symbols = 10 # must be greater than 8
 solutions_result = []
+best_solution = {
+    "points": 0,
+    "word_1": "",
+    "word_2": "",
+    "word_3": "",
+    "word_4": ""
+}
 
 # between any two words, there MUST be a position that has differing symbols
 # otherwise, there is the risk that the same word can be used multiple times
@@ -77,34 +95,31 @@ def generate_game():
 
 def generate_game_new(desired):
     words = [
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
     ]
 
-    shuffled_symbols = list(symbols)
-    random.shuffle(shuffled_symbols)
-    guaranteed_symbols = [
-        [shuffled_symbols[3], shuffled_symbols[0]], 
-        [shuffled_symbols[0], shuffled_symbols[1]], 
-        [shuffled_symbols[1], shuffled_symbols[2]], 
-        [shuffled_symbols[2], shuffled_symbols[3]]
-    ]
-    for i in range(4):
-        positions = random.sample(range(5), 2)
-        words[i][positions[0]] = guaranteed_symbols[i][0]
-        words[i][positions[1]] = guaranteed_symbols[i][1]
+    shuffled_constraints = random.sample(constraints, 4)
+    guaranteed_constraints = []
+    for i in range(num_constraints):
+        guaranteed_constraints.append([shuffled_constraints[i], shuffled_constraints[(i + 1) % 4]])
+    
+    for i in range(len(words)):
+        positions = random.sample(range(word_length), 2)
+        words[i][positions[0]] = guaranteed_constraints[i][0]
+        words[i][positions[1]] = guaranteed_constraints[i][1]
     total = 8
     # fill in the rest randomly
-    _symbols = list(symbols)
+    _constraints = [i for i in range(1, num_constraints + 1)]
     while total < desired:
-        random_word = random.choice([j for j in range(0, 4)])
-        random_position = random.choice([j for j in range(0, 5)])
-        if words[random_word][random_position] != '-': continue
-        random_symbol = random.choice(_symbols)
-        _symbols.remove(random_symbol)
-        words[random_word][random_position] = random_symbol
+        random_word = random.choice([i for i in range(0, len(words))])
+        random_position = random.choice([i for i in range(0, word_length)])
+        if words[random_word][random_position] != 0: continue
+        random_constraint = random.choice(_constraints)
+        _constraints.remove(random_constraint)
+        words[random_word][random_position] = random_constraint
         total += 1
     return words
 
@@ -122,9 +137,9 @@ def verify_constraints_query(query_stub, word):
         " fifth_letter = ?"
     ]
     query_args = []
-    for i, symbol in enumerate(word):
-        if symbol not in symbol_to_letter: continue
-        query_args.append(symbol_to_letter[symbol])
+    for i, constraint in enumerate(word):
+        if constraint == 0 or constraint_assignments[constraint - 1] == '': continue
+        query_args.append(constraint_assignments[constraint - 1])
         query_stub += positive_index_to_clauses[i]
         query_stub += " AND"
     # chop off the last and
@@ -153,18 +168,18 @@ def verify_word_query(query_stub, word):
     ]
 
     query_args = []
-    for i, symbol in enumerate(word):
-        if symbol == '-':
+    for i, constraint in enumerate(word):
+        if constraint == 0:
             # we need to add clauses to ensure that the ith letter
             # is not a letter assigned to a constraint
-            for letter in symbol_to_letter.values():
+            for letter in constraint_assignments:
                 query_args.append(letter)
                 query_stub += negative_index_to_clauses[i]
                 query_stub += " AND"
         else:
             # need to add clauses that ensure that the ith letter
             # is the letter assigned to the symbol
-            query_args.append(symbol_to_letter[symbol])
+            query_args.append(constraint_assignments[constraint - 1])
             query_stub += positive_index_to_clauses[i]
             query_stub += " AND"
     if query_stub[-4:] == " AND":
@@ -185,14 +200,51 @@ def is_solution_for(i):
     cursor.execute(query, query_args)
     return cursor.fetchone()[0] > 0
 
+def calculate_points_for(word):
+    letter_to_points = {
+        'a': 1,
+        'b': 3,
+        'c': 3,
+        'd': 2,
+        'e': 1,
+        'f': 4,
+        'g': 2,
+        'h': 4,
+        'i': 1,
+        'j': 8,
+        'k': 5,
+        'l': 1,
+        'm': 3,
+        'n': 1,
+        'o': 1,
+        'p': 3,
+        'q': 10,
+        'r': 1,
+        's': 1,
+        't': 1,
+        'u': 1,
+        'v': 4,
+        'w': 4,
+        'x': 8,
+        'y': 4,
+        'z': 10
+    }
+    points = 0
+    for letter in word:
+        points += letter_to_points[letter]
+    return points
+
 # this function will be called when we want to generate all solutions to a promising
 # constraint assignment where the wildcards are not allowed to be the same letter
 # as one of the constraints
 def generate_solutions_wildcards_constrained():
     given_symbols_num_possibilities = 1
     solution_object = {
-        "constraint_assignments": {**symbol_to_letter},
+        "constraint_assignments": [c for c in constraint_assignments],
+        "best_total_points": 0
     }
+    best_words = [None, None, None, None]
+    best_points = [0, 0, 0, 0]
     for i, word in enumerate(words):
         query_stub = '''
         SELECT first_letter, second_letter, third_letter, fourth_letter, fifth_letter FROM words
@@ -207,12 +259,26 @@ def generate_solutions_wildcards_constrained():
         solutions = [] # all of the different possible word choices
         for raw_solution in raw_solutions:
             solutions.append("".join(raw_solution))
+            points = calculate_points_for(raw_solution)
+            if points > best_points[i]:
+                best_points[i] = points
+                best_words[i] = "".join(raw_solution)
         given_symbols_num_possibilities *= len(solutions)
         solution_object[f"word_{i + 1}"] = {
             "num_solutions": len(solutions),
+            "best_word_option": best_words[i],
+            "best_word_points": best_points[i],
             "solutions": solutions
         }
+    best_total_points = sum(best_points)
+    solution_object["best_total_points"] = best_total_points
     solutions_result.append(solution_object)
+    if best_total_points > best_solution["points"]:
+        best_solution["points"] = best_total_points
+        best_solution["word_1"] = best_words[0]
+        best_solution["word_2"] = best_words[1]
+        best_solution["word_3"] = best_words[2]
+        best_solution["word_4"] = best_words[3]
     # we will want to add the computed number of possibilites for this symbol arrangement to a total 
     global num_possible_boards
     num_possible_boards += given_symbols_num_possibilities
@@ -251,8 +317,8 @@ def generate_solutions_wildcards_free():
     global num_possible_boards
     num_possible_boards += given_symbols_num_possibilities
 
-def find_solution(symbol):
-    if symbol == len(symbols):
+def find_solution(constraint):
+    if constraint == num_constraints + 1:
         # at this point, we have assigned each symbol a letter
         # this assignment is promisng -- there are words that would satisfy the 
         # constraints if the wildcard letters could by ANYTHING. However, I am messing
@@ -267,58 +333,44 @@ def find_solution(symbol):
     # symbol is an int pointing to the current symbol to be tried
     for letter in alphabet:
         # cannot re-use letters
-        if letter in symbol_to_letter.values(): continue
+        if letter in constraint_assignments: continue
         # assign letter to that symbol
-        symbol_to_letter[symbols[symbol]] = letter
+        constraint_assignments[constraint - 1] = letter
         # check if there are solutions for all words
         solutions_exist = True
         for i in range(len(words)):
             # we have not updated a constraint for this word, so there
             # is no reason to check if a valid one can be formed
-            if symbols[symbol] not in words[i]: continue
+            if constraint not in words[i]: continue
             solutions_exist = solutions_exist and is_solution_for(i)
         # if there are, make a recursive call for the next symbol
         if solutions_exist:
-            find_solution(symbol + 1)
+            find_solution(constraint + 1)
 
         # otherwise, let the loop continue to the next letter
     # remove symbol from map before returning
-    del symbol_to_letter[symbols[symbol]]
+    constraint_assignments[constraint - 1] = ''
 
 
 
 def main(game_id):
     result = {
-    "constraint_symbols" : list(symbols),
-    "no_constraint_symbol": '-'
     } # the result object that will be converted to JSON at the end
     global words
     start = time.time()
-    words = generate_game_new(9)
-    # words = [
-    #     ['-', '@', '-', '@', '-'],
-    #     ['@', '-', '$', '-', '@'],
-    #     ['-', '@', '-', '@', '-'],
-    #     ['-', '-', '@', '-', '-'],
-    # ]
-    # words = generate_game()
+    
+    words = generate_game_new(10)
     result["grid"] = words
-    result["constraints"] = {}
+    result["constraints"] = [[] for _ in range(num_constraints + 1)]
     for i in range(len(words)):
         for j in range(len(words[i])):
-            if words[i][j] == '-': continue
-            l = result["constraints"].get(words[i][j], [])
-            l.append([i, j])
-            result["constraints"][words[i][j]] = l
-    find_solution(0)
+            result["constraints"][words[i][j]].append([i, j])
+    find_solution(1)
     end = time.time()
     # result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
     if num_possible_boards == 0:
         return
     result["num_possible_solutions"] = num_possible_boards
-    # result["solutions"] = solutions_result
-
-    # TODO: when generating, automatically save the game to a file with the date (game id) as the name
 
     output_file = f"generated_games/{game_id}.json"
     # output_file = f"generated_games/solution.json"
@@ -326,16 +378,16 @@ def main(game_id):
         json.dump(result, f, indent=4)
 
     print(f"game generated, solved, and saved to {output_file} in {end - start} seconds")
-    print(result['constraints'])
     
+    result["best_solution"] = best_solution
     result["solutions"] = solutions_result
     output_file = f"generated_games_solutions/{game_id}.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
-    # while num_possible_boards == 0:
-    #     main(sys.argv[1])
-    main(sys.argv[1])
+    while num_possible_boards == 0:
+        main(sys.argv[1])
     print(num_possible_boards)
+    # print(generate_game_new(10))
     conn.close()

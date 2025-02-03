@@ -1,4 +1,5 @@
-const letters_to_points = {
+// CONSTANTS
+const LETTERS_TO_POINTS = {
     "A": 1,
     "B": 3,
     "C": 3,
@@ -29,6 +30,15 @@ const letters_to_points = {
     "": 0
 }
 
+const BOARD_ID = "board";
+const NUM_WORDS = 4;
+const WORD_LENGTH = 5;
+
+// HELPER FUNCTIONS
+function getWithDefault(obj, key, defaultValue) {
+    return key in obj ? obj[key] : defaultValue;
+}
+
 function getCookie(name) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -41,42 +51,49 @@ function getCookie(name) {
     return null; // Return null if the cookie is not found
 }
 
+function deleteAllCookies() {
+    document.cookie.split(';').forEach(cookie => {
+        const cookieName = cookie.split('=')[0].trim();
+        document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+    });
+}
+
+// CLASSES
 class Letter {
     // w: index of word, l: index of letter
-    constructor(w, l, constraint_symbol, click_handler) {
-        // a Letter needs to know "who" is is. when clicked, it must
-        // tell the board that it has been selected
+    constructor(w, l, constraint, clickHandler, gameMode) {
         this.w = w;
         this.l = l;
-        this.constraint_symbol = constraint_symbol;
-        this.click_handler = click_handler;
-        [this.text_element, this.points_element] = this.createTextElement();
+        this.constraint = constraint;
+        this.clickHandler = clickHandler;
+        this.gameMode = gameMode;
+        [this.textElement, this.pointsElement] = this.createTextElement();
         
-        // the first letter of the first word will begin in the selected state
-        // this.is_selected = (w == 0 && l == 0);
-        this.is_selected = false;
-        this.element = this.createLetterElement(this.text_element, this.points_element, this.is_selected);
+        this.isSelected = false;
+        this.tileElement = this.createTileElement(this.textElement, this.pointsElement, this.isSelected);
         
-        this.current_letter = "";
+        this.currentLetter = "";
     }
 
     createTextElement() {
-        const letter_span = document.createElement('span');
-        letter_span.classList.add('letter-text');
-        letter_span.style.visibility = 'hidden';
-        letter_span.textContent = '';
-        const point_span = document.createElement('span');
-        point_span.classList.add('letter-points');
-        point_span.visibility = 'hidden';
-        point_span.textContent = '';
+        const letterSpan = document.createElement('span');
+        letterSpan.classList.add('letter-text');
+        letterSpan.style.visibility = 'hidden';
+        letterSpan.textContent = '';
+        const pointSpan = document.createElement('span');
+        pointSpan.classList.add('letter-points');
+        pointSpan.visibility = 'hidden';
+        pointSpan.textContent = '';
 
-        return [letter_span, point_span];
+        return [letterSpan, pointSpan];
     }
 
-    createLetterElement(text_element, points_element, is_selected) {
+    createTileElement(text_element, points_element, is_selected) {
         const div = document.createElement('div');
         div.appendChild(text_element);
-        div.appendChild(points_element);
+        if (this.gameMode === "score") {
+            div.appendChild(points_element);
+        }
         div.classList.add('letter');
         
         if (is_selected) {
@@ -84,14 +101,14 @@ class Letter {
         }
 
         div.addEventListener('click', () => {
-            this.click_handler(this.w, this.l);
+            this.clickHandler(this.w, this.l);
         });
 
         return div;
     }
 
     appendLetterElement(container) {
-        container.appendChild(this.element);
+        container.appendChild(this.tileElement);
     }
 
     toggleIsSelected() {
@@ -99,51 +116,60 @@ class Letter {
     }
 
     setIsSelected(value) {
-        this.is_selected = value;
+        this.isSelected = value;
         if (value) {
-            this.element.classList.add('selected');
+            this.tileElement.classList.add('selected');
         } else {
-            this.element.classList.remove('selected');
+            this.tileElement.classList.remove('selected');
         }
     }
 
     updateLetter(letter) {
-        this.current_letter = letter;
-        this.text_element.textContent = letter;
-        let points = letters_to_points[letter];
+        this.currentLetter = letter;
+        this.textElement.textContent = letter;
+        let points = LETTERS_TO_POINTS[letter];
         if (points == 0) {
-            this.points_element.textContent = "";
+            this.pointsElement.textContent = "";
         } else {
-            this.points_element.textContent = points.toString();
+            this.pointsElement.textContent = points.toString();
         }
        
-        this.text_element.style.visibility = 'visible';
-        this.points_element.style.visibility = 'visible';
+        this.textElement.style.visibility = 'visible';
+        this.pointsElement.style.visibility = 'visible';
     }
     pause() {
-        this.element.classList.add('paused');
-        this.text_element.style.visibility = 'hidden';
-        this.points_element.style.visibility = 'hidden';
+        this.tileElement.classList.add('paused');
+        this.textElement.style.visibility = 'hidden';
+        this.pointsElement.style.visibility = 'hidden';
     }
     resume() {
-        this.element.classList.remove('paused');
-        this.text_element.style.visibility = 'visible';
-        this.points_element.style.visibility = 'visible';
+        this.tileElement.classList.remove('paused');
+        this.textElement.style.visibility = 'visible';
+        this.pointsElement.style.visibility = 'visible';
+    }
+
+    isConstrained() {
+        return this.constraint > 0;
+    }
+
+    isTopLeft() {
+        return this.w === 0 && this.l === 0;
     }
 }
 
 class Word {
     // w: index of the word
-    constructor(w, grid, click_handler) {
+    constructor(w, word, clickHandler, gameMode) {
         this.index = w;
+        this.gameMode = gameMode;
         this.letters = [];
-        this.is_invalid = false; // true if the word is not full or is a valid word
-        this.initWord(click_handler, grid);
+        this.isInvalid = false; // true if the word is not full or is a valid word
+        this.initWord(word, clickHandler);
     }
 
-    initWord(click_handler, grid) {
-        for (let l = 0; l < 5; l++) {
-            const letter = new Letter(this.index, l, grid[this.index][l], click_handler);
+    initWord(word, click_handler) {
+        for (let l = 0; l < WORD_LENGTH; l++) {
+            const letter = new Letter(this.index, l, word[l], click_handler, this.gameMode);
             this.letters.push(letter);
         }
     }
@@ -201,35 +227,39 @@ class Word {
     }
     _turnRed() {
         this.letters.forEach(letter => {
-            letter.element.classList.add('incorrect');
+            letter.tileElement.classList.add('incorrect');
         });
-        this.is_invalid = true;
+        this.isInvalid = true;
     }
-    clearRed() {
+    
+    clear(resetLetters) {
         this.letters.forEach(letter => {
+            if (resetLetters) {
+                letter.updateLetter("");
+            }
             letter.element.classList.remove('incorrect');
         });
-        this.is_invalid = false;
+        this.isInvalid = false;
     }
 }
 
 class Board {
-    constructor(container_id, num_words, data) {
-        this.element = document.getElementById(container_id);
+    constructor(manager, data, gameMode) {
+        this.manager = manager;
+        this.gameMode = gameMode;
+        this.element = document.getElementById(BOARD_ID);
         this.words = [];
-        this.num_words = num_words;
-        
-        this.selected_w = null;
-        this.selected_l = null;
+        this.selectedLetter = null;
         
         this.game_id = data["game_id"];
-        this.constraints_to_positions = data["constraints"];
+        this.constraints = data["constraints"];
         this.grid = data["grid"];
         this.accepted_words = new Set(data["words"]);
         this.num_possible_solutions = data["num_possible_solutions"];
-        // this is used to ensure that no constraints can be assigned the same letter
-        this.constraints_to_letters = {}
-        this.black_letters_count_map = {}
+
+        // constraints_to_letters
+        this.initDataStructures();
+        
         
         this.is_paused = false;
         this.game_has_started = false; // this will only ever be updated once, when the user makes their first click
@@ -248,39 +278,39 @@ class Board {
         this.copyResultsTimeout = null
     }
 
-    writeBoardDataToCookie() {
-        // want to save:
-        // each of the four words (with dashes for empty letters)
-        // the value of this.first_solution_found
-        // the total_seconds
-        // the game id
-
-        // words cookies
-        for (let w = 0; w < this.num_words; w++) {
-            let word = this.words[w].getWordString();
-            document.cookie = `word${w}=${word};path=/;max-age=${60 * 60 * 24}`;
+    initDataStructures() {
+        this.constraintAssignments = []; // tracks the letter assigned to each constraint (colored tile)
+        for (let i = 0; i < this.constraints.length; i++) {
+            this.constraintAssignments.push("");
         }
-        // first_solution_found cookie
+        this.blackLetters = {}; // keys are black letters, values are the number of times they appear on the board
+    }
+
+    saveToCookie() {
+        // write cookie for state of each word
+        // e.g. word0=cloud;word1=--in-;...
+        this.words.forEach((word, w) => {
+            document.cookie = `word${w}=${word.getWordString()};path=/;max-age=${60 * 60 * 24}`;
+        });
         document.cookie = `first_solution_found=${this.first_solution_found};path=/;max-age=${60 * 60 * 24}`;
     }
 
-    getWithDefault(obj, key, defaultValue) {
-        return key in obj ? obj[key] : defaultValue;
+    isEmpty() {
+        this.words.forEach(word => {
+            if (!word.isBlank()) {
+                return false;
+            }
+        });
+        return true;
     }
 
-    isEmpty() {
-        let is_empty = true;
-        this.words.forEach(word => {
-            is_empty = is_empty && word.isBlank();
-        });
-        return is_empty;
-    }
     isFull() { 
-        let is_full = true;
         this.words.forEach(word => {
-            is_full = is_full && word.isAllLettersFilled();
+            if (!word.isAllLettersFilled()) {
+                return false;
+            }
         });
-        return is_full;
+        return true;
     }
 
     updateTimerDisplay() {
@@ -365,9 +395,8 @@ class Board {
         }
         if (this.is_paused) {
             // if there is no currently selected letter, select the first letter of the first word
-            if (this.selected_w == null && this.selected_l == null) {
-                this.selected_w = 0;
-                this.selected_l = 0;
+            if (this.selectedLetter === null) {
+                this.selectedLetter = this.words[0].letters[0];
                 this.toggleSelected();
             }
             this.resume();
@@ -377,44 +406,37 @@ class Board {
     }
 
     initBoard(use_saved_game) {
-
         document.addEventListener('keydown', (event) => {
-            this.keyPressed(event);
+            console.log(event);
+            this.handleKeyPressed(event);
         });
-        for (let w = 0; w < this.num_words; w++) {
-            const word = new Word(w, this.grid, this.handleLetterClicked.bind(this))
+        for (let w = 0; w < NUM_WORDS; w++) {
+            const word = new Word(w, this.grid[w], this.handleLetterClicked.bind(this), this.gameMode)
             this.words.push(word);
             word.appendWordElement(this.element);
         }
-        let constraint_to_class = {
-            '@': 'c1',
-            '#': 'c2',
-            '$': 'c3',
-            '%': 'c4'
-        }
-        for (let constraint in this.constraints_to_positions) {
-            this.constraints_to_positions[constraint].forEach(constrained_letter => {
-                let w = constrained_letter[0];
-                let l = constrained_letter[1];
-                this.words[w].letters[l].element.classList.add(constraint_to_class[constraint]);
+        
+        this.constraints.forEach((letters, constraint) => {
+            if (constraint === 0) {
+                return;
+            }
+            letters.forEach((letter) => {
+                this.words[letter[0]].letters[letter[1]].tileElement.classList.add(`c${constraint}`)
             });
-        }
+        });
+
         if (use_saved_game) {
             this.loadSavedGame();
         } else {
-            // write gameid to cookie
-            deleteAllCookies();
-            document.cookie = `game_id=${this.game_id};path=/;max-age=${60 * 60 * 24}`;
+            this.manager.resetCookie();
         }
     }
 
 
     loadSavedGame() {
-        // use the information in the cookie to put the board into the saved state
-        // need to update the following:
-        // convert words into a word grid
-        let saved_words = []
-        for (let w = 0; w < this.num_words; w++) {
+        // load the saved words into a 2d array of characters
+        let saved_words = [];
+        for (let w = 0; w < NUM_WORDS; w++) {
             let word = [];
             getCookie(`word${w}`).split('').forEach((letter, i) => {
                 if (letter != '-') {
@@ -425,56 +447,59 @@ class Board {
             });
             saved_words.push(word);
         }
-        // this.words
-        for (let w = 0; w < this.num_words; w++) {
-            saved_words[w].forEach((letter, l) => {
+
+        // populate constraintAssignments and blackLetters
+        this.constraints.forEach((letters, constraint) => {
+            if (constraint === 0) {
+                // black letters
+                letters.forEach((letter) => {
+                    const value = this.words[letter[0]].letters[letter[1]].currentLetter;
+                    if (value != "") {
+                        this.blackLetters[value] = getWithDefault(this.blackLetters, value, 0) + 1;
+                    }
+                });
+            } else {
+                // constraints
+                // only need one occurrence of the constraint letter to know its value
+                const value = this.words[letters[0][0]][letters[0][1]].currentLetter;
+                this.constraintAssignments[constraint - 1] = value; // constraint 1 is at index 0 of constraintAssignments...
+            }
+        });
+
+        // update each letter with the saved letter
+        saved_words.forEach((word, w) => {
+            word.forEach((letter, l) => {
                 this.words[w].letters[l].updateLetter(letter);
             });
-        }
+        });
+
+
+        // turn a word red if it is invalid. Will move this to the Word class later
         this.words.forEach(word => {
-            // is_solution_found = is_solution_found && word.isAllLettersFilled();
             if (word.isAllLettersFilled()) {
                 let is_valid_word = this.accepted_words.has(word.getWordString());
                 if (!is_valid_word) {
-                    // color the word red for a second
                     word._turnRed();
                 } else {
-                    word.clearRed();
+                    word.clear(false);
                 }
             }
         });
-        // this.constraints_to_letters
-        for (let constraint in this.constraints_to_positions) {
-            // grab the first position of the constraint
-            let w = this.constraints_to_positions[constraint][0][0];
-            let l = this.constraints_to_positions[constraint][0][1];
-            if (saved_words[w][l] != "") {
-                this.constraints_to_letters[constraint] = saved_words[w][l];
-            }
-        }
-        // this.black_letters_count_map
-        for (let w = 0; w < this.num_words; w++) {
-            for (let l = 0; l < 5; l++) {
-                let symbol = this.grid[w][l];
-                let letter = saved_words[w][l];
-                if (symbol == "-" && letter != "") {
-                    this.black_letters_count_map[letter] = this.getWithDefault(this.black_letters_count_map, letter, 0) + 1;
-                }
-            }
-        }
-        // this.game_has_started = true;
+    
+
         this.game_has_started = true;
-        // this.first_solution_found;
         this.first_solution_found = (getCookie("first_solution_found") == "true");
+        
+        // move this to the Manager class later
         // show the copy results button if the solution has been found
         if (this.first_solution_found) {
-            document.getElementById("copy-results-button").style.display = "inline-block";
+            this.copyButton.style.display = "inline-block";
             this.playPauseButton.style.display = "none";
             this.date_element.style.display = 'none';
             this.timer_element.style.display = 'inline-block';
 
         }
-        // this.total_seconds;
+        
         this.total_seconds = parseInt(getCookie("total_seconds"));
         this.updateTimerDisplay();
     }
@@ -489,80 +514,33 @@ class Board {
 
     toggleSelected() {
         this.deselectAll();
-        this.words[this.selected_w].letters[this.selected_l].toggleIsSelected();
+        this.selectedLetter.toggleIsSelected();
     }
-    //
+    
     clearBoard() {  
+        // clear all of the letters
         this.words.forEach((word) => {
-            word.letters.forEach((letter) => {
-                letter.updateLetter("");
-                letter.element.classList.remove('incorrect');
-            });
-            word.is_invalid = false;
-        });
-        this.constraints_to_letters = {}
-        this.black_letters_count_map = {}
-        this.reportMissingWordButton.style.display = "none";
-        if (this.first_solution_found) {
-            this.copyButton.style.display = "inline-block";
-        }
-        for (let i = 65; i <= 90; i++) {
-            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
-            if (key_element) {
-                key_element.classList.remove('unavailable');
-            }
-        }
-        this.writeBoardDataToCookie();
-    }
-
-    updateKeyboard() {
-        for (let i = 65; i <= 90; i++) {
-            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
-            if (key_element) {
-                key_element.classList.remove('unavailable');
-            }
-        }
-        if (this.selected_w == null || this.selected_l == null) {
-            // set all of the keys to be unselected
-            return;
-        }
-        // we have to figure out which letters are unavailable to be played at
-        // the selected letter, and update keyboard keys accordingly
-        // if the selected key is constrained, no letters that are constrained or black can be used
-        let unavailable_letters = [];
-        if(this.selectedIsConstrained()) {
-            // must add the black letters too
-            for (let letter in this.black_letters_count_map) {
-                if (this.black_letters_count_map[letter] > 0) {
-                    unavailable_letters.push(letter);
-                }
-            }
-        }
-        for (let symbol in this.constraints_to_letters) {
-            if (this.getWithDefault(this.constraints_to_letters, symbol, '') != '') {
-                unavailable_letters.push(this.constraints_to_letters[symbol]);
-            }
-        }
-        // for each of these letters, except the current letter if there if one, get the key element from the dom
-        // and add the unavailable class to the key
-        unavailable_letters.forEach(letter => {
-            if (this.words[this.selected_w].letters[this.selected_l].current_letter != letter) {
-                let key_element = document.getElementById(`key-${letter}`);
-                if (key_element) {
-                    key_element.classList.add('unavailable');
-                }
-            }
+            word.clear(true);
         });
         
+        this.initDataStructures(); // reset the constraints and black letters
+        
+        // guarantee that the report missing word button is hidden
+        this.reportMissingWordButton.style.display = "none";
+        
+        // reset the keyboard
+        this.manager.resetKeyboard();
+
+        this.saveToCookie();
     }
 
-    keyPressed(event) {
+    handleKeyPressed(event) {
         if (event.keyCode == 2000 && !this.is_paused) {
             // special clear board case
             this.clearBoard();
             return;
         }
-        if (this.selected_w == null || this.selected_l == null || this.is_paused) {
+        if (this.selectedLetter === null || this.is_paused) {
             return;
         }
         if ((event.metaKey || event.ctrlKey) && event.key === 'r') {
@@ -587,63 +565,54 @@ class Board {
     }
 
     moveLeft() {
-        let new_w = this.selected_w;
-        let new_l = this.selected_l;
-
+        let new_w = this.selectedLetter.w;
+        let new_l = this.selectedLetter.l;
         new_l--;
         if (new_l < 0) {
             new_l = 4;
             if (new_w != 0) {
                 this.moveUp();
-                new_w = this.selected_w;
+                new_w = this.selectedLetter.w;
             }
         }
-        this.selected_w = new_w;
-        this.selected_l = new_l;
+        this.selectedLetter = this.words[new_w].letters[new_l];
         this.updateKeyboard();
     }
 
     moveUp() {
-        let new_w = this.selected_w;
+        let new_w = this.selectedLetter.w;
         new_w--;
         if (new_w < 0) {
             new_w = 3;
         }
-        this.selected_w = new_w;
+        this.selectedLetter = this.words[new_w].letters[this.selectedLetter.l];
         this.updateKeyboard();
     }
 
     moveRight() {
-        let new_w = this.selected_w;
-        let new_l = this.selected_l;
+        let new_w = this.selectedLetter.w;
+        let new_l = this.selectedLetter.l;
         new_l++;
         if (new_l > 4) {
             new_l = 0;
             this.moveDown();
-            new_w = this.selected_w;
+            new_w = this.selectedLetter.w;
         }
-        this.selected_w = new_w;
-        this.selected_l = new_l;
+        this.selectedLetter = this.words[new_w].letters[new_l];
         this.updateKeyboard();
     }
 
     moveDown() {
-        let new_w = this.selected_w;
+        let new_w = this.selectedLetter.w;
         new_w++;
         if (new_w > 3) {
             new_w = 0;
         }
-        this.selected_w = new_w;
+        this.selectedLetter = this.words[new_w].letters[this.selectedLetter.l];
         this.updateKeyboard();
     }
 
     handleArrowKeyPressed(key) {
-        if (this.selected_w == null) {
-            this.selected_w = 0;
-        }
-        if (this.selected_l == null) {
-            this.selected_l = 0;
-        }
         switch (key) {
             case 37:
                 this.moveLeft();
@@ -665,29 +634,20 @@ class Board {
     // this gets called when the user uses their mouse to click on a letter to select it
     handleLetterClicked(w, l) {
         this.resume();
-        let clicked_currently_selected = (w == this.selected_w && l == this.selected_l);
+        let clicked_currently_selected = (this.selectedLetter !== null) && (w == this.selectedLetter.w && l == this.selectedLetter.l);
         this.deselectAll();
-        this.selected_w = null;
-        this.selected_l = null;
+        this.selectedLetter = null;
 
         if (!clicked_currently_selected) {
             // toggle new on
-            this.words[w].letters[l].toggleIsSelected();
-            this.selected_w = w;
-            this.selected_l = l;
+            this.selectedLetter = this.words[w].letters[l];
+            this.selectedLetter.toggleIsSelected();
         }
         this.updateKeyboard();
     }
 
-    selectedIsConstrained() {
-        if (this.selected_w == null || this.selected_l == null) {
-            return false;
-        }
-        return (this.grid[this.selected_w][this.selected_l] != '-');
-    }
-
     getSelectedConstrainedLetterPositions() {
-        return this.constraints_to_positions[this.grid[this.selected_w][this.selected_l]];
+        return this.constraints[this.selectedLetter.constraint];
     }
 
     // need two functions to answer two different questions
@@ -709,75 +669,73 @@ class Board {
         }, 200);
     }
 
-    flashConflictingConstrainedLetters(key) {
-        for (let constraint in this.constraints_to_letters) {
-            if (this.constraints_to_letters[constraint] == String.fromCharCode(key)) {
-                if (constraint != this.grid[this.selected_w][this.selected_l]) {
-                    this.flashLetters(this.constraints_to_positions[constraint])
-                    return true;
-                } // don't do anything about conflict, since it is in conflict with itself. not doing anything is the same as a self update
-                // do something visual to highlight all of the conflicting letters
-            } // if we find that a symbol already is using that letter, return early
-        } // go through the map mapping a constraint symbol to a letter
+    flashConflictingConstrainedLetters(pressedLetter) {
+        // if the pressedLetter is already assigned to a constraint, flash all other letters with that constraint
+        this.constraintAssignments.forEach((letter, i) => {
+            if (letter === pressedLetter) {
+                let conflictingLetters = this.constraints[i + 1];
+                this.flashLetters(conflictingLetters);
+                return true;
+            }
+        });
         return false;
     }
 
-    flashConflictingWildcardLetters(key) {
-        let conflicting_wildcard_letter_positions = [];
-        this.words.forEach(word => {
-            word.letters.forEach(letter => {
-                if (this.grid[letter.w][letter.l] == "-" && letter.current_letter == String.fromCharCode(key)) {
-                    conflicting_wildcard_letter_positions.push([letter.w, letter.l]);
-                }
-            });
+    flashConflictingWildcardLetters(pressedLetter) {
+        let conflictingLetters = [];
+        this.constraints[0].forEach((letter) => {
+            if (this.words[letter[0]].letters[letter[1]].currentLetter == pressedLetter) {
+                conflictingLetters.push(letter);
+            }
         });
-        if (conflicting_wildcard_letter_positions.length == 0) {
+
+        if (conflictingLetters.length === 0) {
             return false;
         }
-        this.flashLetters(conflicting_wildcard_letter_positions);
+        this.flashLetters(conflictingLetters);
         return true;
 
     }
     
 
     async handleLetterKeyPressed(key) {
-        if (this.words[this.selected_w].letters[this.selected_l].current_letter == String.fromCharCode(key)) {
+        const pressedLetter = String.fromCharCode(key);
+        // if the key is already the current letter, save a bunch of work and do nothing
+        if (this.selectedLetter.current_letter === pressedLetter) {
             return;
         }
+        
         // if the currently selected letter is constrained, update all letters with that same constraint
-        if (this.selectedIsConstrained()) {
-            if (this.flashConflictingConstrainedLetters(key)) {
+        if (this.selectedLetter.isConstrained()) {
+            // check if there are conflicts, and if so, flash the conflicting letters
+            if (this.flashConflictingConstrainedLetters(pressedLetter)) {
                 return;
             }
-            if (this.flashConflictingWildcardLetters(key)) {
+            if (this.flashConflictingWildcardLetters(pressedLetter)) {
                 return;
             }
-            let constrained_letters = this.getSelectedConstrainedLetterPositions();
-            constrained_letters.forEach(letter => {
-                let w = letter[0];
-                let l = letter[1];
-                this.words[w].letters[l].updateLetter(String.fromCharCode(key));
-            })
-            this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = String.fromCharCode(key);
+            this.constraints[this.selectedLetter.constraint].forEach(letter => {
+                this.words[letter[0]].letters[letter[1]].updateLetter(letter);
+            });
+            this.constraintAssignments[this.selectedLetter.constraint - 1] = pressedLetter;
         } else {
             // otherwise, just update the letter
-            if (this.flashConflictingConstrainedLetters(key)) {
+            if (this.flashConflictingConstrainedLetters(pressedLetter)) {
                 return;
             }
-            let old_letter = this.words[this.selected_w].letters[this.selected_l].current_letter;
-            this.words[this.selected_w].letters[this.selected_l].updateLetter(String.fromCharCode(key));
-            // update black letter count map
-            this.black_letters_count_map[String.fromCharCode(key)] = this.getWithDefault(this.black_letters_count_map, String.fromCharCode(key), 0) + 1;
-            this.black_letters_count_map[old_letter]--;
+            let previousLetter = this.selectedLetter.current_letter;
+            this.selectedLetter.updateLetter(pressedLetter);
+            this.blackLetters[pressedLetter] = getWithDefault(this.blackLetters, String.fromCharCode(key), 0) + 1;
+            this.blackLetters[previousLetter]--;
         }
+        
+        
         if (this.isSolutionFound()) {
-            // document.getElementById('encouraging-message').textContent = "Way to go! 🎉 Keep finding more.";
             document.getElementById("copy-results-button").style.display = "inline-block";
             this.pauseTimer();
             this.playPauseButton.style.display = "none";
             this.deselectAll();
-            this.selected_w = null;
-            this.selected_l = null;
+            this.selectedLetter = null;
             this.updateKeyboard();
             let delay_time = 100;
             // loop through the letters and add celebrate class
@@ -793,14 +751,13 @@ class Board {
                 }, delay_time);
             }, delay_time);
         } else {
-            // if the board is full, this will go forver
-            if (this.words[this.selected_w].is_invalid) {
+            if (this.words[this.selectedLetter.w].is_invalid) {
                 return;
             }
             if (this.isFull()) {
                 this.moveRight();
             } else {
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter != "") {
+                while (this.selectedLetter.current_letter != "") {
                     this.moveRight();
                 }
             }
@@ -819,30 +776,43 @@ class Board {
     }
 
     handleBackspacePressed() {
-        let is_on_blank_letter = (this.words[this.selected_w].letters[this.selected_l].current_letter == "");
-        if (this.selectedIsConstrained()) {
-            let constrained_letters = this.getSelectedConstrainedLetterPositions();
-            constrained_letters.forEach(letter => {
-                let w = letter[0];
-                let l = letter[1];
-                this.words[w].letters[l].updateLetter("");
-                this.words[w].clearRed();
-            })
-            this.constraints_to_letters[this.grid[this.selected_w][this.selected_l]] = '';
-        } else {
-            this.black_letters_count_map[this.words[this.selected_w].letters[this.selected_l].current_letter]--;
-            this.words[this.selected_w].letters[this.selected_l].updateLetter("");
+        // backspace only produces motion if the current letter is empty
+        if (this.selectedLetter.currentLetter === "") {
+            if (this.isEmpty()) {
+                this.moveLeft();
+            } else {
+                while (this.selectedLetter.currentLetter === "" && !this.selectedLetter.isTopLeft()) {
+                    this.moveLeft();
+                }
+            }
+            this.toggleSelected();
+            return;
         }
-        this.words[this.selected_w].clearRed();
-        this.writeBoardDataToCookie();
-        let num_invalid = 0;
+
+        // update data structures
+        if (this.selectedLetter.isConstrained()) {
+            this.constraints[this.selectedLetter.constraint].forEach(letter => {
+                this.words[letter[0]].letters[letter[1]].updateLetter("");
+                this.words[letter[0]].clear(false);
+            });
+            this.constraintAssignments[this.selectedLetter.constraint - 1] = "";
+        } else {
+            this.blackLetters[this.selectedLetter.currentLetter]--;
+            this.selectedLetter.updateLetter("");
+            this.words[this.selectedLetter.w].clear(false);
+        }
+        
+        this.saveToCookie();
+        
+        // update the report missing word button
+        let numInvalid = 0;
         this.words.forEach(word => {        
-            if (word.is_invalid) {
-                num_invalid++;
+            if (word.isInvalid) {
+                numInvalid++;
             }
         });
-        if (num_invalid) {
-            if (num_invalid == 1) {
+        if (numInvalid) {
+            if (numInvalid == 1) {
                 this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
             } else {
                 this.reportMissingWordButton.textContent = "REPORT MISSING WORDS";
@@ -853,24 +823,7 @@ class Board {
                 this.copyButton.style.display = "inline-block";
             }
         }
-        if (this.selected_w == 0 && this.selected_l == 0) {
-            return;
-        }
-        if (is_on_blank_letter) {
-            // if the board is empty this will go forever
-            if (this.isEmpty()) {
-                this.moveLeft();
-            } else {
-                // TODO fix the double delete freeze
-                while (this.words[this.selected_w].letters[this.selected_l].current_letter == "" && 
-                    !(this.selected_w == 0 && this.selected_l == 0)) {
-                    this.moveLeft();
-                }
-            }
-            this.toggleSelected();
-        } else {
-            this.updateKeyboard();
-        }
+        this.updateKeyboard();
     }
 
     isSolutionFound() {
@@ -884,10 +837,10 @@ class Board {
                 if (!is_valid_word) {
                     // color the word red for a second
                     num_invalid_words++;
-                    word.turnRed(this.selected_w, this.grid[this.selected_w][this.selected_l]);
+                    word.turnRed(this.selectedLetter.w, this.grid[this.selectedLetter.w][this.selectedLetter.l]);
                     is_solution_found = false;
                 } else {
-                    word.clearRed();
+                    word.clear(false);
                 }
                 is_solution_found = is_solution_found && is_valid_word;
             } else {
@@ -917,7 +870,7 @@ class Board {
                 }
             }
         }
-        this.writeBoardDataToCookie();
+        this.saveToCookie();
         return is_solution_found;
     }
 
@@ -994,104 +947,128 @@ class Board {
     }
 }
 
-function deleteAllCookies() {
-    // Get all cookies
-    const cookies = document.cookie.split(';');
+class Manager {
+    constructor() {
+        this.showHowToPlayIfFirstTime();
+        this.fetchBoard().then(() => {
+            this.addEventListeners();
+        });
+    }
+    
+    async fetchBoard() {
+        this.game_id = document.getElementById("game-id").value;
+        this.game_mode = "speed"; // can be speed or score. hard coded for now
+        const response = await fetch(`/game?game-id=${this.game_id}`);
+        const data = await response.json();
+        
+        document.getElementById("num-possible-solutions").textContent = data["num_possible_solutions"].toLocaleString();
+        document.getElementById("loading-text").style.display = "none";
+        
+        this.board = new Board(this, data, this.game_mode);
+    }
 
-    // Loop through all cookies and delete each one
-    cookies.forEach(cookie => {
-        const cookieName = cookie.split('=')[0].trim();
-        document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
-    });
+    addEventListeners() {
+        // virtual keys
+        document.querySelectorAll(".key").forEach((key) => {
+            key.addEventListener("click", (e) => {
+                const keyCode = e.target.getAttribute("data-key");
+                document.dispatchEvent(
+                    new KeyboardEvent("keydown", { keyCode })
+                );
+            });
+        });
+
+        // how to play overlay
+        const howToPlayOverlay = document.getElementById("how-to-play-overlay");
+        function showOverlay() {
+            howToPlayOverlay.style.visibility = 'visible';
+            this.board.pause();
+        }
+        document.getElementById("how-to-play-button").addEventListener("click", showOverlay);
+        function closeOverlay() {
+            howToPlayOverlay.style.visibility = 'hidden';
+        }
+        document.getElementById("close-button").addEventListener("click", closeOverlay);
+        document.getElementById("got-it-button").addEventListener("click", closeOverlay);
+        howToPlayOverlay.addEventListener("click", (event) => {
+            if (event.target === howToPlayOverlay) {
+                closeOverlay();
+            }
+        });
+
+        // report missing word
+        document.getElementById("report-missing-word-button").addEventListener("click", () => {
+            this.board.reportMissingWords();
+        });
+
+        // play pause button
+        document.getElementById("play-pause-button").addEventListener("click", () => {
+            this.board.handlePlayPauseClicked();
+        });
+
+        // copy results button
+        document.getElementById("copy-results-button").addEventListener("click", () => {
+            this.board.copyResults();
+        });
+    }
+
+    showHowToPlayIfFirstTime() {
+        if (!localStorage.getItem("visited")) {
+            document.getElementById("how-to-play-overlay").style.visibility = 'visible'; // Show instructions
+            localStorage.setItem("visited", "true"); // Mark as visited
+        }
+    }
+
+    resetKeyboard() {
+        for (let i = 65; i <= 90; i++) {
+            document.getElementById(`key-${String.fromCharCode(i)}`).classList.remove('unavailable');
+        }
+    }
+
+    updateKeyboard() {
+        this.resetKeyboard();
+        
+        if (this.board.selectedLetter === null) {
+            return;
+        }
+        
+        let unavailableLetters = [];
+        if(this.board.selectedLetter.isConstrained()) {
+            // must add the black letters too
+            for (let letter in this.board.blackLetters) {
+                if (this.board.blackLetters[letter] > 0) {
+                    unavailableLetters.push(letter);
+                }
+            }
+        }
+        this.board.constraintAssignments.forEach((letter) => {
+            if (letter != "") {
+                unavailableLetters.push(letter);
+            }
+        });
+        
+        // for each of these letters, except the current letter if there if one, get the key element from the dom
+        // and add the unavailable class to the key
+        unavailableLetters.forEach(letter => {
+            if (this.board.selectedLetter.current_letter != letter) {
+                document.getElementById(`key-${letter}`).classList.add('unavailable');
+            }
+        });
+    }
+
+    
+
+    resetCookie() {
+        deleteAllCookies();
+        document.cookie = `game_id=${this.game_id};path=/;max-age=${60 * 60 * 24}`;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
-    let board = null;
-
-    const overlay = document.getElementById("how-to-play-overlay");
-    // const overlay = document.getElementById("win-overlay");
-    const howToPlayButton = document.getElementById("how-to-play-button");
-    const reportMissingWordButton = document.getElementById("report-missing-word-button");
-    const closeButton = document.getElementById("close-button");
-    const gotItButton = document.getElementById("got-it-button");
-    const playPauseButton = document.getElementById("play-pause-button");
-    // const keyboard = document.getElementById("keyboard-container");
-    const keys = document.querySelectorAll(".key");
-
-    // Function to simulate key events
-    function triggerKeyEvent(keyCode) {
-        const event = new KeyboardEvent("keydown", { keyCode });
-        document.dispatchEvent(event);
-    }
-
-    // Add click event to each virtual key
-    keys.forEach((key) => {
-        key.addEventListener("click", (e) => {
-            
-            const keyValue = e.target.getAttribute("data-key");
-            triggerKeyEvent(keyValue);
-        });
-    });
-
-    // Show the overlay when the "How to Play" button is clicked
-    howToPlayButton.addEventListener("click", () => {
-        overlay.style.visibility = 'visible';
-        board.pause();
-    });
-
-    reportMissingWordButton.addEventListener("click", () => {
-        board.reportMissingWords();
-        
-        // console.log("reporting missing word");
-    });
-
-    // Hide the overlay when the "X" button is clicked
-    closeButton.addEventListener("click", () => {
-        overlay.style.visibility = 'hidden';
-        // board.resume();
-    });
-    gotItButton.addEventListener("click", () => {
-        overlay.style.visibility = 'hidden';
-    });
-
-    playPauseButton.addEventListener("click", () => {
-        board.handlePlayPauseClicked();
-    });
-
-
-    // Optional: Hide the overlay if the user clicks outside the popup
-    overlay.addEventListener("click", (event) => {
-        if (event.target === overlay) {
-            overlay.style.visibility = 'hidden';
-        }
-    });
-
-    const game_id = document.getElementById("game-id").value;
-    
-    let endpoint = "/game";
-    
-    if (game_id != "None") {    
-        endpoint = endpoint + `?game-id=${game_id}`;
-    }
-    
-    fetch(endpoint)
-    .then(response => response.json())
-    .then(data => {
-        board = new Board('board', 4, data);
-        // document.getElementById("num-valid-constraint-assignments").textContent = data["num_valid_constraint_assignments"].toLocaleString();
-        document.getElementById("num-possible-solutions").textContent = data["num_possible_solutions"].toLocaleString();
-        document.getElementById("loading-text").style.display = "none";
-    });
-
-    document.getElementById("copy-results-button").addEventListener("click", () => {
-        board.copyResults();
-    });
-
-    // show the instructions to the user if they have not visited the site before
-    if (!localStorage.getItem("visited")) {
-        overlay.style.visibility = 'visible'; // Show instructions
-        localStorage.setItem("visited", "true"); // Mark as visited
-    }
-    
+    new Manager();
 });
+
+// TODO:
+// update keyboard should be the responsibility of the manager
+// fix the toggleSelected bs
+// ditch symbols for constraints, and use array indexes

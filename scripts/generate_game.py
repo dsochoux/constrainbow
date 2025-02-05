@@ -371,6 +371,7 @@ def main(game_id):
     if num_possible_boards == 0:
         return
     result["num_possible_solutions"] = num_possible_boards
+    result["num_possible_points"] = best_solution["points"]
 
     output_file = f"generated_games/{game_id}.json"
     # output_file = f"generated_games/solution.json"

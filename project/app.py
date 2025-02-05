@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, make_response
+from flask import Flask, render_template, jsonify, request, redirect, make_response, send_from_directory
 import os
 import json
 from datetime import datetime
@@ -18,23 +18,31 @@ with open('./word_files/words.txt', 'r') as f:
 generated_game_folder = './generated_games'
 files = [f for f in os.listdir(generated_game_folder)]
 
-# return a random game
+def get_game_id():
+    return datetime.now(eastern).strftime("%m%d%Y")
+
+def get_date_string(game_id):
+    return f"{game_id[0]}{game_id[1]}/{game_id[2]}{game_id[3]}"
+
+
 @app.route('/')
 def index():
     # a game-id can be provided as a query parameter (this is a secret feature)
     # people will hit the normal endpoint
     # if no game-id is provided, get the game id for today's game and pass it to the index.html
     # then, when the user hits the game endpoint, it will get the game with that game id
-    game_id = request.args.get("game-id", None)
-    if game_id is not None:
-        # verify it is valid
-       if not os.path.isfile(os.path.join(generated_game_folder, f"{game_id}.json")):
-           return redirect('/')
-    else:
-        game_id = datetime.now(eastern).strftime("%m%d%Y")
-        print(game_id)
-    # game_id = datetime.now(eastern).strftime("%m%d%Y")
-    return render_template('index.html', game_id=game_id, date=f"{game_id[0]}{game_id[1]}/{game_id[2]}{game_id[3]}")
+    return render_template('home.html')
+
+@app.route('/speed')
+def speed():
+    game_id = get_game_id()
+    game_id = "test"
+    return render_template('game.html', game_id=game_id, game_mode="speed", date=get_date_string(game_id))
+
+@app.route('/score')
+def score():
+    game_id = get_game_id()
+    return render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
 
 # returns a game based on the query parameter game-id
 # if no game-id is provided, redirect to the index, which will give a random game
@@ -45,9 +53,6 @@ def game():
     
     # game id in hidden input supplied by /
     game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
-    
-    # game id in the cookie, if it exists
-    saved_game_id = request.cookies.get('game_id', '')
     selected_game_file = game_id + '.json'
     
     # convert the json file to a dictionary
@@ -56,23 +61,12 @@ def game():
         game_object = json.load(f)
 
 
-    # make sure all the cookies are present
-    should_use_saved_game = (
-        game_id == saved_game_id and 
-        'total_seconds' in request.cookies and
-        'word0' in request.cookies and
-        'word1' in request.cookies and
-        'word2' in request.cookies and
-        'word3' in request.cookies and
-        'first_solution_found' in request.cookies
-    )
-
     return jsonify({
-        "use_saved_game": should_use_saved_game,
         "game_id": game_id,
         "constraints": game_object["constraints"],
         "grid": game_object["grid"],
         "num_possible_solutions": game_object["num_possible_solutions"],
+        "num_possible_points": game_object["num_possible_points"],
         "words": words
     })
 

@@ -8,6 +8,7 @@
 </head>
 <body>
     <input type="hidden" id="game-id" value="{{ game_id }}" />
+    <input type="hidden" id="game-mode" value="{{ game_mode }}" />
     <div class="overlay" id="how-to-play-overlay">
         <div class="popup">
             <button id="close-button">&times;</button>
@@ -224,6 +225,6 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

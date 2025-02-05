@@ -6,7 +6,7 @@ import { NUM_WORDS } from './helpers.js';
 export class SpeedBoard extends Board {
     constructor(manager, data) {
         super(manager, data);
-        this.isPaused = false;
+        this.isPaused = true;
         this.hasStarted = false;
         this.isFirstSolutionFound = false; // timer runs while this is false
         this.elapsedSeconds = 0;
@@ -22,98 +22,76 @@ export class SpeedBoard extends Board {
             this.words.push(word);
             word.appendWordElement(this.element);
         }
+        this.timerElement.style.display = 'inline-block';
+        this.playPauseButton.textContent = "START GAME";
+        this.playPauseButton.style.display = 'inline-block';
+        this.playPauseButton.addEventListener('click', () => {
+            this.handlePlayPauseClicked();
+        });
         super.initBoard();
     }
 
     isListeningForInput() {
-        return !this.isPause && super.isListeningForInput();
+        return !this.isPaused && super.isListeningForInput();
     }
 
     updateTimerDisplay() {
-        let minutes = Math.floor(this.total_seconds / 60).toString().padStart(2, '0');
-        let seconds = (this.total_seconds % 60).toString().padStart(2, '0');
-        this.timer_element.textContent = `${minutes}:${seconds}`;
+        this.timerElement.textContent = formatTime(this.elapsedSeconds);
     }
 
     startTimer() {
-        this.interval_id = setInterval(() => {
-            this.total_seconds++;
+        this.intervalId = setInterval(() => {
+            this.elapsedSeconds++;
             // total_seconds cookie
-            document.cookie = `total_seconds=${this.total_seconds};path=/;max-age=${60 * 60 * 24}`;
+            console.log("updating elapsed seconds in local storage");
             this.updateTimerDisplay();
         }, 1000);
     }
 
     pauseTimer() {
-        clearInterval(this.interval_id);
+        clearInterval(this.intervalId);
     }
 
-    pause(initial = false) {
-        if (this.is_paused || this.first_solution_found) {
+    pause() {
+        if (this.is_paused || this.isFirstSolutionFound) {
             return;
         }
-        this.timer_element.style.display = 'none';
-        this.dateElement.style.display = 'inline-block';
         this.pauseTimer();
-        if (initial) {
-            this.playPauseButton.textContent = "START GAME";
-        } else {
-            this.playPauseButton.textContent = "RESUME";
-        }
-        this.is_paused = true;
+        this.playPauseButton.textContent = "RESUME";
+        this.isPaused = true;
         // add the paused class to all of the letters
         this.words.forEach((word) => {
             word.letters.forEach((letter) => {
                 letter.pause();
             });
         });
-        for (let i = 65; i <= 90; i++) {
-            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
-            if (key_element) {
-                key_element.classList.add('paused-key');
-            }
-        }
-        document.getElementById("refresh-key").classList.add('paused-key');
-        document.getElementById("delete-key").classList.add('paused-key');
+        this.manager.pauseKeyboard();
     }
     resume() {
-        if (!this.is_paused || this.first_solution_found) {
+        if (!this.isPaused || this.isFirstSolutionFound) {
             return;
         }
-        this.timer_element.style.display = 'inline-block';
-        this.dateElement.style.display = 'none'
         this.startTimer();
         this.playPauseButton.textContent = "PAUSE";
-        this.is_paused = false;
+        this.isPaused = false;
         // remove the paused class from all of the letters
         this.words.forEach((word) => {
             word.letters.forEach((letter) => {
                 letter.resume();
             });
         });
-        if (!this.game_has_started) {
-            this.game_has_started = true;
-            // need to switch the start message for the timer and get it rolling
-        }
-        for (let i = 65; i <= 90; i++) {
-            let key_element = document.getElementById(`key-${String.fromCharCode(i)}`);
-            if (key_element) {
-                key_element.classList.remove('paused-key');
-            }
-        }
-        document.getElementById("refresh-key").classList.remove('paused-key');
-        document.getElementById("delete-key").classList.remove('paused-key');
+        this.manager.resumeKeyboard();
     }
 
     handlePlayPauseClicked() {
-        if (this.first_solution_found) {
+        if (this.isFirstSolutionFound) {
             return;
         }
-        if (this.is_paused) {
+        if (this.isPaused) {
             // if there is no currently selected letter, select the first letter of the first word
             if (this.selectedLetter === null) {
                 this.selectedLetter = this.words[0].letters[0];
-                this.toggleSelected();
+                this.selectedLetter.setIsSelected(true);
             }
             this.resume();
         } else {
@@ -122,8 +100,10 @@ export class SpeedBoard extends Board {
     }
 
     handleSolutionFound() {
-        this.celebrate();
-        // stop timer...
+        this.isFirstSolutionFound = true;
+        this.playPauseButton.style.display = 'none';
+        this.pauseTimer();
+        super.handleSolutionFound();
     }
 
 

@@ -4,8 +4,9 @@ import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
     constructor() {
+        this.pauseKeyboard();
         this.showHowToPlayIfFirstTime();
-        this.fetchBoard().then(() => {
+        this.fetchGame().then(() => {
             this.addEventListeners();
         });
         this.dateElement = document.getElementById('date');
@@ -13,19 +14,27 @@ export class Manager {
         this.copyButton = document.getElementById('copy-results-button');
     }
     
-    async fetchBoard() {
-        this.game_id = document.getElementById('game-id').value;
-        this.game_mode = document.getElementById('game-mode').value;
-        const response = await fetch(`/game?game-id=${this.game_id}`);
+    async fetchGame() {
+        this.gameId = document.getElementById('game-id').value;
+        this.gameMode = document.getElementById('game-mode').value;
+        const response = await fetch(`/game?game-id=${this.gameId}`);
         const data = await response.json();
         
         this.accepted_words = new Set(data['words']);
+        this.num_possible_solutions = data['num_possible_solutions'];
+        this.num_possible_points = data['num_possible_points'];
         
         // update some DOM elements after receiving the data
-        document.getElementById('num-possible-solutions').textContent = data['num_possible_solutions'].toLocaleString();
+        let description = `Today's puzzle has ${this.num_possible_solutions.toLocaleString()} unique solutions`;
+        if (this.gameMode === 'score') {
+            document.querySelectorAll('.key-points').forEach((element) => {
+                element.style.display = 'block';
+            });
+        }
+        document.getElementById('description').textContent = description;
         document.getElementById('loading-text').style.display = 'none';
         
-        if(this.game_mode === 'speed') {
+        if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
@@ -33,7 +42,6 @@ export class Manager {
     }
 
     addEventListeners() {
-
         // keyboard events
         document.addEventListener('keydown', (e) => {
             // ignore keystrokes if the user is holding down the meta key, control key, 
@@ -47,9 +55,9 @@ export class Manager {
         // virtual keys
         document.querySelectorAll('.key').forEach((key) => {
             key.addEventListener('click', (e) => {
-                const keyCode = e.target.getAttribute('data-key');
+                const key = e.target.getAttribute('data-key');
                 document.dispatchEvent(
-                    new KeyboardEvent('keydown', { keyCode })
+                    new KeyboardEvent('keydown', { key })
                 );
             });
         });
@@ -77,11 +85,6 @@ export class Manager {
             this.board.reportMissingWords();
         });
 
-        // play pause button
-        document.getElementById('play-pause-button').addEventListener('click', () => {
-            this.board.handlePlayPauseClicked();
-        });
-
         // copy results button
         document.getElementById('copy-results-button').addEventListener('click', () => {
             this.board.copyResults();
@@ -106,6 +109,22 @@ export class Manager {
         for (let i = 65; i <= 90; i++) {
             document.getElementById(`key-${String.fromCharCode(i)}`).classList.remove('unavailable');
         }
+    }
+
+    pauseKeyboard() {
+        for (let i = 65; i <= 90; i++) {
+            document.getElementById(`key-${String.fromCharCode(i)}`).classList.add('paused-key');
+        }
+        document.getElementById("refresh-key").classList.add('paused-key');
+        document.getElementById("delete-key").classList.add('paused-key');
+    }
+
+    resumeKeyboard() {
+        for (let i = 65; i <= 90; i++) {
+            document.getElementById(`key-${String.fromCharCode(i)}`).classList.remove('paused-key');
+        }
+        document.getElementById("refresh-key").classList.remove('paused-key');
+        document.getElementById("delete-key").classList.remove('paused-key');
     }
 
     updateKeyboard() {
@@ -141,7 +160,7 @@ export class Manager {
     
     resetCookie() {
         deleteAllCookies();
-        document.cookie = `game_id=${this.game_id};path=/;max-age=${60 * 60 * 24}`;
+        document.cookie = `game_id=${this.gameId};path=/;max-age=${60 * 60 * 24}`;
     }
 
     isValidWord(word) {
@@ -149,7 +168,7 @@ export class Manager {
     }
 
     getFormatedDate() {
-        return `${this.game_id[0]}${this.game_id[1]}/${this.game_id[2]}${this.game_id[3]}`;
+        return `${this.gameId[0]}${this.gameId[1]}/${this.gameId[2]}${this.gameId[3]}`;
     }
 }
 

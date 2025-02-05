@@ -98,12 +98,13 @@
             <h2><span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span>
             </h2>
             <h2 id="date">{{ date }}</h2>
-            <p id="timer">00:00</p>
             <button id="how-to-play-button">?</button>
         </div>
-        <p class="description">Today's puzzle has <span id="num-possible-solutions"></span> unique solutions</p>
+        <p class="description" id="description">Today's puzzle has <span id="num-possible-solutions"></span> unique solutions</p>
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
+            <p id="timer">00:00</p>
+            <p id="score"></p>
             <button id="play-pause-button">...</button>
             <button id="report-missing-word-button">REPORT MISSING WORD</button>
             <button id="copy-results-button">COPY RESULTS!</button>
@@ -111,117 +112,117 @@
         <div id="board"></div>
         <div id="keyboard-container">
             <div class="keyboard-row">
-                <button class="key" id="key-Q" data-key=81>
+                <button class="key" id="key-Q" data-key="Q">
                     <span class="key-letter">Q</span>
                     <span class="key-points">10</span>
                 </button>
-                <button class="key" id="key-W" data-key=87>
+                <button class="key" id="key-W" data-key="W">
                     <span class="key-letter">W</span>
                     <span class="key-points">4</span>
                 </button>
-                <button class="key" id="key-E" data-key=69>
+                <button class="key" id="key-E" data-key="E">
                     <span class="key-letter">E</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-R" data-key=82>
+                <button class="key" id="key-R" data-key="R">
                     <span class="key-letter">R</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-T" data-key=84>
+                <button class="key" id="key-T" data-key="T">
                     <span class="key-letter">T</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-Y" data-key=89>
+                <button class="key" id="key-Y" data-key="Y">
                     <span class="key-letter">Y</span>
                     <span class="key-points">4</span>
                 </button>
-                <button class="key" id="key-U" data-key=85>
+                <button class="key" id="key-U" data-key="U">
                     <span class="key-letter">U</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-I" data-key=73>
+                <button class="key" id="key-I" data-key="I">
                     <span class="key-letter">I</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-O" data-key=79>
+                <button class="key" id="key-O" data-key="O">
                     <span class="key-letter">O</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-P" data-key=80>
+                <button class="key" id="key-P" data-key="P">
                     <span class="key-letter">P</span>
                     <span class="key-points">3</span>
                 </button>
             </div>
             <div class="keyboard-row" id="second-keyboard-row">
-                <button class="key" id="key-A" data-key=65>
+                <button class="key" id="key-A" data-key="A">
                     <span class="key-letter">A</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-S" data-key=83>
+                <button class="key" id="key-S" data-key="S">
                     <span class="key-letter">S</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-D" data-key=68>
+                <button class="key" id="key-D" data-key="D">
                     <span class="key-letter">D</span>
                     <span class="key-points">2</span>
                 </button>
-                <button class="key" id="key-F" data-key=70>
+                <button class="key" id="key-F" data-key="F">
                     <span class="key-letter">F</span>
                     <span class="key-points">4</span>
                 </button>
-                <button class="key" id="key-G" data-key=71>
+                <button class="key" id="key-G" data-key="G">
                     <span class="key-letter">G</span>
                     <span class="key-points">2</span>
                 </button>
-                <button class="key" id="key-H" data-key=72>
+                <button class="key" id="key-H" data-key="H">
                     <span class="key-letter">H</span>
                     <span class="key-points">4</span>
                 </button>
-                <button class="key" id="key-J" data-key=74>
+                <button class="key" id="key-J" data-key="J">
                     <span class="key-letter">J</span>
                     <span class="key-points">8</span>
                 </button>
-                <button class="key" id="key-K" data-key=75>
+                <button class="key" id="key-K" data-key="K">
                     <span class="key-letter">K</span>
                     <span class="key-points">5</span>
                 </button>
-                <button class="key" id="key-L" data-key=76>
+                <button class="key" id="key-L" data-key="L">
                     <span class="key-letter">L</span>
                     <span class="key-points">1</span>
                 </button>
             </div>
             <div class="keyboard-row" id="bottom-keyboard-row">
                 <!-- <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button> -->
-                <button class="key" id="refresh-key" data-key=2000>CLEAR BOARD</button>
-                <button class="key" id="key-Z" data-key=90>
+                <button class="key" id="refresh-key" data-key="Clear">CLEAR BOARD</button>
+                <button class="key" id="key-Z" data-key="Z">
                     <span class="key-letter">Z</span>
                     <span class="key-points">10</span>
                 </button>
-                <button class="key" id="key-X" data-key=88>
+                <button class="key" id="key-X" data-key="X">
                     <span class="key-letter">X</span>
                     <span class="key-points">8</span>
                 </button>
-                <button class="key" id="key-C" data-key=67>
+                <button class="key" id="key-C" data-key="C">
                     <span class="key-letter">C</span>
                     <span class="key-points">3</span>
                 </button>
-                <button class="key" id="key-V" data-key=86>
+                <button class="key" id="key-V" data-key="V">
                     <span class="key-letter">V</span>
                     <span class="key-points">4</span>
                 </button>
-                <button class="key" id="key-B" data-key=66>
+                <button class="key" id="key-B" data-key="B">
                     <span class="key-letter">B</span>
                     <span class="key-points">3</span>
                 </button>
-                <button class="key" id="key-N" data-key=78>
+                <button class="key" id="key-N" data-key="N">
                     <span class="key-letter">N</span>
                     <span class="key-points">1</span>
                 </button>
-                <button class="key" id="key-M" data-key=77>
+                <button class="key" id="key-M" data-key="M">
                     <span class="key-letter">M</span>
                     <span class="key-points">3</span>
                 </button>
-                <button class="key" id="delete-key" data-key=8>⌫</button>
+                <button class="key" id="delete-key" data-key="Backspace">⌫</button>
             </div>
         </div>
     </div>

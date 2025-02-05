@@ -128,6 +128,7 @@ export class Board {
         });
         this.initDataStructures(); // reset the constraints and black letters
         this.manager.resetKeyboard();
+        this.manager.hideCopyButton();
     }
 
     handleKeyPressed(key) {
@@ -149,6 +150,10 @@ export class Board {
         }
         if (key === "Backspace") {
             this.handleBackspacePressed();
+            return;
+        }
+        if (key === "Clear") {
+            this.clearBoard();
             return;
         }
     }
@@ -303,7 +308,7 @@ export class Board {
             this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, letter);
         }
         
-        if (this.words[this.selectedLetter.w].isInvalid) {
+        if (!this.words[this.selectedLetter.w].isValid && this.words[this.selectedLetter.w].isAllLettersFilled()) {
             // if the letter addition caused a word to be invalid, do not move to the next letter
             return;
         }
@@ -338,7 +343,7 @@ export class Board {
             });
             this.constraintAssignments[this.selectedLetter.constraint - 1] = "";
         } else {
-            this.blackLetters[this.selectedLetter.currentLetter]--;
+            this.blackLetters[this.selectedLetter.value]--;
             this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, '');
         }
         // clear the red color from the word (if it was red) without resetting the letters
@@ -364,6 +369,15 @@ export class Board {
         //     }
         // }
         this.manager.updateKeyboard();
+        this.manager.hideCopyButton();
+    }
+
+    handleSolutionFound() {
+        this.celebrate();
+        this.manager.showCopyButton();
+        this.selectedLetter.setIsSelected(false);
+        this.selectedLetter = null;
+        this.manager.updateKeyboard();
     }
 
     check() {
@@ -382,10 +396,6 @@ export class Board {
         
         // a solution was found!
         this.handleSolutionFound();
-        this.manager.showCopyButton();
-        this.selectedLetter.setIsSelected(false);
-        this.selectedLetter = null;
-        this.manager.updateKeyboard();
         
         // else {
         //     if (num_invalid_words > 0) {
@@ -424,13 +434,14 @@ export class Board {
 
     getEmojiBoard() {
         const emojis = ['⬛️', '🟥', '🟧', '🟨', '🟦'];
-        boardString = "";
+        let boardString = "";
         this.grid.forEach((word) => {
             word.forEach((constraint) => {
                 boardString += emojis[constraint];
             });
             boardString += "\n";
         });
+        return boardString;
     }
 
     copyResults() {

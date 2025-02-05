@@ -400,6 +400,7 @@ h2 {
     right: 3px;
     font-size: 10px;
     color: black;
+    display: none;
     /* font-weight: bold; */
     /* display: none; */
 }
@@ -483,6 +484,7 @@ h2 {
     border-radius: 5px;
     background-color: white;
     box-shadow: 1px 1px purple;
+    display: none;
 }
 
 #copy-results-button {
@@ -542,7 +544,7 @@ h2 {
     background-color: white;
 } */
 
-#timer {
+#timer, #score {
     margin: 0px;
     border: 1px solid black;
     padding: 3px;

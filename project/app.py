@@ -42,6 +42,7 @@ def speed():
 @app.route('/score')
 def score():
     game_id = get_game_id()
+    game_id = "test"
     return render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
 
 # returns a game based on the query parameter game-id

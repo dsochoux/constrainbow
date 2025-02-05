@@ -54,7 +54,7 @@ export class Word {
     clear(resetLetters) {
         this.letters.forEach(letter => {
             if (resetLetters) {
-                letter.updateLetter('');
+                this.updateLetter(letter.l, '');
             }
             letter.tileElement.classList.remove('incorrect');
         });

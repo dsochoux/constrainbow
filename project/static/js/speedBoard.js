@@ -13,12 +13,12 @@ export class SpeedBoard extends Board {
         this.intervalId = null;
         this.timerElement = document.getElementById("timer");
         this.playPauseButton = document.getElementById("play-pause-button");
-        this.initBoard();
+        this.initBoard(manager);
     }
 
-    initBoard() {
+    initBoard(manager) {
         for (let w = 0; w < NUM_WORDS; w++) {
-            const word = new SpeedWord(w, this.grid[w], this.handleLetterClicked.bind(this))
+            const word = new SpeedWord(w, this.grid[w], this.handleLetterClicked.bind(this), manager)
             this.words.push(word);
             word.appendWordElement(this.element);
         }

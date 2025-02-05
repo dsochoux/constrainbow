@@ -3,8 +3,8 @@ import { SpeedLetter } from './speedLetter.js';
 import { WORD_LENGTH } from './helpers.js';
 
 export class SpeedWord extends Word {
-    constructor(w, word, clickHandler) {
-        super(w);
+    constructor(w, word, clickHandler, manager) {
+        super(w, manager);
         this.initWord(word, clickHandler);
     }
 

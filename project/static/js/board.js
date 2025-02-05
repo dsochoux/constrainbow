@@ -38,21 +38,17 @@ export class Board {
     }
 
     isEmpty() {
-        this.words.forEach(word => {
-            if (!word.isBlank()) {
-                return false;
-            }
+        const nonEmptyWordExists = this.words.some(word => {
+            return !word.isBlank();
         });
-        return true;
+        return !nonEmptyWordExists;
     }
 
     isFull() { 
-        this.words.forEach(word => {
-            if (!word.isAllLettersFilled()) {
-                return false;
-            }
+        const nonFullWordExists = this.words.some(word => {
+            return !word.isAllLettersFilled();
         });
-        return true;
+        return !nonFullWordExists;
     }
 
     isListeningForInput() {
@@ -80,11 +76,11 @@ export class Board {
 
     loadSavedGame() {
         // load the saved words into a 2d array of characters
-        let saved_words = [];
+        let savedWords = [];
         for (let w = 0; w < NUM_WORDS; w++) {
             let word = [];
             console.log("getting words from local storage...");
-            saved_words.push(word);
+            savedWords.push(word);
         }
         
         // refil data structures
@@ -93,7 +89,7 @@ export class Board {
                 // black letters
                 letters.forEach((letter) => {
                     const value = this.words[letter[0]].letters[letter[1]].currentLetter;
-                    if (value != "") {
+                    if (value != '') {
                         this.blackLetters[value] = getWithDefault(this.blackLetters, value, 0) + 1;
                     }
                 });
@@ -106,25 +102,12 @@ export class Board {
         });
 
         // update each letter with the saved letter
-        saved_words.forEach((word, w) => {
+        savedWords.forEach((word, w) => {
             word.forEach((letter, l) => {
-                this.words[w].letters[l].updateLetter(letter);
+                this.words[w].updateLetter(l, letter);
             });
         });
 
-
-        // turn a word red if it is invalid. Will move this to the Word class later
-        this.words.forEach(word => {
-            if (word.isAllLettersFilled()) {
-                let is_valid_word = this.manager.isValidWord(word.getWordString());
-                if (!is_valid_word) {
-                    word._turnRed(); // TODO: redo this
-                } else {
-                    word.clear(false);
-                }
-            }
-        });
-    
         this.game_has_started = true;
 
         // the SpeedBoard class will handle the timer, and the ScoreBoard class will handle the points
@@ -306,7 +289,7 @@ export class Board {
             }
             // update all of the tiles of the same constraint of the selected tile
             this.constraints[this.selectedLetter.constraint].forEach(position => {
-                this.words[position[0]].letters[position[1]].update(letter);
+                this.words[position[0]].updateLetter(position[1], letter);
             });
             // update the constraint assignment
             this.constraintAssignments[this.selectedLetter.constraint - 1] = letter;
@@ -317,7 +300,19 @@ export class Board {
             }
             this.blackLetters[this.selectedLetter.value]--;
             this.blackLetters[letter] = getWithDefault(this.blackLetters, letter, 0) + 1;
-            this.selectedLetter.update(letter);
+            this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, letter);
+        }
+        
+        if (this.words[this.selectedLetter.w].isInvalid) {
+            // if the letter addition caused a word to be invalid, do not move to the next letter
+            return;
+        }
+        if (this.isFull()) {
+            this.moveRight();
+        } else {
+            while (!this.selectedLetter.isBlank()) {
+                this.moveRight();
+            }
         }
         
         this.check();
@@ -329,7 +324,7 @@ export class Board {
             if (this.isEmpty()) {
                 this.moveLeft();
             } else {
-                while (this.selectedLetter.currentLetter === '' && !this.selectedLetter.isTopLeft()) {
+                while (this.selectedLetter.isBlank() && !this.selectedLetter.isTopLeft()) {
                     this.moveLeft();
                 }
             }
@@ -339,12 +334,12 @@ export class Board {
         // a non blank letter was deleted
         if (this.selectedLetter.isConstrained()) {
             this.constraints[this.selectedLetter.constraint].forEach(position => {
-                this.words[position[0]].letters[position[1]].update('');
+                this.words[position[0]].updateLetter(position[1], '');
             });
             this.constraintAssignments[this.selectedLetter.constraint - 1] = "";
         } else {
             this.blackLetters[this.selectedLetter.currentLetter]--;
-            this.selectedLetter.update('');
+            this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, '');
         }
         // clear the red color from the word (if it was red) without resetting the letters
         this.words[this.selectedLetter.w].clear(false);
@@ -376,30 +371,12 @@ export class Board {
 
         let isSolutionFound = true;
         this.words.forEach((word) => {
-            if (!word.isAllLettersFilled()) {
-                isSolutionFound = false;
-                return;
-            }
-            if (!this.manager.isValidWord(word.getWordString())) {
+            if (!word.isValid) {
                 numInvalidWords++;
-                word.turnRed(this.selectedLetter.w, this.grid[this.selectedLetter.w][this.selectedLetter.l]);
-            } else {
-                word.clear(false);
+                isSolutionFound = false;
             }
         });
-
         if (!isSolutionFound) {
-            if (this.words[this.selectedLetter.w].isInvalid) {
-                // if the letter addition caused a word to be invalid, do not move to the next letter
-                return;
-            }
-            if (this.isFull()) {
-                this.moveRight();
-            } else {
-                while (this.selectedLetter.current_letter != '') {
-                    this.moveRight();
-                }
-            }
             return;
         }
         
@@ -408,7 +385,7 @@ export class Board {
         this.manager.showCopyButton();
         this.selectedLetter.setIsSelected(false);
         this.selectedLetter = null;
-        this.updateKeyboard();
+        this.manager.updateKeyboard();
         
         // else {
         //     if (num_invalid_words > 0) {
@@ -434,13 +411,13 @@ export class Board {
         // loop through the letters and add celebrate class
         await delayedForEach(this.words, (word) => {
             delayedForEach(word.letters, (letter) => {
-                letter.element.classList.add('celebrate');
+                letter.celebrate()
             }, delayTime);
         }, delayTime);
         // loop through the letters and remove celebrate class
         await delayedForEach(this.words, (word) => {
             delayedForEach(word.letters, (letter) => {
-                letter.element.classList.remove('celebrate');
+                letter.stopCelebrating()
             }, delayTime);
         }, delayTime);
     }

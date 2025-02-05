@@ -60,4 +60,11 @@ export class Letter {
     isBlank() {
         return this.value === '';
     }
+
+    celebrate() {
+        this.tileElement.classList.add('celebrate');
+    }
+    stopCelebrating() {
+        this.tileElement.classList.remove('celebrate');
+    }
 }

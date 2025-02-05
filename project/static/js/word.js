@@ -3,10 +3,12 @@ import { WORD_LENGTH } from './helpers.js';
 
 export class Word {
     // w: index of the word
-    constructor(w) {
+    constructor(w, manager) {
         this.index = w;
+        this.manager = manager;
         this.letters = [];
-        this.isInvalid = false; // true if the word is not full or is a valid word
+        this.numFilledLetters = 0;
+        this.isValid = false;
     }
 
     appendWordElement(container) {
@@ -32,46 +34,54 @@ export class Word {
     }
 
     getWordString() {
-        let word = "";
+        let word = '';
         this.letters.forEach(letter => {
-            if (letter.current_letter == "") {
-                word = word + "-";
+            if (letter.value == '') {
+                word = word + '-';
                 return;
             }
-            word = word + letter.current_letter;
+            word = word + letter.value;
         });
         return word.toLowerCase();
     }
 
-    turnRed(w, constraint_symbol) {
-        if (w != this.index) {
-            // the only time we don't want to flash would be if the word is not the one that just got completed
-            let word_contrains_constraint_symbol = false;
-            this.letters.forEach(letter => {
-                if (constraint_symbol != "-" && letter.constraint_symbol == constraint_symbol) {
-                    word_contrains_constraint_symbol = true;
-                }
-            });
-            if (!word_contrains_constraint_symbol) {
-                return;
-            }
-        }
-        this._turnRed();
-    }
-    _turnRed() {
+    turnRed() {
         this.letters.forEach(letter => {
             letter.tileElement.classList.add('incorrect');
         });
-        this.isInvalid = true;
     }
     
     clear(resetLetters) {
         this.letters.forEach(letter => {
             if (resetLetters) {
-                letter.updateLetter("");
+                letter.updateLetter('');
             }
             letter.tileElement.classList.remove('incorrect');
         });
-        this.isInvalid = false;
+    }
+
+    // the board will update a letter via this function, so that the word
+    // can keep track of its own state
+    updateLetter(l, letter){
+        // l: index of the letter
+        if (letter !== '' && this.letters[l].isBlank()) {
+            this.numFilledLetters++;
+        } else if (letter === '' && !this.letters[l].isBlank()) {
+            this.numFilledLetters--;   
+        }
+        this.letters[l].update(letter);
+        if (this.numFilledLetters === WORD_LENGTH) {
+            // this letter is completing the word, must check if it is a valid word
+            if (this.manager.isValidWord(this.getWordString())) {
+                this.isValid = true;
+                this.clear(false);
+            } else {
+                this.isValid = false;
+                this.turnRed();
+            }
+        } else {
+            this.isValid = false;
+            this.clear(false);
+        }
     }
 }

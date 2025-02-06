@@ -19,6 +19,7 @@ generated_game_folder = './generated_games'
 files = [f for f in os.listdir(generated_game_folder)]
 
 def get_game_id():
+    return "doot"
     return datetime.now(eastern).strftime("%m%d%Y")
 
 def get_date_string(game_id):
@@ -27,23 +28,26 @@ def get_date_string(game_id):
 
 @app.route('/')
 def index():
-    # a game-id can be provided as a query parameter (this is a secret feature)
-    # people will hit the normal endpoint
-    # if no game-id is provided, get the game id for today's game and pass it to the index.html
-    # then, when the user hits the game endpoint, it will get the game with that game id
-    return render_template('home.html', date=get_date_string(get_game_id()))
+    game_mode = request.cookies.get('game_mode', 'speed')
+    return redirect(f'/{game_mode}')
 
 @app.route('/speed')
 def speed():
     game_id = get_game_id()
-    game_id = "doot"
-    return render_template('game.html', game_id=game_id, game_mode="speed", date=get_date_string(game_id))
+    response = make_response(
+        render_template('game.html', game_id=game_id, game_mode="speed", date=get_date_string(game_id))
+    )
+    response.set_cookie('game_mode', 'speed', max_age=60*60*24*365)
+    return response
 
 @app.route('/score')
 def score():
     game_id = get_game_id()
-    game_id = "doot"
-    return render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
+    response = make_response(
+        render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
+    )
+    response.set_cookie('game_mode', 'score', max_age=60*60*24*365)
+    return response
 
 # returns a game based on the query parameter game-id
 # if no game-id is provided, redirect to the index, which will give a random game

@@ -7,7 +7,6 @@ export class SpeedBoard extends Board {
     constructor(manager, data) {
         super(manager, data);
         this.isPaused = true;
-        this.hasStarted = false;
         this.isFirstSolutionFound = false; // timer runs while this is false
         this.elapsedSeconds = 0;
         this.intervalId = null;
@@ -29,6 +28,45 @@ export class SpeedBoard extends Board {
             this.handlePlayPauseClicked();
         });
         super.initBoard();
+        // look into local storage for a saved game
+        if (JSON.parse(localStorage.getItem('speedGameId')) == this.manager.gameId) {
+            this.loadSavedGame();
+        } else {
+            this.resetLocalStorage();
+            localStorage.setItem('speedGameId', JSON.stringify(this.manager.gameId));
+        }
+    }
+
+    loadSavedGame() {
+        super.loadSavedGame('speed');
+        // load timer and other things
+        this.elapsedSeconds = JSON.parse(localStorage.getItem('elapsedSeconds')) || 0;
+        this.updateTimerDisplay();
+        this.isFirstSolutionFound = JSON.parse(localStorage.getItem('isFirstSolutionFound')) || false;
+        if (this.isFirstSolutionFound) {
+            this.playPauseButton.style.display = 'none';
+            this.isPaused = false;
+        } else {
+            this.playPauseButton.textContent = "RESUME";
+            this.playPauseButton.style.display = 'inline-block';
+        }
+        if (this.isInSolvedState()) {
+            this.resumeLetters();
+            this.manager.resumeKeyboard();
+        }
+    }
+
+    resetLocalStorage() {
+        super.resetLocalStorage('speed');
+        localStorage.removeItem('elapsedSeconds');
+        localStorage.removeItem('isFirstSolutionFound');
+    }
+
+    handleLetterClicked(w, l) {
+        super.handleLetterClicked(w, l);
+        if (this.isPaused) {
+            this.resume();
+        }
     }
 
     isListeningForInput() {
@@ -43,7 +81,7 @@ export class SpeedBoard extends Board {
         this.intervalId = setInterval(() => {
             this.elapsedSeconds++;
             // total_seconds cookie
-            console.log("updating elapsed seconds in local storage");
+            localStorage.setItem(`elapsedSeconds`, JSON.stringify(this.elapsedSeconds));
             this.updateTimerDisplay();
         }, 1000);
     }
@@ -67,6 +105,13 @@ export class SpeedBoard extends Board {
         });
         this.manager.pauseKeyboard();
     }
+    resumeLetters() {
+        this.words.forEach((word) => {
+            word.letters.forEach((letter) => {
+                letter.resume();
+            });
+        });
+    }
     resume() {
         if (!this.isPaused || this.isFirstSolutionFound) {
             return;
@@ -74,12 +119,7 @@ export class SpeedBoard extends Board {
         this.startTimer();
         this.playPauseButton.textContent = "PAUSE";
         this.isPaused = false;
-        // remove the paused class from all of the letters
-        this.words.forEach((word) => {
-            word.letters.forEach((letter) => {
-                letter.resume();
-            });
-        });
+        this.resumeLetters();
         this.manager.resumeKeyboard();
     }
 
@@ -101,6 +141,7 @@ export class SpeedBoard extends Board {
 
     handleSolutionFound() {
         this.isFirstSolutionFound = true;
+        localStorage.setItem("isFirstSolutionFound", JSON.stringify(true));
         this.playPauseButton.style.display = 'none';
         this.pauseTimer();
         super.handleSolutionFound();
@@ -108,6 +149,6 @@ export class SpeedBoard extends Board {
 
 
     getMetric() {
-        return formatTime(this.elapsedSeconds);
+        return `⏱️ ${formatTime(this.elapsedSeconds)}`;
     }
 }

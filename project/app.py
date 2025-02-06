@@ -31,18 +31,18 @@ def index():
     # people will hit the normal endpoint
     # if no game-id is provided, get the game id for today's game and pass it to the index.html
     # then, when the user hits the game endpoint, it will get the game with that game id
-    return render_template('home.html')
+    return render_template('home.html', date=get_date_string(get_game_id()))
 
 @app.route('/speed')
 def speed():
     game_id = get_game_id()
-    game_id = "test"
+    game_id = "doot"
     return render_template('game.html', game_id=game_id, game_mode="speed", date=get_date_string(game_id))
 
 @app.route('/score')
 def score():
     game_id = get_game_id()
-    game_id = "test"
+    game_id = "doot"
     return render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
 
 # returns a game based on the query parameter game-id

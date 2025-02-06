@@ -15,6 +15,10 @@ export class ScoreWord extends Word {
         }
     }
 
+    updateLetter(l, letter) {
+        super.updateLetter(l, letter, 'score');
+    }
+
     getPointValue() {
         let points = 0;
         this.letters.forEach(letter => {

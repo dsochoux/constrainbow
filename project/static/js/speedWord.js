@@ -15,6 +15,10 @@ export class SpeedWord extends Word {
         }
     }
 
+    updateLetter(l, letter) {
+        super.updateLetter(l, letter, 'speed');
+    }
+
     pause() {
         this.letters.forEach((letter) => {
             letter.pause();

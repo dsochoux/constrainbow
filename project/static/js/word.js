@@ -45,6 +45,12 @@ export class Word {
         return word.toLowerCase();
     }
 
+    getWordList() {
+        return this.letters.map(letter => {
+            return letter.value;
+        });
+    }
+
     turnRed() {
         this.letters.forEach(letter => {
             letter.tileElement.classList.add('incorrect');
@@ -62,7 +68,7 @@ export class Word {
 
     // the board will update a letter via this function, so that the word
     // can keep track of its own state
-    updateLetter(l, letter){
+    updateLetter(l, letter, prefix){
         // l: index of the letter
         if (letter !== '' && this.letters[l].isBlank()) {
             this.numFilledLetters++;
@@ -83,5 +89,7 @@ export class Word {
             this.isValid = false;
             this.clear(false);
         }
+        // write the updated word to local storage
+        localStorage.setItem(`${prefix}Word${this.index}`, JSON.stringify(this.getWordList()));
     }
 }

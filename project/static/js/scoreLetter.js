@@ -19,9 +19,9 @@ export class ScoreLetter extends Letter {
 
     update(letter) {
         // update the points element
-        this.pointValue = LETTERS_TO_POINTS[letter];;
+        this.pointValue = LETTERS_TO_POINTS[letter];
         if (this.pointValue == 0) {
-            this.pointsElement.textContent = "";
+            this.pointsElement.textContent = '';
         } else {
             this.pointsElement.textContent = this.pointValue.toString();
         }

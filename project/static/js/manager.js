@@ -25,7 +25,7 @@ export class Manager {
         this.num_possible_points = data['num_possible_points'];
         
         // update some DOM elements after receiving the data
-        let description = `Today's puzzle has ${this.num_possible_solutions.toLocaleString()} unique solutions`;
+        let description = `Today's ${this.gameMode} puzzle has ${this.num_possible_solutions.toLocaleString()} unique solutions`;
         if (this.gameMode === 'score') {
             document.querySelectorAll('.key-points').forEach((element) => {
                 element.style.display = 'block';
@@ -152,7 +152,7 @@ export class Manager {
         // for each of these letters, except the current letter if there if one, get the key element from the dom
         // and add the unavailable class to the key
         unavailableLetters.forEach(letter => {
-            if (this.board.selectedLetter.current_letter != letter) {
+            if (this.board.selectedLetter.value != letter) {
                 document.getElementById(`key-${letter}`).classList.add('unavailable');
             }
         });

@@ -10,8 +10,12 @@ export class ScoreBoard extends Board {
         this.initBoard(manager);
     }
 
+    getPointsFraction() {
+        return `${this.score.toLocaleString()}/${this.numPossiblePoints.toLocaleString()}`;
+    }
+
     updateScoreDisplay() {
-        this.scoreElement.textContent = `${this.score.toLocaleString()}/${this.numPossiblePoints.toLocaleString()} POINTS`;
+        this.scoreElement.textContent = `${this.getPointsFraction()} POSSIBLE POINTS`;
     }
 
     initBoard(manager) {
@@ -24,15 +28,34 @@ export class ScoreBoard extends Board {
         this.updateScoreDisplay();
         this.manager.resumeKeyboard();
         super.initBoard();
+        if (JSON.parse(localStorage.getItem('scoreGameId')) == this.manager.gameId) {
+            this.loadSavedGame();
+        } else {
+            this.resetLocalStorage();
+            localStorage.setItem('scoreGameId', JSON.stringify(this.manager.gameId));
+        }
     }
-
-    handleLetterKeyPressed(letter) {
-        super.handleLetterKeyPressed(letter);
+    
+    calculateScore() {
         this.score = 0;
         this.words.forEach(word => {
             this.score += word.getPointValue();
         });
         this.updateScoreDisplay();
+    }
+
+    loadSavedGame() {
+        super.loadSavedGame('score');
+        this.calculateScore();
+    }
+
+    resetLocalStorage() {
+        super.resetLocalStorage('score');
+    }
+
+    handleLetterKeyPressed(letter) {
+        super.handleLetterKeyPressed(letter);
+        this.calculateScore();
     }
 
     handleBackspacePressed() {
@@ -48,5 +71,9 @@ export class ScoreBoard extends Board {
         super.clearBoard();
         this.score = 0;
         this.updateScoreDisplay();
+    }
+
+    getMetric() {
+        return `🏆 ${this.getPointsFraction()}`;
     }
 }

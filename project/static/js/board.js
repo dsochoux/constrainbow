@@ -64,31 +64,15 @@ export class Board {
                 this.words[letter[0]].letters[letter[1]].tileElement.classList.add(`c${constraint}`)
             });
         });
-
-        // look into local storage for a saved game
-        if (false) {
-            this.loadSavedGame();
-        } else {
-            console.log("resetting local storage...");
-        }
     }
 
-
-    loadSavedGame() {
-        // load the saved words into a 2d array of characters
-        let savedWords = [];
-        for (let w = 0; w < NUM_WORDS; w++) {
-            let word = [];
-            console.log("getting words from local storage...");
-            savedWords.push(word);
-        }
-        
+    syncDataStructures() {
         // refil data structures
-        this.constraints.forEach((letters, constraint) => {
+        this.constraints.forEach((positions, constraint) => {
             if (constraint === 0) {
                 // black letters
-                letters.forEach((letter) => {
-                    const value = this.words[letter[0]].letters[letter[1]].currentLetter;
+                positions.forEach((position) => {
+                    const value = this.words[position[0]].letters[position[1]].value;
                     if (value != '') {
                         this.blackLetters[value] = getWithDefault(this.blackLetters, value, 0) + 1;
                     }
@@ -96,21 +80,31 @@ export class Board {
             } else {
                 // constraints
                 // only need one occurrence of the constraint letter to know its value
-                const value = this.words[letters[0][0]][letters[0][1]].currentLetter;
+                const value = this.words[positions[0][0]].letters[positions[0][1]].value;
                 this.constraintAssignments[constraint - 1] = value; // constraint 1 is at index 0 of constraintAssignments...
             }
         });
+    }
 
-        // update each letter with the saved letter
-        savedWords.forEach((word, w) => {
+
+    loadSavedGame(prefix) {
+        for (let w = 0; w < NUM_WORDS; w++) {
+            const word = JSON.parse(localStorage.getItem(`${prefix}Word${w}`)) || [];
             word.forEach((letter, l) => {
                 this.words[w].updateLetter(l, letter);
             });
-        });
-
-        this.game_has_started = true;
-
+        }
+        this.syncDataStructures();
+        if (this.isInSolvedState()) {
+            this.manager.showCopyButton();
+        }
         // the SpeedBoard class will handle the timer, and the ScoreBoard class will handle the points
+    }
+
+    resetLocalStorage(prefix) {
+        for (let w = 0; w < NUM_WORDS; w++) {
+            localStorage.removeItem(`${prefix}Word${w}`);
+        }
     }
 
     deselectAll() {
@@ -380,6 +374,12 @@ export class Board {
         this.manager.updateKeyboard();
     }
 
+    isInSolvedState() {
+        return this.words.every(word => {
+            return word.isValid;
+        });
+    }
+
     check() {
         let numInvalidWords = 0;
 
@@ -483,5 +483,9 @@ export class Board {
             }
         });
         return invalid_words;
+    }
+
+    pause() {
+        return;
     }
 }

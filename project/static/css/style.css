@@ -26,6 +26,13 @@ button {
     cursor: pointer; /* Ensures it looks clickable */
     touch-action: manipulation;
 }
+.centered-div {
+    position: fixed; /* Fixed positioning makes it stay in place even when scrolling */
+    top: 50%; /* Position it in the center vertically */
+    left: 50%; /* Position it in the center horizontally */
+    transform: translate(-50%, -50%); /* Offset by half of its width and height to center it */
+    text-align: center; /* Optional: ensures it stays on top of other elements */
+}
 
 #container {
     display: flex;
@@ -113,6 +120,58 @@ h2 {
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     /* font-weight: bold; */
+}
+
+.game-mode-containter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    max-width: 300px;
+    width: 100%;
+}
+
+.game-mode-letter-container {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    /* border: 2px solid black; */
+    border-radius: 10px;
+    max-width: 100%;
+    
+}
+
+.game-mode-letter {
+    position: relative; /* Ensures child elements position relative to the tile */
+    font-size: 30px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--letter-border-thickness) solid black;
+    box-shadow: 2px 2px black;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    box-sizing: border-box; /* Ensure padding and border are included in the tile size */
+    pointer-events: none;
+}
+
+.m1 {
+    border: var(--letter-border-thickness) solid var(--c1);
+    box-shadow: 2px 2px var(--c1);
+}
+.m2 {
+    border: var(--letter-border-thickness) solid var(--c2);
+    box-shadow: 2px 2px var(--c2);
+}
+.m3 {
+    border: var(--letter-border-thickness) solid green;
+    box-shadow: 2px 2px green;
 }
 
 .letter-text {

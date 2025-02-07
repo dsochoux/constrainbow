@@ -35,7 +35,15 @@ def index():
 def speed():
     game_id = get_game_id()
     response = make_response(
-        render_template('game.html', game_id=game_id, game_mode="speed", date=get_date_string(game_id))
+        render_template(
+            'game.html',
+            game_id=game_id,
+            game_mode="speed",
+            mode_emoji="⏱️",
+            other_mode_emoji="🎯",
+            other_mode_endpoint="/score",
+            date=get_date_string(game_id)
+        )
     )
     response.set_cookie('game_mode', 'speed', max_age=60*60*24*365)
     return response
@@ -44,7 +52,15 @@ def speed():
 def score():
     game_id = get_game_id()
     response = make_response(
-        render_template('game.html', game_id=game_id, game_mode="score", date=get_date_string(game_id))
+        render_template(
+            'game.html',
+            game_id=game_id,
+            game_mode="score",
+            mode_emoji="🎯",
+            other_mode_emoji = "⏱️",
+            other_mode_endpoint = "/speed",
+            date=get_date_string(game_id)
+        )
     )
     response.set_cookie('game_mode', 'score', max_age=60*60*24*365)
     return response
@@ -85,16 +101,26 @@ def report():
             f.write(word + '\n')    
     return '', 200 # will never actually be used
 
-@app.route('/clear_all_cookies', methods=['GET'])
-def clear_all_cookies():
-    # Create a response object
-    response = make_response(redirect('/'))
-    
-    # Iterate over all cookies and clear them
-    for cookie in request.cookies:
-        response.set_cookie(cookie, '', expires=0)
-    
-    return response
+@app.route('log-solution', methods=['POST'])
+def log_solution():
+    data = request.get_json()
+    game_id = data['game_id'] # used in the file name
+    time = datetime.now(eastern).strftime("%m/%d/%Y %H:%M:%S")
+    mode = data['mode']
+    metric = data['metric']
+    words = data['words']
+    # add words to csv file
+    file_name = f'./logs/{mode}/{game_id}.csv'
+    # check if file exists
+    if not os.path.exists(file_name):
+        with open(file_name, 'w') as f:
+            f.write('time,metric,word0,word1,word2,word3\n')
+    with open(file_name, 'a') as f:
+        f.write(f'{time},{metric},{",".join(words)}\n')
+    return '', 200
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

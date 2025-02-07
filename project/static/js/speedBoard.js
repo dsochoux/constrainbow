@@ -69,7 +69,11 @@ export class SpeedBoard extends Board {
         }
     }
 
-    isListeningForInput() {
+    isListeningForInput(key) {
+        // does not matter if a letter is selected, clearing can always be done when not paused
+        if (key === "Clear") {
+            return !this.isPaused;
+        }
         return !this.isPaused && super.isListeningForInput();
     }
 

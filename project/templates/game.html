@@ -90,7 +90,6 @@
             </div>
             <p>© 2025 Daniel Sochoux. All rights reserved.</p>
             <p>For feedback or support, contact <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
-            <p>Seeing weird things? <a href="/clear_all_cookies">Clear all cookies</a></p>
         </div>
     </div>
     <div id="container">
@@ -98,9 +97,11 @@
             <h2><span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span>
             </h2>
             <h2 id="date">{{ date }}</h2>
-            <button id="how-to-play-button">?</button>
+            <!-- <button id="mode-button">🎯</button> -->
+            <a id="mode-button" href="{{ other_mode_endpoint }}">{{ other_mode_emoji }}</a>
+            <button id="how-to-play-button">❓</button>
         </div>
-        <p class="description" id="description">Today's puzzle has <span id="num-possible-solutions"></span> unique solutions</p>
+        <p class="description" id="description">Today's {{ mode_emoji }} puzzle has <span id="num-possible-solutions"></span> unique solutions</p>
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
             <p id="timer">00:00</p>
@@ -193,7 +194,7 @@
             </div>
             <div class="keyboard-row" id="bottom-keyboard-row">
                 <!-- <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button> -->
-                <button class="key" id="refresh-key" data-key="Clear">CLEAR BOARD</button>
+                <button class="key" id="refresh-key" data-key="Clear">↺</button>
                 <button class="key" id="key-Z" data-key="Z">
                     <span class="key-letter">Z</span>
                     <span class="key-points">10</span>

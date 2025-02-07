@@ -262,13 +262,9 @@ export class Board {
                 conflictingLetters.push(letter);
             }
         });
-
-        if (conflictingLetters.length === 0) {
-            return false;
-        }
+        
         this.flashLetters(conflictingLetters);
-        return true;
-
+        return conflictingLetters.length > 0;
     }
     
 
@@ -485,6 +481,9 @@ export class Board {
         return invalid_words;
     }
 
+    // pause is called in the callback for showing the overlay
+    // ScoreBoard does not have a pause method, so it inherits the empty method from Board
+    // and SpeedBoard overrides the pause method
     pause() {
         return;
     }

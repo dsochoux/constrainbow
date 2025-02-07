@@ -25,13 +25,12 @@ export class Manager {
         this.num_possible_points = data['num_possible_points'];
         
         // update some DOM elements after receiving the data
-        let description = `Today's ${this.gameMode} puzzle has ${this.num_possible_solutions.toLocaleString()} unique solutions`;
         if (this.gameMode === 'score') {
             document.querySelectorAll('.key-points').forEach((element) => {
                 element.style.display = 'block';
             });
         }
-        document.getElementById('description').textContent = description;
+        document.getElementById('num-possible-solutions').textContent = this.num_possible_solutions.toLocaleString();
         document.getElementById('loading-text').style.display = 'none';
         
         if(this.gameMode === 'speed') {
@@ -46,7 +45,7 @@ export class Manager {
         document.addEventListener('keydown', (e) => {
             // ignore keystrokes if the user is holding down the meta key, control key, 
             // or if the board is not listening for input
-            if (e.metaKey || e.ctrlKey || !this.board.isListeningForInput()) {
+            if (e.metaKey || e.ctrlKey || !this.board.isListeningForInput(e.key)) {
                 return;
             }
             this.board.handleKeyPressed(e.key);
@@ -201,3 +200,10 @@ export class Manager {
     //         }, 1000);
     //     });
     // }
+
+// TODO
+// fix keyboard on small screen bug
+// add report missing word back?
+// add endpoint that gets hit with data when somebody finds a solution (for my data collection)
+// figure out game file organization
+// get a favicon

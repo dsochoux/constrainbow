@@ -35,6 +35,13 @@ export class ScoreBoard extends Board {
             localStorage.setItem('scoreGameId', JSON.stringify(this.manager.gameId));
         }
     }
+
+    isListeningForInput(key) {
+        if (key == "Clear") {
+            return true;
+        }
+        return super.isListeningForInput();
+    }
     
     calculateScore() {
         this.score = 0;

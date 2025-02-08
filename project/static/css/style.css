@@ -56,7 +56,7 @@ h1 {
 }
 h2 {
     margin: 0; /* Remove default margin */
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     /* background-color: white;
     padding: 5px;
     border-radius: 5px; */
@@ -364,8 +364,7 @@ h2 {
     max-width: 90%;
     text-align: left;
     position: relative;
-
-    max-height: 80vh; /* Limit height to 80% of viewport */
+    max-height: 70vh; /* Limit height to 80% of viewport */
     overflow-y: auto; /* Enable scrolling if content overflows */
 }
 
@@ -565,7 +564,7 @@ h2 {
 } */
 
 @media screen and (max-height: 645px) {
-    /* h1 {
+    h2 {
         font-size: 1.3rem;
     }
     #board {
@@ -575,14 +574,17 @@ h2 {
     .letter {
         width: 60px;
         height: 60px;
-    } */
+    }
     #container {
         gap: 10px;
     }
-    .key {
+    /* .key {
         padding-top: 5px;
         padding-bottom: 5px;
-    }
+    } */
+     .key {
+        height: 40px;
+     }
     /* .description {
         margin-bottom: 5px;
     } */

@@ -156,4 +156,20 @@ export class SpeedBoard extends Board {
         }
         return `${formatTime(this.elapsedSeconds)}`;
     }
+
+    hideItems() {
+        this.timerElement.style.display = 'none';
+        this.playPauseButton.style.display = 'none';
+        this.copyButton.style.display = 'none';
+    }
+
+    showItems() {
+        // timer, play/pause button, copy results button, report missing words button
+        this.timerElement.style.display = 'inline-block';
+        if (!this.isSolutionFound) {
+            this.playPauseButton.style.display = 'inline-block';
+        } else if (this.isInSolvedState()) {
+            this.copyButton.style.display = 'inline-block';
+        }
+    }
 }

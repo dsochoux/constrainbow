@@ -92,4 +92,17 @@ export class ScoreBoard extends Board {
         }
         return `${this.getPointsFraction()}`;
     }
+
+    hideItems() {
+        this.scoreElement.style.display = 'none';
+        this.copyButton.style.display = 'none';
+    }
+
+    showItems() {
+        // timer, play/pause button, copy results button, report missing words button
+        this.scoreElement.style.display = 'inline-block';
+        if (this.isInSolvedState()) {
+            this.copyButton.style.display = 'inline-block';
+        }
+    }
 }

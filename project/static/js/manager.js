@@ -81,7 +81,7 @@ export class Manager {
 
         // report missing word
         document.getElementById('report-missing-word-button').addEventListener('click', () => {
-            this.board.reportMissingWords();
+            this.reportMissingWords();
         });
 
         // copy results button
@@ -102,6 +102,15 @@ export class Manager {
     }
     hideCopyButton() {
         this.copyButton.style.display = "none";
+    }
+
+    showReportMissingWordButton(numInvalidWords) {
+        const text = numInvalidWords > 1 ? "REPORT MISSING WORDS" : "REPORT MISSING WORD";
+        this.reportMissingWordButton.textContent = text;
+        this.reportMissingWordButton.style.display = 'inline-block';
+    }
+    hideReportMissingWordButton() {
+        this.reportMissingWordButton.style.display = 'none';
     }
 
     resetKeyboard() {
@@ -182,6 +191,33 @@ export class Manager {
             })
         });
     }
+
+    reportMissingWords() {
+        let incorrectWords = [];
+        this.board.words.forEach(word => {
+            if (word.isAllLettersFilled() && !word.isValidWord) {
+                // a full word not in the invalid state is one we should report
+                incorrectWords.push(word.getWordString());
+            }
+        });
+        this.reportMissingWordButton.textContent = "REPORTING...";
+        fetch('/report-missing-word', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'words': incorrectWords
+            })
+        }).then(() => {
+            this.reportMissingWordButton.textContent = "REPORTED!";
+            setTimeout(() => {
+                this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
+                this.hideReportMissingWordButton();
+                this.board.showItems();
+            }, 1000);
+        })
+    }
 }
 
 // this function will be called when the user clicks the report missing word button
@@ -215,8 +251,4 @@ export class Manager {
     // }
 
 // TODO
-// fix keyboard on small screen bug
-// add report missing word back?
-// add endpoint that gets hit with data when somebody finds a solution (for my data collection)
-// figure out game file organization
 // get a favicon

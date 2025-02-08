@@ -127,7 +127,8 @@ export class Board {
         });
         this.initDataStructures(); // reset the constraints and black letters
         this.manager.resetKeyboard();
-        this.manager.hideCopyButton();
+        this.manager.hideReportMissingWordButton();
+        this.showItems();
     }
 
     handleKeyPressed(key) {
@@ -303,15 +304,14 @@ export class Board {
             this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, letter);
         }
         
-        if (!this.words[this.selectedLetter.w].isValid && this.words[this.selectedLetter.w].isAllLettersFilled()) {
+        if (this.words[this.selectedLetter.w].isValid || !this.words[this.selectedLetter.w].isAllLettersFilled()) {
             // if the letter addition caused a word to be invalid, do not move to the next letter
-            return;
-        }
-        if (this.isFull()) {
-            this.moveRight();
-        } else {
-            while (!this.selectedLetter.isBlank()) {
+            if (this.isFull()) {
                 this.moveRight();
+            } else {
+                while (!this.selectedLetter.isBlank()) {
+                    this.moveRight();
+                }
             }
         }
         
@@ -319,6 +319,7 @@ export class Board {
     }
 
     handleBackspacePressed() {
+
         // backspace only produces motion if the current letter is blank
         if (this.selectedLetter.isBlank()) {
             if (this.isEmpty()) {
@@ -343,6 +344,14 @@ export class Board {
         }
         // clear the red color from the word (if it was red) without resetting the letters
         this.words[this.selectedLetter.w].clear(false);
+        
+        const numInvalidWords = this.getNumInvalidWords()
+        if (numInvalidWords > 0) {
+            this.manager.showReportMissingWordButton(numInvalidWords);
+        } else {
+            this.manager.hideReportMissingWordButton();
+            this.showItems();
+        }
         
         // // update the report missing word button
         // let numInvalid = 0;
@@ -386,40 +395,31 @@ export class Board {
         });
     }
 
-    check() {
+    getNumInvalidWords() {
         let numInvalidWords = 0;
-
-        let isSolutionFound = true;
         this.words.forEach((word) => {
-            if (!word.isValid) {
+            if (word.isAllLettersFilled() && !word.isValid) {
                 numInvalidWords++;
-                isSolutionFound = false;
             }
         });
-        if (!isSolutionFound) {
+        return numInvalidWords;
+    }
+
+    check() {
+        const numInvalidWords = this.getNumInvalidWords();
+        if (numInvalidWords > 0) {
+            // show report missing words button
+            this.hideItems();
+            this.manager.showReportMissingWordButton(numInvalidWords);
+            return
+        }
+        this.manager.hideReportMissingWordButton();
+        this.showItems();
+        if (!this.isInSolvedState()) {
             return;
         }
-        
         // a solution was found!
         this.handleSolutionFound();
-        
-        // else {
-        //     if (num_invalid_words > 0) {
-        //         if (num_invalid_words == 1) {
-        //             this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
-                    
-        //         } else {
-        //             this.reportMissingWordButton.textContent = "REPORT MISSING WORDS";
-        //         }
-        //         this.reportMissingWordButton.style.display = "inline-block";
-        //         this.copyButton.style.display = "none";
-        //     } else {
-        //         this.reportMissingWordButton.style.display = "none";
-        //         if (this.first_solution_found) {
-        //             this.copyButton.style.display = "inline-block";
-        //         }
-        //     }
-        // }
     }
 
     async celebrate() {

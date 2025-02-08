@@ -75,8 +75,7 @@ def game():
     selected_game_file = game_id + '.json'
     
     # convert the json file to a dictionary
-    if game_mode == "speed":
-        generated_game_folder = f"./games/{game_mode}/"
+    generated_game_folder = f"./games/{game_mode}/"
     file_path = os.path.join(generated_game_folder, selected_game_file)
     with open(file_path, 'r') as f:
         game_object = json.load(f)

@@ -314,8 +314,6 @@ export class Board {
                 }
             }
         }
-        
-        this.check();
     }
 
     handleBackspacePressed() {

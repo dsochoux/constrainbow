@@ -126,6 +126,11 @@ export class SpeedBoard extends Board {
         this.manager.resumeKeyboard();
     }
 
+    handleLetterKeyPressed(letter) {
+        super.handleLetterKeyPressed(letter);
+        this.check();
+    }
+
     handlePlayPauseClicked() {
         if (this.isSolutionFound) {
             return;

@@ -52,6 +52,7 @@ export class ScoreBoard extends Board {
     }
 
     loadSavedGame() {
+        this.isSolutionFound = JSON.parse(localStorage.getItem('scoreIsSolutionFound')) || false;
         super.loadSavedGame('score');
         this.calculateScore();
     }
@@ -64,6 +65,7 @@ export class ScoreBoard extends Board {
     handleLetterKeyPressed(letter) {
         super.handleLetterKeyPressed(letter);
         this.calculateScore();
+        this.check();
     }
 
     handleBackspacePressed() {
@@ -88,7 +90,7 @@ export class ScoreBoard extends Board {
 
     getMetric(doIncludeEmoji) {
         if (doIncludeEmoji) {
-            return `🏆 ${this.getPointsFraction()}`;
+            return `🎯 ${this.getPointsFraction()}`;
         }
         return `${this.getPointsFraction()}`;
     }

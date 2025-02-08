@@ -26,6 +26,9 @@ def get_date_string(game_id):
 
 @app.route('/')
 def index():
+    # going to / will redirect the user to either speed or score mode
+    # this is determined by what they were last playing, which is stored in the cookie
+    # if the cookie is not set, default to speed mode
     game_mode = request.cookies.get('game_mode', 'speed')
     return redirect(f'/{game_mode}')
 
@@ -80,7 +83,6 @@ def game():
     with open(file_path, 'r') as f:
         game_object = json.load(f)
 
-
     return jsonify({
         "game_id": game_id,
         "constraints": game_object["constraints"],
@@ -96,15 +98,17 @@ def report():
     words = data['words']
     # add words to text file
     with open('./word_files/reported_missing_words.txt', 'a') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
         for word in words:
-            f.write(word + '\n')    
+            f.write(word + '\n')
+        fcntl.flock(f, fcntl.LOCK_UN)  
     return '', 200 # will never actually be used
 
 @app.route('/log-solution', methods=['POST'])
 def log_solution():
     data = request.get_json()
     game_id = data['game_id']  # Used in the file name
-    time = datetime.now(eastern).strftime("%m/%d/%Y %H:%M:%S")
+    time = datetime.now(eastern).strftime("%H:%M:%S")
     mode = data['mode']
     metric = data['metric']
     words = data['words']
@@ -129,8 +133,6 @@ def log_solution():
         fcntl.flock(f, fcntl.LOCK_UN)  # Unlock
 
     return '', 200
-
-
 
 
 if __name__ == '__main__':

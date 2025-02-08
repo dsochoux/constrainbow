@@ -353,13 +353,13 @@ def find_solution(constraint):
 
 
 
-def main(game_id):
+def main(game_id, num_colored, game_mode):
     result = {
     } # the result object that will be converted to JSON at the end
     global words
     start = time.time()
     
-    words = generate_game_new(10)
+    words = generate_game_new(num_colored)
     result["grid"] = words
     result["constraints"] = [[] for _ in range(num_constraints + 1)]
     for i in range(len(words)):
@@ -373,7 +373,7 @@ def main(game_id):
     result["num_possible_solutions"] = num_possible_boards
     result["num_possible_points"] = best_solution["points"]
 
-    output_file = f"generated_games/{game_id}.json"
+    output_file = f"games/{game_mode}/{game_id}.json"
     # output_file = f"generated_games/solution.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
@@ -382,13 +382,13 @@ def main(game_id):
     
     result["best_solution"] = best_solution
     result["solutions"] = solutions_result
-    output_file = f"generated_games_solutions/{game_id}.json"
+    output_file = f"game_solutions/{game_mode}/{game_id}.json"
     with open(output_file, "w") as f:
         json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
     while num_possible_boards == 0:
-        main(sys.argv[1])
+        main(sys.argv[1], int(sys.argv[2]), sys.argv[3])
     print(num_possible_boards)
     # print(generate_game_new(10))
     conn.close()

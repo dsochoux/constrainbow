@@ -58,6 +58,7 @@ export class ScoreBoard extends Board {
 
     resetLocalStorage() {
         super.resetLocalStorage('score');
+        localStorage.removeItem('scoreIsSolutionFound');
     }
 
     handleLetterKeyPressed(letter) {
@@ -79,8 +80,16 @@ export class ScoreBoard extends Board {
         this.score = 0;
         this.updateScoreDisplay();
     }
+    
+    handleSolutionFound() {
+        localStorage.setItem("scoreIsSolutionFound", JSON.stringify(true));
+        super.handleSolutionFound();
+    }
 
-    getMetric() {
-        return `🏆 ${this.getPointsFraction()}`;
+    getMetric(doIncludeEmoji) {
+        if (doIncludeEmoji) {
+            return `🏆 ${this.getPointsFraction()}`;
+        }
+        return `${this.getPointsFraction()}`;
     }
 }

@@ -17,7 +17,7 @@ export class Manager {
     async fetchGame() {
         this.gameId = document.getElementById('game-id').value;
         this.gameMode = document.getElementById('game-mode').value;
-        const response = await fetch(`/game?game-id=${this.gameId}`);
+        const response = await fetch(`/game?game-id=${this.gameId}&game-mode=${this.gameMode}`);
         const data = await response.json();
         
         this.accepted_words = new Set(data['words']);
@@ -168,6 +168,19 @@ export class Manager {
 
     getFormatedDate() {
         return `${this.gameId[0]}${this.gameId[1]}/${this.gameId[2]}${this.gameId[3]}`;
+    }
+
+    logBoard() {
+        fetch('/log-solution', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                'game_id': this.gameId,
+                'mode': this.gameMode,
+                'metric': this.board.getMetric(false),
+                'words': this.board.getWordsList(),
+            })
+        });
     }
 }
 

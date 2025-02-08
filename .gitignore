@@ -2,3 +2,6 @@ database.db
 generated_games/
 env/
 .DS_Store
+games/
+game_solutions/
+logs/

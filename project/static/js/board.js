@@ -6,6 +6,11 @@ export class Board {
         this.words = []; // list of Word objects
         this.selectedLetter = null; // the currently selected letter (Letter object)
         
+        // both SpeedBoard and ScoreBoard will inherit this
+        // for both, it is used to know when to send a solved board to the server for logging
+        // SpeedBoard will also use it to know when to stop the timer
+        this.isSolutionFound = false;
+        
         // a 2d array of points
         // each index in the outer array represents a constraint, and each point in the inner array
         // represents a letter that is constrained by that constraint
@@ -363,6 +368,11 @@ export class Board {
     }
 
     handleSolutionFound() {
+        if (!this.isSolutionFound) {
+            // sent a post request to the server to log the solution
+            this.manager.logBoard();
+        }
+        this.isSolutionFound = true;
         this.celebrate();
         this.manager.showCopyButton();
         this.selectedLetter.setIsSelected(false);
@@ -445,7 +455,7 @@ export class Board {
             clearTimeout(this.copyResultsTimeout);
         }
         let message = "constrainbow.com\n";
-        message += `${this.manager.getFormatedDate()} | ${this.getMetric()}\n`;
+        message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}\n`;
         message += this.getEmojiBoard();
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;
         const doIncludeSolution = this.copyButton.textContent !== 'COPY RESULTS!';
@@ -479,6 +489,14 @@ export class Board {
             }
         });
         return invalid_words;
+    }
+
+    getWordsList() {
+        let words = [];
+        this.words.forEach(word => {
+            words.push(word.getWordString());
+        });
+        return words;
     }
 
     // pause is called in the callback for showing the overlay

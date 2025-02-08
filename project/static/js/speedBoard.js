@@ -6,8 +6,7 @@ import { NUM_WORDS } from './helpers.js';
 export class SpeedBoard extends Board {
     constructor(manager, data) {
         super(manager, data);
-        this.isPaused = true;
-        this.isFirstSolutionFound = false; // timer runs while this is false
+        this.isPaused = true; // timer runs while this is false
         this.elapsedSeconds = 0;
         this.intervalId = null;
         this.timerElement = document.getElementById("timer");
@@ -42,15 +41,15 @@ export class SpeedBoard extends Board {
         // load timer and other things
         this.elapsedSeconds = JSON.parse(localStorage.getItem('elapsedSeconds')) || 0;
         this.updateTimerDisplay();
-        this.isFirstSolutionFound = JSON.parse(localStorage.getItem('isFirstSolutionFound')) || false;
-        if (this.isFirstSolutionFound) {
+        this.isSolutionFound = JSON.parse(localStorage.getItem('speedIsSolutionFound')) || false;
+        if (this.isSolutionFound) {
             this.playPauseButton.style.display = 'none';
             this.isPaused = false;
         } else {
             this.playPauseButton.textContent = "RESUME";
             this.playPauseButton.style.display = 'inline-block';
         }
-        if (this.isInSolvedState()) {
+        if (this.isSolutionFound) {
             this.resumeLetters();
             this.manager.resumeKeyboard();
         }
@@ -59,7 +58,7 @@ export class SpeedBoard extends Board {
     resetLocalStorage() {
         super.resetLocalStorage('speed');
         localStorage.removeItem('elapsedSeconds');
-        localStorage.removeItem('isFirstSolutionFound');
+        localStorage.removeItem('speedIsSolutionFound');
     }
 
     handleLetterClicked(w, l) {
@@ -95,7 +94,7 @@ export class SpeedBoard extends Board {
     }
 
     pause() {
-        if (this.is_paused || this.isFirstSolutionFound) {
+        if (this.is_paused || this.isSolutionFound) {
             return;
         }
         this.pauseTimer();
@@ -117,7 +116,7 @@ export class SpeedBoard extends Board {
         });
     }
     resume() {
-        if (!this.isPaused || this.isFirstSolutionFound) {
+        if (!this.isPaused || this.isSolutionFound) {
             return;
         }
         this.startTimer();
@@ -128,7 +127,7 @@ export class SpeedBoard extends Board {
     }
 
     handlePlayPauseClicked() {
-        if (this.isFirstSolutionFound) {
+        if (this.isSolutionFound) {
             return;
         }
         if (this.isPaused) {
@@ -144,15 +143,17 @@ export class SpeedBoard extends Board {
     }
 
     handleSolutionFound() {
-        this.isFirstSolutionFound = true;
-        localStorage.setItem("isFirstSolutionFound", JSON.stringify(true));
+        localStorage.setItem("speedIsSolutionFound", JSON.stringify(true));
         this.playPauseButton.style.display = 'none';
         this.pauseTimer();
         super.handleSolutionFound();
     }
 
 
-    getMetric() {
-        return `⏱️ ${formatTime(this.elapsedSeconds)}`;
+    getMetric(doIncludeEmoji) {
+        if (doIncludeEmoji) {
+            return `⏱️ ${formatTime(this.elapsedSeconds)}`;
+        }
+        return `${formatTime(this.elapsedSeconds)}`;
     }
 }

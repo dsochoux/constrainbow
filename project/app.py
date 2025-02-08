@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request, redirect, make_response, send_from_directory
 import os
+import fcntl
 import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -14,11 +15,8 @@ with open('./word_files/words.txt', 'r') as f:
     for word in f:
         words.append(word.strip())
 
-# folder to look for the games
-generated_game_folder = './generated_games'
-files = [f for f in os.listdir(generated_game_folder)]
-
 def get_game_id():
+    return "02122025"
     return "doot"
     return datetime.now(eastern).strftime("%m%d%Y")
 
@@ -70,13 +68,15 @@ def score():
 @app.route('/game')
 def game():
     global words
-    global files
     
     # game id in hidden input supplied by /
     game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
+    game_mode = request.args.get("game-mode", "speed")
     selected_game_file = game_id + '.json'
     
     # convert the json file to a dictionary
+    if game_mode == "speed":
+        generated_game_folder = f"./games/{game_mode}/"
     file_path = os.path.join(generated_game_folder, selected_game_file)
     with open(file_path, 'r') as f:
         game_object = json.load(f)
@@ -101,22 +101,34 @@ def report():
             f.write(word + '\n')    
     return '', 200 # will never actually be used
 
-@app.route('log-solution', methods=['POST'])
+@app.route('/log-solution', methods=['POST'])
 def log_solution():
     data = request.get_json()
-    game_id = data['game_id'] # used in the file name
+    game_id = data['game_id']  # Used in the file name
     time = datetime.now(eastern).strftime("%m/%d/%Y %H:%M:%S")
     mode = data['mode']
     metric = data['metric']
     words = data['words']
-    # add words to csv file
-    file_name = f'./logs/{mode}/{game_id}.csv'
-    # check if file exists
-    if not os.path.exists(file_name):
-        with open(file_name, 'w') as f:
-            f.write('time,metric,word0,word1,word2,word3\n')
+
+    file_path = f'./logs/{game_id}/'
+    file_name = f'{file_path}{mode}.csv'
+
+    # Ensure the directory exists
+    os.makedirs(file_path, exist_ok=True)
+
+    # Use file locking to prevent race conditions
     with open(file_name, 'a') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)  # Exclusive lock
+
+        # If the file is empty, write the header first
+        if os.stat(file_name).st_size == 0:
+            f.write('time,metric,word0,word1,word2,word3\n')
+
+        # Append the new line
         f.write(f'{time},{metric},{",".join(words)}\n')
+
+        fcntl.flock(f, fcntl.LOCK_UN)  # Unlock
+
     return '', 200
 
 

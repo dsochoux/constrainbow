@@ -16,7 +16,7 @@ with open('./word_files/words.txt', 'r') as f:
         words.append(word.strip())
 
 def get_game_id():
-    return "02122025"
+    return "02132025"
     return "doot"
     return datetime.now(eastern).strftime("%m%d%Y")
 

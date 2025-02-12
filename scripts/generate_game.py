@@ -294,7 +294,7 @@ def main(game_id):
     } # the result object that will be converted to JSON at the end
     global words
     start = time.time()
-    words = generate_game_new(9)
+    words = generate_game_new(10)
     # words = [
     #     ['-', '@', '-', '@', '-'],
     #     ['@', '-', '$', '-', '@'],

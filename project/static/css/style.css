@@ -5,6 +5,7 @@
     --c2: #ff9019;
     --c3: #d4c600;
     --c4: #3a2fda;
+    --bg: white;
 }
 
 html, body {
@@ -13,7 +14,7 @@ html, body {
     display: flex;
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    background-color:snow;
+    background-color: var(--bg);
     font-family: Arial, Helvetica, sans-serif;
     overflow-x: hidden;
     padding-top: 10px;
@@ -200,7 +201,7 @@ h2 {
 .letter.paused {
     /* border: 5px solid #b4b4b4; */
     border: 2px solid rgb(44, 44, 44);
-    background-color: snow;
+    background-color: var(--bg);
     box-shadow: none;
 }
 
@@ -261,7 +262,7 @@ h2 {
 .key {
     position: relative;
     margin: 0; /* Remove margins */
-    height: 50px; /* Ensure consistent height */
+    height: 47px; /* Ensure consistent height */
     width: 30px;
     font-size: 18px;
     background-color: white;
@@ -302,7 +303,7 @@ h2 {
     box-shadow: none;
 }
 .paused-key {
-    background-color: snow;
+    background-color: var(--bg);
     box-shadow: none;
 }
 

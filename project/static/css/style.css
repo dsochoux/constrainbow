@@ -5,6 +5,9 @@
     --c2: #ff9019;
     --c3: #d4c600;
     --c4: #3a2fda;
+    --bg: white;
+    /* --bg: rgb(31, 31, 31); */
+    --contrast: black;
 }
 
 html, body {
@@ -13,8 +16,7 @@ html, body {
     display: flex;
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    /* background-color: #f0f0f0; */
-    background-color:snow;
+    background-color: var(--bg);
     font-family: Arial, Helvetica, sans-serif;
     overflow-x: hidden;
     padding-top: 10px;
@@ -35,32 +37,14 @@ button {
     justify-content: space-between;
     height: 95dvh;
     max-height: 650px;
-    /* gap: 20px; Add spacing between elements */
-    /* padding-bottom: env(safe-area-inset-bottom); Dynamic safe area for the bottom */
-    /* padding-top: env(safe-area-inset-top);  */
-    /* max-height: 600px; */
-    /* overflow-y: auto; */
-    /* height: auto; */
 }
 
-h1 {
-    margin: 0; /* Remove default margin */
-    font-size: 2rem;
-}
 h2 {
     margin: 0; /* Remove default margin */
-    font-size: 1.6rem;
-    /* background-color: white;
-    padding: 5px;
-    border-radius: 5px; */
-    /* background-image: linear-gradient(to right, var(--c1), var(--c2), var(--c3), var(--c4)); /* Define gradient */
-    /*-webkit-background-clip: text; /* Clip the gradient to the text */
-    /*-webkit-text-fill-color: transparent; Make the text itself transparent */
+    font-size: 1.5rem;
+    color: var(--contrast);
 }
-/* h2 span {
-    margin: 0; 
-    padding: 0;
-} */
+
  .t0, .t4, .t8 {
     text-shadow: 1px 1px var(--c1);
  }
@@ -74,14 +58,10 @@ h2 {
     text-shadow: 1px 1px var(--c4);
  }
 
-/* #rainbow {
-    
-} */
-
 .description {
     margin: 0;
     font-size: 1rem;
-    color: #000000; /* Optional: light gray text */
+    color: var(--contrast); /* Optional: light gray text */
 }
 
 #board {
@@ -91,6 +71,7 @@ h2 {
     overflow: visible;
     padding: 3px;
 }
+
 #example-board {
     display: grid;
     grid-template-columns: repeat(5, 50px);
@@ -99,22 +80,36 @@ h2 {
     padding: 1px;
 }
 .letter {
+    position: relative; /* Ensures child elements position relative to the tile */
+    font-size: 40px;
     width: 67px;
     height: 67px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: var(--letter-border-thickness) solid black;
-    /* text-shadow: 1px 1px gray; */
-    box-shadow: 3px 3px black;
+    border: var(--letter-border-thickness) solid var(--contrast);
+    box-shadow: 3px 3px var(--contrast);
     border-radius: 10px;
-    /* background-color: #e6e6e6; */
-    background-color: white;
+    background-color: var(--bg);
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
+}
+
+.letter-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Keeps letter centered */
     font-weight: bold;
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
-    /* box-shadow: 0px 2px 2px 0 rgba(0, 0, 0, 0.5); */
+}
+
+.letter-points {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 12px; /* Slightly smaller than the letter */
+    color: var(--contrast);
+    pointer-events: none; /* Ensures clicks still register on the .letter div */
 }
 
 .example-letter {
@@ -123,18 +118,13 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: var(--example-letter-border-thickness) solid black;
-    /* text-shadow: 1px 1px gray; */
-    /* box-shadow: 1px 1px black; */
+    border: var(--example-letter-border-thickness) solid var(--contrast);
     border-radius: 5px;
-    /* background-color: #e6e6e6; */
-    background-color: white;
+    background-color: var(--bg);
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
     font-size: 1.7rem;
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
-    /* box-shadow: 0px 2px 2px 0 rgba(0, 0, 0, 0.5); */
 }
 
 /* The overlay background */
@@ -153,6 +143,7 @@ h2 {
     visibility: hidden;
     padding-top: 5px;
 }
+
 @media (min-width: 1024px) {
     html, body {
         align-items: center;
@@ -162,103 +153,46 @@ h2 {
         align-items: center;
         padding-top: 0px;
     }
-    /* #container {
-        gap: 30px;
-    } */
-    /* #board {
-        grid-template-columns: repeat(5, 70px);
-    } */
-
-    /* .letter {
-        width: 70px; 
-        height: 70px;
-    } */
 }
 
 .letter.selected {
-    /* border: 5.5px solid black; */
-    /* background-color: rgb(133, 132, 132);
-    color: #e6e6e6; */
-    /* box-shadow: 0 10px 16px rgba(0, 0, 0, 0.5); */
-    /* border: 4.5px solid #000; */
-    /* background-color: #bcbcbc; */
     background-color: #dcdcdc;
-    /* box-shadow: 0px 3px 3px 0 #dddddd; */
-    /* background-color: white; */
 }
 
 .letter.c1 {
-    /* border: 5px solid #D04848; */
-    /* border: var(--letter-border-thickness) solid var(--c1); */
     border: var(--letter-border-thickness) solid var(--c1);
-    /* text-shadow: 1px 1px var(--c1); */
     box-shadow: 3px 3px var(--c1);
-    /* border: 5px solid #f34213; */
 }
 
 .example-letter.c1 {
-    /* border: 5px solid #D04848; */
-    /* border: var(--letter-border-thickness) solid var(--c1); */
     border: var(--example-letter-border-thickness) solid var(--c1);
-    /* text-shadow: 1px 1px var(--c1); */
-    /* box-shadow: 1px 1px var(--c1); */
-    /* border: 5px solid #f34213; */
 }
 
 .letter.c2 {
-    /* border: 5px solid #F3B95F; */
-    /* border: var(--letter-border-thickness) solid var(--c2);*/
     border: var(--letter-border-thickness) solid var(--c2);
-    /* text-shadow: 1px 1px var(--c2); */
     box-shadow: 3px 3px var(--c2);
-    /* border: 5px solid #2dd881; */
 }
 .example-letter.c2 {
-    /* border: 5px solid #F3B95F; */
-    /* border: var(--letter-border-thickness) solid var(--c2);*/
     border: var(--example-letter-border-thickness) solid var(--c2);
-    /* text-shadow: 1px 1px var(--c2); */
-    /* box-shadow: 1px 1px var(--c2); */
-    /* border: 5px solid #2dd881; */
 }
 .letter.c3 {
-    /* border: 5px solid #FDE767; */
-    /* border: var(--letter-border-thickness) solid var(--c3); */
     border: var(--letter-border-thickness) solid var(--c3);
-    /* text-shadow: 1px 1px var(--c3); */
     box-shadow: 3px 3px var(--c3);
-    /* border: 5px solid #1d4e89; */
 }
 .example-letter.c3 {
-    /* border: 5px solid #FDE767; */
-    /* border: var(--letter-border-thickness) solid var(--c3); */
     border: var(--example-letter-border-thickness) solid var(--c3);
-    /* text-shadow: 1px 1px var(--c3); */
-    /* box-shadow: 1px 1px var(--c3); */
-    /* border: 5px solid #1d4e89; */
 }
 .letter.c4 {
-    /* border: 5px solid #6895D2; */
-    /* border: var(--letter-border-thickness) solid var(--c4); */
     border: var(--letter-border-thickness) solid var(--c4);
-    /* text-shadow: 1px 1px var(--c4); */
     box-shadow: 3px 3px var(--c4);
-    /* border: 5px solid #bdbf09; */
 }
 .example-letter.c4 {
-    /* border: 5px solid #6895D2; */
-    /* border: var(--letter-border-thickness) solid var(--c4); */
     border: var(--example-letter-border-thickness) solid var(--c4);
-    /* text-shadow: 1px 1px var(--c4); */
-    /* box-shadow: 1px 1px var(--c4); */
-    /* border: 5px solid #bdbf09; */
 }
 .letter.conflict {
     background-color: rgb(255, 172, 172);
-    /* color: rgb(255, 76, 76); */
 }
 .letter.incorrect {
-    /* background-color: rgb(255, 172, 172); */
     color: rgb(255, 76, 76);
 }
 .letter.celebrate {
@@ -270,17 +204,13 @@ h2 {
 .letter.paused {
     /* border: 5px solid #b4b4b4; */
     border: 2px solid rgb(44, 44, 44);
-    background-color: snow;
+    background-color: var(--bg);
     box-shadow: none;
-}
-
-.text {
-    font-size: 40px;
 }
 
 /* The popup window */
 .popup {
-    background-color: #fff;
+    background-color: var(--bg);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -288,8 +218,7 @@ h2 {
     max-width: 90%;
     text-align: left;
     position: relative;
-
-    max-height: 80vh; /* Limit height to 80% of viewport */
+    max-height: 70vh; /* Limit height to 80% of viewport */
     overflow-y: auto; /* Enable scrolling if content overflows */
 }
 
@@ -304,31 +233,12 @@ h2 {
     cursor: pointer;
 }
 
-/* How-to-play button styling (optional) */
-.link-styled-button {
-    font-size: 1rem; /* Match the font size of .description */
-    color: #666; /* Use the same text color as .description */
-    background-color: transparent; /* Remove background color */
-    border: none; /* Remove border */
-    cursor: pointer;
-    /* margin-top: 20px; */
-    text-decoration: underline; /* Optional: Adds an underline, since buttons usually stand out with something like this */
-}
-
-/* #timer {
-    color: black;
-    display: none;
-    font-weight: bold;
-    margin: 0;
-    padding: 0;
-} */
-
 .end-timer {
     display: none;
 }
 
 #start-message {
-    color: black;
+    color: var(--contrast);
     /* font-weight: bold; */
     margin: 0;
     padding: 0;
@@ -353,18 +263,39 @@ h2 {
 }
 
 .key {
+    color: var(--contrast);
+    position: relative;
     margin: 0; /* Remove margins */
-    padding-top: 12px;
-    padding-bottom: 12px;
+    height: 47px; /* Ensure consistent height */
+    width: 30px;
     font-size: 18px;
-    background-color: white;
-    border: 1px solid #000000;
+    background-color: var(--bg);
+    border: 1px solid var(--contrast);
     border-radius: 5px;
     cursor: pointer;
-    width: 30px;
     text-align: center;
-    box-shadow: 1px 1px black;
-    /* box-shadow: 0px 3px 3px 0 #dddddd; */
+    box-shadow: 1px 1px var(--contrast);
+}
+
+.key-letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Keeps letter perfectly centered */
+    /* font-weight: bold; */
+}
+
+.key-points {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 10px;
+    color: var(--contrast);
+    display: none;
+}
+.key-letter,
+.key-points {
+    pointer-events: none;
 }
 
 #second-keyboard-row .key, #bottom-keyboard-row .key {
@@ -376,57 +307,38 @@ h2 {
     box-shadow: none;
 }
 .paused-key {
-    background-color: snow;
+    background-color: var(--bg);
     box-shadow: none;
 }
 
 #reset-button {
     margin: 0; /* Remove margins */
     padding: 6px;
-    /* padding-bottom: 4px; */
     font-size: 18px;
-    background: #fff;
+    background: var(--bg);
     border: 1px solid #aaa;
     border-radius: 5px;
     cursor: pointer;
-    /* width: 70px; */
     text-align: center;
     display: none;
 }
 
-/* @media (min-width: 2732px) {
-    #keyboard-container {
-        display: none; 
-    }
-    #reset-button {
-        display: block; 
-    }
-} */
-
-#info-div {
-    padding: 0;
-}
-
-#results-div p {
-    margin: -5px;
-    padding: 0px;
-}
-
 #report-missing-word-button {
+    color: var(--contrast);
     display: none;
-    /* color: rgb(255, 76, 76); */
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
     box-shadow: 1px 1px red;
-    background-color: white;
+    background-color: var(--bg);
 }
 #got-it-button {
-    border: 1px solid black;
+    color: var(--contrast);
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
     box-shadow: 1px 1px green;
-    background-color: white;
+    background-color: var(--bg);
 }
 
 .report-missing-word-button-paused {
@@ -440,16 +352,17 @@ h2 {
     padding-left: 5px;
     padding-right: 5px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px purple;
+    display: none;
 }
 
 #copy-results-button {
     display: none;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px green;
 }
 
@@ -457,70 +370,54 @@ h2 {
     color: rgb(255, 76, 76);
 }
 
-#refresh-key {
-    font-size: 8px;
-    font-weight: bolder;
-}
-
 @media screen and (max-height: 645px) {
-    /* h1 {
-        font-size: 1.3rem;
+    h2 {
+        font-size: 1.4rem;
     }
     #board {
         grid-template-columns: repeat(5, 60px);
-        grid-gap: 4px;
+        grid-gap: 6px;
     }
     .letter {
         width: 60px;
         height: 60px;
-    } */
+    }
     #container {
         gap: 10px;
     }
-    .key {
-        padding-top: 5px;
-        padding-bottom: 5px;
-    }
-    /* .description {
-        margin-bottom: 5px;
-    } */
-    
+     .key {
+        height: 40px;
+     }
 }
 
 #header-div {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    gap: 20px;
+    gap: 8px;
 }
 
-/* h2 {
-    border: 3px solid black;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: white;
-} */
-
-#timer {
+#timer, #score {
     margin: 0px;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     display: none;
     box-shadow: 1px 1px skyblue;
 }
 
-#how-to-play-button {
+#mode-button, #how-to-play-button {
     margin: 0px;
-    border: 1px solid black;
-    padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 9px;
-    padding-right: 9px;
+    border: 1px solid var(--contrast);
+    /* padding-top: 3px;
+    padding-bottom: 3px; */
+    padding-left: 4px;
+    padding-right: 4px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px purple;
+    text-decoration: none;
 }
 
 #actions-container {

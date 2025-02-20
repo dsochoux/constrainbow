@@ -1,13 +1,52 @@
 #!/bin/bash
 
-# Navigate to your project directory
-cd /var/www/constrainbow
+REMOTE_USER="root"
+REMOTE_HOST="constrainbow.com"
+REMOTE_DIR="constrainbow"
 
-# Pull the latest code
-git pull origin deploy
 
-# Install any new dependencies
-pip install -r project/requirements.txt
+read -p "Have you updated your bundle.js and is game.html using it? (Y/n) " confirm
+confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
+if [[ "$confirm" == "y" || "$confirm" == "" ]]; then
+    echo "Continuing with deployment..."
+else
+    echo "Building bundle.js, then aborting..."
+    esbuild ./project/static/js/script.js --bundle --minify --outfile=./project/static/js/bundle.js
+    exit 1
+fi
 
-# Restart the Flask application (use the method you're using, e.g., systemd, supervisor, etc.)
-sudo systemctl restart flask-app.service  # Adjust this if you're using a different method to run your app
+read -p "No development changes remain in app.py? (Y/n) " confirm
+confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
+if [[ "$confirm" == "y" || "$confirm" == "" ]]; then
+    echo "Continuing with deployment..."
+else
+    echo "Aborting..."
+    exit 1
+fi
+
+echo "Syncing files..."
+# app.py
+scp ./project/app.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
+# game.html
+scp ./project/templates/game.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
+# style.css
+scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
+# bundle.js
+scp ./project/static/js/bundle.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
+# words.txt
+scp ./word_files/words.txt $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
+# games
+rsync -avz ./games/ $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/games
+
+echo "Restarting gunicorn..."
+ssh $REMOTE_USER@$REMOTE_HOST << EOF
+    cd $REMOTE_DIR
+    source env/bin/activate
+    pkill gunicorn
+    nohup gunicorn -w 4 project.app:app -b 0.0.0.0:5001 > gunicorn.log 2>&1 &
+EOF
+
+echo "Restarting NGINX..."
+ssh $REMOTE_USER@$REMOTE_HOST "sudo systemctl reload nginx"
+
+echo "Deployment complete!"

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <title>CONSTRAINBOW</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Standard favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}" sizes="32x32" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}" sizes="16x16" type="image/png">
+
+    <!-- Apple Touch Icon (for iOS devices) -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
+
+    <!-- Android Chrome Icons -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-192x192.png') }}" sizes="192x192" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-512x512.png') }}" sizes="512x512" type="image/png">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
+
+
+</head>
+<body>
+    <input type="hidden" id="game-id" value="{{ game_id }}" />
+    <input type="hidden" id="game-mode" value="{{ game_mode }}" />
+    <div class="overlay" id="how-to-play-overlay">
+        <div class="popup">
+            <button id="close-button">&times;</button>
+            <h2>How to play <span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span> (beta)</h2>
+            <p>The object of the game is to come up with four five-letter English words (no regular plurals or regular past tense) that fit the colored constraints.</p>
+            <p>Tiles of the same color must be the same letter. Different colored tiles may not be the same letter. For example, if one orange is an F, all of the oranges must be F. The red and the orange tiles may not both be F.</p>
+            <div id="example-board">
+                <div class="example-letter c2">F</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter"></div>
+                <div class="example-letter"></div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter"></div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter"></div>
+                <div class="example-letter"></div>
+                <div class="example-letter"></div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter"></div>
+                <div class="example-letter"></div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter"></div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter"></div>
+            </div>
+            <p>The black tiles can be any letters that a colored tile is not. We can continue by filling the black tiles using all letters of the alphabet except for P, F, A, and I.</p>
+            <div id="example-board">
+                <div class="example-letter c2">F</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter">T</div>
+                <div class="example-letter">Y</div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter">L</div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter">S</div>
+                <div class="example-letter">K</div>
+                <div class="example-letter"></div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter">R</div>
+                <div class="example-letter"></div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter">U</div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter"></div>
+            </div>
+            <p>Although we are not allowed to use the letters that the colored tiles are (P, F, A and I), we can repeat black letters. So, we can finish up this puzzle by filling in an S, K, and L, even though they are already used by other black tiles.</p>
+            <div id="example-board">
+                <div class="example-letter c2">F</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter">T</div>
+                <div class="example-letter">Y</div>
+                <div class="example-letter c2">F</div>
+                <div class="example-letter">L</div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter">S</div>
+                <div class="example-letter">K</div>
+                <div class="example-letter">S</div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c3">A</div>
+                <div class="example-letter">R</div>
+                <div class="example-letter">K</div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter">U</div>
+                <div class="example-letter c1">P</div>
+                <div class="example-letter c4">I</div>
+                <div class="example-letter">L</div>
+            </div>
+            <p>This is a solution! Four words that fit the constraints. (BTW, you don't have to fill the tiles in any particular order. It's totally up to you.)</p>
+            <p>For each puzzle, which comes out at 12:00am EST, there are many different solutions. For speed mode, find any solution as fast as possible. For score mode, try to find the highest scoring solution possible. Your solutions will look different than your friends', so don't forget to compare!</p>
+            <div style="display: flex; justify-content: center;">
+                <button id="got-it-button">GOT IT!</button>
+            </div>
+            <p>© 2025 Daniel Sochoux. All rights reserved.</p>
+            <p>For feedback or support, contact <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
+        </div>
+    </div>
+    <div id="container">
+        <div id="header-div">
+            <h2><span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span>
+            </h2>
+            <h2 id="date">{{ date }}</h2>
+            <a id="mode-button" href="{{ other_mode_endpoint }}">{{ other_mode_emoji }}</a>
+            <button id="how-to-play-button">❓</button>
+        </div>
+        <p class="description" id="description">Today's {{ mode_emoji }} puzzle has <strong id="num-possible-solutions"></strong> unique solutions.</p>
+        <p id="loading-text">LOADING GAME...</p>
+        <div id="actions-container">
+            <p id="timer">00:00</p>
+            <p id="score"></p>
+            <button id="play-pause-button">...</button>
+            <button id="report-missing-word-button">REPORT MISSING WORD</button>
+            <button id="copy-results-button">COPY RESULTS!</button>
+        </div>
+        <div id="board"></div>
+        <div id="keyboard-container">
+            <div class="keyboard-row">
+                <button class="key" id="key-Q" data-key="Q">
+                    <span class="key-letter">Q</span>
+                    <span class="key-points">10</span>
+                </button>
+                <button class="key" id="key-W" data-key="W">
+                    <span class="key-letter">W</span>
+                    <span class="key-points">4</span>
+                </button>
+                <button class="key" id="key-E" data-key="E">
+                    <span class="key-letter">E</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-R" data-key="R">
+                    <span class="key-letter">R</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-T" data-key="T">
+                    <span class="key-letter">T</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-Y" data-key="Y">
+                    <span class="key-letter">Y</span>
+                    <span class="key-points">4</span>
+                </button>
+                <button class="key" id="key-U" data-key="U">
+                    <span class="key-letter">U</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-I" data-key="I">
+                    <span class="key-letter">I</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-O" data-key="O">
+                    <span class="key-letter">O</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-P" data-key="P">
+                    <span class="key-letter">P</span>
+                    <span class="key-points">3</span>
+                </button>
+            </div>
+            <div class="keyboard-row" id="second-keyboard-row">
+                <button class="key" id="key-A" data-key="A">
+                    <span class="key-letter">A</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-S" data-key="S">
+                    <span class="key-letter">S</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-D" data-key="D">
+                    <span class="key-letter">D</span>
+                    <span class="key-points">2</span>
+                </button>
+                <button class="key" id="key-F" data-key="F">
+                    <span class="key-letter">F</span>
+                    <span class="key-points">4</span>
+                </button>
+                <button class="key" id="key-G" data-key="G">
+                    <span class="key-letter">G</span>
+                    <span class="key-points">2</span>
+                </button>
+                <button class="key" id="key-H" data-key="H">
+                    <span class="key-letter">H</span>
+                    <span class="key-points">4</span>
+                </button>
+                <button class="key" id="key-J" data-key="J">
+                    <span class="key-letter">J</span>
+                    <span class="key-points">8</span>
+                </button>
+                <button class="key" id="key-K" data-key="K">
+                    <span class="key-letter">K</span>
+                    <span class="key-points">5</span>
+                </button>
+                <button class="key" id="key-L" data-key="L">
+                    <span class="key-letter">L</span>
+                    <span class="key-points">1</span>
+                </button>
+            </div>
+            <div class="keyboard-row" id="bottom-keyboard-row">
+                <!-- <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button> -->
+                <button class="key" id="refresh-key" data-key="Clear">↺</button>
+                <button class="key" id="key-Z" data-key="Z">
+                    <span class="key-letter">Z</span>
+                    <span class="key-points">10</span>
+                </button>
+                <button class="key" id="key-X" data-key="X">
+                    <span class="key-letter">X</span>
+                    <span class="key-points">8</span>
+                </button>
+                <button class="key" id="key-C" data-key="C">
+                    <span class="key-letter">C</span>
+                    <span class="key-points">3</span>
+                </button>
+                <button class="key" id="key-V" data-key="V">
+                    <span class="key-letter">V</span>
+                    <span class="key-points">4</span>
+                </button>
+                <button class="key" id="key-B" data-key="B">
+                    <span class="key-letter">B</span>
+                    <span class="key-points">3</span>
+                </button>
+                <button class="key" id="key-N" data-key="N">
+                    <span class="key-letter">N</span>
+                    <span class="key-points">1</span>
+                </button>
+                <button class="key" id="key-M" data-key="M">
+                    <span class="key-letter">M</span>
+                    <span class="key-points">3</span>
+                </button>
+                <button class="key" id="delete-key" data-key="Backspace">⌫</button>
+            </div>
+        </div>
+    </div>
+    <!-- <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
+</body>
+</html>

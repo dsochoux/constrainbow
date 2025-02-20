@@ -2,3 +2,4 @@ database.db
 env/
 .DS_Store
 logs/
+game_solutions/

@@ -12,14 +12,20 @@ export class Manager {
         this.dateElement = document.getElementById('date');
         this.reportMissingWordButton = document.getElementById('report-missing-word-button');
         this.copyButton = document.getElementById('copy-results-button');
+        this.loadingText = document.getElementById('loading-text');
     }
     
     async fetchGame() {
         this.gameId = document.getElementById('game-id').value;
         this.gameMode = document.getElementById('game-mode').value;
         const response = await fetch(`/game?game-id=${this.gameId}&game-mode=${this.gameMode}`);
+        if (response.status === 404) {
+            console.log("forgot to make game");
+            this.loadingText.textContent = "SORRY, I FORGOT TO MAKE TODAY'S GAME 😭"
+            return;
+        }
         const data = await response.json();
-        
+
         this.accepted_words = new Set(data['words']);
         this.num_possible_solutions = data['num_possible_solutions'];
         this.num_possible_points = data['num_possible_points'];
@@ -31,7 +37,7 @@ export class Manager {
             });
         }
         document.getElementById('num-possible-solutions').textContent = this.num_possible_solutions.toLocaleString();
-        document.getElementById('loading-text').style.display = 'none';
+        this.loadingText.style.display = 'none';
         
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
@@ -219,36 +225,3 @@ export class Manager {
         })
     }
 }
-
-// this function will be called when the user clicks the report missing word button
-    // it reports **incorect** words to the server, that the user thinks are valid
-    // reportMissingWords() {
-    //     let incorect_words = [];
-    //     this.words.forEach(word => {
-    //         if (word.is_invalid) {
-    //             incorect_words.push(word.getWordString());
-    //         }
-    //     });
-    //     this.reportMissingWordButton.textContent = "REPORTING...";
-    //     fetch("/report-missing-word", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify({
-    //             "words": incorect_words,
-    //         })
-    //     }).then(() => {
-    //         this.reportMissingWordButton.textContent = "REPORTED!";
-    //         setTimeout(() => {
-    //             this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
-    //             this.reportMissingWordButton.style.display = "none";
-    //             if (this.first_solution_found) {
-    //                 this.copyButton.style.display = "inline-block";
-    //             }
-    //         }, 1000);
-    //     });
-    // }
-
-// TODO
-// get a favicon

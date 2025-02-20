@@ -46,7 +46,11 @@ export class SpeedBoard extends Board {
             this.playPauseButton.style.display = 'none';
             this.isPaused = false;
         } else {
-            this.playPauseButton.textContent = "RESUME";
+            if (this.elapsedSeconds === 0) {
+                this.playPauseButton.textContent = "START GAME";
+            } else {
+                this.playPauseButton.textContent = "RESUME";
+            }
             this.playPauseButton.style.display = 'inline-block';
         }
         if (this.isSolutionFound) {

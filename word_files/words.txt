@@ -37,6 +37,7 @@ agate
 agent
 agile
 aging
+aglet
 aglow
 agony
 agree
@@ -47,6 +48,7 @@ alarm
 album
 alert
 algae
+alias
 alibi
 alien
 align
@@ -88,10 +90,12 @@ annoy
 annul
 anode
 antic
+antsy
 anvil
 aorta
 apart
 aphid
+apian
 aping
 apnea
 apple
@@ -114,8 +118,10 @@ ascot
 ashen
 aside
 askew
+aspen
 assay
 asset
+atlas
 atoll
 atone
 attic
@@ -181,6 +187,7 @@ belle
 belly
 below
 bench
+bendy
 beret
 berry
 berth
@@ -200,6 +207,7 @@ biome
 birch
 birth
 bison
+bitch
 bitty
 black
 blade
@@ -217,6 +225,7 @@ blend
 bless
 blimp
 blind
+bling
 blink
 bliss
 blitz
@@ -236,6 +245,7 @@ blush
 board
 boast
 bobby
+boner
 boney
 bongo
 bonus
@@ -301,8 +311,10 @@ bulky
 bully
 bunch
 bunny
+burka
 burly
 burnt
+burqa
 burst
 bused
 bushy
@@ -426,6 +438,7 @@ clung
 coach
 coast
 cobra
+cocky
 cocoa
 colon
 color
@@ -446,6 +459,7 @@ could
 count
 coupe
 court
+couth
 coven
 cover
 covet
@@ -492,6 +506,7 @@ crowd
 crown
 crude
 cruel
+cruet
 crumb
 crump
 crush
@@ -549,6 +564,7 @@ devil
 diary
 dicey
 digit
+dildo
 dilly
 dimly
 diner
@@ -605,6 +621,7 @@ drove
 drown
 druid
 drunk
+dryad
 dryer
 dryly
 duchy
@@ -650,6 +667,7 @@ email
 embed
 ember
 emcee
+emote
 empty
 enact
 endow
@@ -796,6 +814,7 @@ forty
 forum
 found
 foyer
+frack
 frail
 frame
 frank
@@ -826,13 +845,16 @@ funny
 furor
 furry
 fussy
+futon
 fuzzy
 gaffe
 gaily
 gamer
+gamey
 gamma
 gamut
 gassy
+gator
 gaudy
 gauge
 gaunt
@@ -847,6 +869,7 @@ geeky
 geese
 genie
 genre
+ghast
 ghost
 ghoul
 giant
@@ -934,6 +957,7 @@ guild
 guile
 guilt
 guise
+gulag
 gulch
 gully
 gumbo
@@ -943,6 +967,7 @@ gusto
 gusty
 gypsy
 habit
+haiku
 hairy
 halve
 handy
@@ -984,6 +1009,7 @@ hobby
 hoist
 holly
 homer
+homie
 honey
 honor
 horde
@@ -1036,6 +1062,7 @@ inlay
 inlet
 inner
 input
+inset
 inter
 intro
 ionic
@@ -1069,6 +1096,7 @@ kappa
 karma
 kayak
 kebab
+kefir
 khaki
 kinky
 kiosk
@@ -1084,6 +1112,7 @@ knock
 knoll
 known
 koala
+kooky
 krill
 label
 labor
@@ -1096,9 +1125,11 @@ lapel
 lapse
 large
 larva
+laser
 lasso
 latch
 later
+latex
 lathe
 latte
 laugh
@@ -1135,6 +1166,7 @@ linen
 liner
 lingo
 lipid
+liter
 lithe
 liver
 livid
@@ -1154,6 +1186,7 @@ lorry
 loser
 louse
 lousy
+loved
 lover
 lower
 lowly
@@ -1171,6 +1204,7 @@ lurid
 lusty
 lying
 lymph
+lynch
 lyric
 macaw
 macho
@@ -1202,11 +1236,13 @@ mason
 masse
 match
 matey
+matte
 mauve
 maxim
 maybe
 mayor
 mealy
+means
 meant
 meaty
 mecca
@@ -1233,10 +1269,13 @@ miner
 minim
 minor
 minty
+minty
 minus
 mirth
 miser
 missy
+misty
+mixer
 mocha
 modal
 model
@@ -1245,6 +1284,7 @@ mogul
 moist
 molar
 moldy
+mommy
 money
 month
 moody
@@ -1294,9 +1334,11 @@ nerve
 never
 newer
 newly
+nexus
 nicer
 niche
 niece
+nifty
 night
 ninja
 ninny
@@ -1338,6 +1380,7 @@ opera
 opine
 opium
 optic
+orate
 orbit
 order
 organ
@@ -1357,12 +1400,14 @@ owing
 owner
 oxide
 ozone
+pacer
 paddy
 pagan
 pager
 paint
 paler
 palsy
+panda
 panel
 panic
 pansy
@@ -1390,8 +1435,10 @@ pecan
 pedal
 penal
 pence
+penis
 penne
 penny
+peony
 perch
 peril
 perky
@@ -1413,8 +1460,10 @@ pinch
 piney
 pinky
 pinto
+pious
 piper
 pique
+piste
 pitch
 pithy
 pivot
@@ -1439,7 +1488,9 @@ plumb
 plume
 plump
 plunk
+pluot
 plush
+poach
 poesy
 point
 poise
@@ -1467,6 +1518,7 @@ pride
 pried
 prime
 primo
+primp
 print
 prior
 prism
@@ -1484,6 +1536,7 @@ proxy
 prude
 prune
 psalm
+psych
 pubic
 pudgy
 puffy
@@ -1567,6 +1620,7 @@ relax
 relay
 relic
 remit
+remix
 renal
 renew
 repay
@@ -1679,6 +1733,7 @@ screw
 scrub
 scrum
 scuba
+scuff
 sedan
 seedy
 segue
@@ -1709,6 +1764,7 @@ shard
 share
 shark
 sharp
+shart
 shave
 shawl
 shear
@@ -1754,6 +1810,7 @@ silly
 since
 sinew
 singe
+sinus
 siren
 sissy
 sixth
@@ -1878,6 +1935,7 @@ spook
 spool
 spoon
 spore
+spork
 sport
 spout
 spray
@@ -1889,6 +1947,7 @@ spurt
 squad
 squat
 squib
+squid
 stack
 staff
 stage
@@ -1944,6 +2003,7 @@ stove
 strap
 straw
 stray
+strew
 strip
 strut
 stuck
@@ -2010,10 +2070,13 @@ taper
 tapir
 tardy
 tarot
+taser
 taste
 tasty
+tater
 tatty
 taunt
+taupe
 tawny
 teach
 teary
@@ -2063,6 +2126,7 @@ tilde
 timer
 timid
 tipsy
+tired
 titan
 tithe
 title
@@ -2078,6 +2142,7 @@ topaz
 topic
 torch
 torso
+torte
 torus
 total
 totem
@@ -2106,6 +2171,7 @@ tribe
 trice
 trick
 tried
+trill
 tripe
 trite
 troll
@@ -2145,6 +2211,9 @@ udder
 ulcer
 ultra
 umbra
+unbar
+unbox
+uncap
 uncle
 uncut
 under
@@ -2152,6 +2221,7 @@ undid
 undue
 unfed
 unfit
+unhip
 unify
 union
 unite
@@ -2255,6 +2325,7 @@ whisk
 white
 whole
 whoop
+whore
 whose
 widen
 wider
@@ -2303,6 +2374,7 @@ yacht
 yearn
 yeast
 yield
+yodel
 young
 youth
 zebra

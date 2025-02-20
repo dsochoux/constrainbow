@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, make_response, send_from_directory
+from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file
 import os
 import fcntl
 import json
@@ -16,8 +16,6 @@ with open('./word_files/words.txt', 'r') as f:
         words.append(word.strip())
 
 def get_game_id():
-    return "02132025"
-    return "doot"
     return datetime.now(eastern).strftime("%m%d%Y")
 
 def get_date_string(game_id):
@@ -72,25 +70,28 @@ def score():
 def game():
     global words
     
-    # game id in hidden input supplied by /
-    game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
-    game_mode = request.args.get("game-mode", "speed")
-    selected_game_file = game_id + '.json'
-    
-    # convert the json file to a dictionary
-    generated_game_folder = f"./games/{game_mode}/"
-    file_path = os.path.join(generated_game_folder, selected_game_file)
-    with open(file_path, 'r') as f:
-        game_object = json.load(f)
+    try:
+        # game id in hidden input supplied by /
+        game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
+        game_mode = request.args.get("game-mode", "speed")
+        selected_game_file = game_id + '.json'
+        
+        # convert the json file to a dictionary
+        generated_game_folder = f"./games/{game_mode}/"
+        file_path = os.path.join(generated_game_folder, selected_game_file)
+        with open(file_path, 'r') as f:
+            game_object = json.load(f)
 
-    return jsonify({
-        "game_id": game_id,
-        "constraints": game_object["constraints"],
-        "grid": game_object["grid"],
-        "num_possible_solutions": game_object["num_possible_solutions"],
-        "num_possible_points": game_object["num_possible_points"],
-        "words": words
-    })
+        return jsonify({
+            "game_id": game_id,
+            "constraints": game_object["constraints"],
+            "grid": game_object["grid"],
+            "num_possible_solutions": game_object["num_possible_solutions"],
+            "num_possible_points": game_object["num_possible_points"],
+            "words": words
+        })
+    except:
+        return '', 404
 
 @app.route('/report-missing-word', methods=['POST'])
 def report():
@@ -133,6 +134,10 @@ def log_solution():
         fcntl.flock(f, fcntl.LOCK_UN)  # Unlock
 
     return '', 200
+
+@app.route('/words', methods=['GET'])
+def get_words():
+    return send_file('../word_files/words.txt')
 
 
 if __name__ == '__main__':

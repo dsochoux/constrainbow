@@ -3,28 +3,19 @@ import random
 import json
 import time
 import sys
+from datetime import datetime, timedelta
 import pdb
 
 db_path = "database.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-symbols = ('@', '#', '$', '%')
-# symbols = ('@', '$')
-
-num_constraints = 4
-constraints = []
-for i in range(num_constraints):
-    constraints.append(i + 1)
-
-constraint_assignments = ['' for _ in range(num_constraints)]
-
+constraints = [i + 1 for i in range(4)]
+constraint_assignments = ['' for _ in range(len(constraints))]
 word_length = 5
-
 alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
 symbol_to_letter = {}
-desired_num_symbols = 10 # must be greater than 8
 solutions_result = []
 best_solution = {
     "points": 0,
@@ -33,65 +24,6 @@ best_solution = {
     "word_3": "",
     "word_4": ""
 }
-
-# between any two words, there MUST be a position that has differing symbols
-# otherwise, there is the risk that the same word can be used multiple times
-
-# there will always be a column where each word has a different symbol
-# this will guarantee four symbols as well as guarantee no duplicate words
-# (the front end won't even have to check! it will arise naturally from the constraints)
-
-# this function will generate the constraints, which is the game
-def generate_game():
-    num_symbols = 0
-    # I thought that this number would directly correlate to how hard the game is.
-    # Turns out, randomness is wild. There can be millions of solutions, or zero,
-    # without changing this number.
-    words = [
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-'],
-    ]
-
-    # first, randomly select a position to guarantee difference
-    difference_column = random.randint(0, 4)
-    for i in range(4):
-        words[i][difference_column] = symbols[i]
-        num_symbols += 1
-    for i in range(4):
-        # randomly pick a different word, and assign one of its
-        # non-difference-positions this symbol. This guaretees that no
-        # symbol is contained in only one word
-        random_word = random.choice([j for j in range(0, 4) if j!=i])
-        random_position = difference_column # start with a bad column
-        while words[random_word][random_position] != '-':
-            random_word = random.choice([j for j in range(0, 4) if j!=i])
-            random_position = random.choice([j for j in range(0, 5) if j != difference_column])
-        words[random_word][random_position] = symbols[i]
-        num_symbols += 1
-
-    # ensure no row only has one symbol. Worst case, this adds 2 symbols
-    # for i in range(4):
-    #     # count num dashes
-    #     num_symbols_in_word = 5 - words[i].count('-')
-    #     if num_symbols_in_word == 1:
-    #         # find a dash and replace it with a random symbol
-    #         random_position = random.choice([j for j in range(0, 5) if words[i][j] == '-'])
-    #         random_symbol = random.choice(symbols)
-    #         words[i][random_position] = random_symbol
-    #         num_symbols += 1
-    
-    # fill in the rest randomly
-    while num_symbols < desired_num_symbols:
-        random_word = random.choice([j for j in range(0, 4)])
-        random_position = random.choice([j for j in range(0, 5)])
-        if words[random_word][random_position] != '-': continue
-        random_symbol = random.choice(symbols)
-        words[random_word][random_position] = random_symbol
-        num_symbols += 1
-
-    return words
 
 def generate_game_new(desired):
     words = [
@@ -103,7 +35,7 @@ def generate_game_new(desired):
 
     shuffled_constraints = random.sample(constraints, 4)
     guaranteed_constraints = []
-    for i in range(num_constraints):
+    for i in range(len(constraints)):
         guaranteed_constraints.append([shuffled_constraints[i], shuffled_constraints[(i + 1) % 4]])
     
     for i in range(len(words)):
@@ -112,7 +44,7 @@ def generate_game_new(desired):
         words[i][positions[1]] = guaranteed_constraints[i][1]
     total = 8
     # fill in the rest randomly
-    _constraints = [i for i in range(1, num_constraints + 1)]
+    _constraints = [i for i in range(1, len(constraints) + 1)]
     while total < desired:
         random_word = random.choice([i for i in range(0, len(words))])
         random_position = random.choice([i for i in range(0, word_length)])
@@ -318,7 +250,7 @@ def generate_solutions_wildcards_free():
     num_possible_boards += given_symbols_num_possibilities
 
 def find_solution(constraint):
-    if constraint == num_constraints + 1:
+    if constraint == len(constraints) + 1:
         # at this point, we have assigned each symbol a letter
         # this assignment is promisng -- there are words that would satisfy the 
         # constraints if the wildcard letters could by ANYTHING. However, I am messing
@@ -361,7 +293,7 @@ def main(game_id, num_colored, game_mode):
     
     words = generate_game_new(num_colored)
     result["grid"] = words
-    result["constraints"] = [[] for _ in range(num_constraints + 1)]
+    result["constraints"] = [[] for _ in range(len(constraints) + 1)]
     for i in range(len(words)):
         for j in range(len(words[i])):
             result["constraints"][words[i][j]].append([i, j])
@@ -387,8 +319,21 @@ def main(game_id, num_colored, game_mode):
         json.dump(result, f, indent=4)
 
 if __name__ == "__main__":
-    while num_possible_boards == 0:
-        main(sys.argv[1], int(sys.argv[2]), sys.argv[3])
-    print(num_possible_boards)
-    # print(generate_game_new(10))
+    start_date = datetime(2025, 2, 18)
+    for i in range(11):
+        date = start_date + timedelta(days=i)
+        date_string = date.strftime("%m%d%Y")
+        # generate speed game
+        num_possible_boards = 0
+        while num_possible_boards < 10000:
+            num_possible_boards = 0
+            main(date_string, 10, "speed")
+        print(f"generated speed game for {date_string} with {num_possible_boards} solutions")
+        # generate score game
+        num_possible_boards = 0
+        while num_possible_boards < 50000:
+            num_possible_boards = 0
+            main(date_string, 9, "score")
+        print(f"generated score game for {date_string} with {num_possible_boards} solutions")
+
     conn.close()

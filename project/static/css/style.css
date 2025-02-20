@@ -6,6 +6,8 @@
     --c3: #d4c600;
     --c4: #3a2fda;
     --bg: white;
+    /* --bg: rgb(31, 31, 31); */
+    --contrast: black;
 }
 
 html, body {
@@ -40,6 +42,7 @@ button {
 h2 {
     margin: 0; /* Remove default margin */
     font-size: 1.5rem;
+    color: var(--contrast);
 }
 
  .t0, .t4, .t8 {
@@ -58,7 +61,7 @@ h2 {
 .description {
     margin: 0;
     font-size: 1rem;
-    color: #000000; /* Optional: light gray text */
+    color: var(--contrast); /* Optional: light gray text */
 }
 
 #board {
@@ -84,10 +87,10 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: var(--letter-border-thickness) solid black;
-    box-shadow: 3px 3px black;
+    border: var(--letter-border-thickness) solid var(--contrast);
+    box-shadow: 3px 3px var(--contrast);
     border-radius: 10px;
-    background-color: white;
+    background-color: var(--bg);
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
 }
@@ -105,7 +108,7 @@ h2 {
     bottom: 2px;
     right: 3px;
     font-size: 12px; /* Slightly smaller than the letter */
-    color: black;
+    color: var(--contrast);
     pointer-events: none; /* Ensures clicks still register on the .letter div */
 }
 
@@ -115,9 +118,9 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: var(--example-letter-border-thickness) solid black;
+    border: var(--example-letter-border-thickness) solid var(--contrast);
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     font-weight: bold;
@@ -207,7 +210,7 @@ h2 {
 
 /* The popup window */
 .popup {
-    background-color: #fff;
+    background-color: var(--bg);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -235,7 +238,7 @@ h2 {
 }
 
 #start-message {
-    color: black;
+    color: var(--contrast);
     /* font-weight: bold; */
     margin: 0;
     padding: 0;
@@ -260,17 +263,18 @@ h2 {
 }
 
 .key {
+    color: var(--contrast);
     position: relative;
     margin: 0; /* Remove margins */
     height: 47px; /* Ensure consistent height */
     width: 30px;
     font-size: 18px;
-    background-color: white;
-    border: 1px solid #000000;
+    background-color: var(--bg);
+    border: 1px solid var(--contrast);
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
-    box-shadow: 1px 1px black;
+    box-shadow: 1px 1px var(--contrast);
 }
 
 .key-letter {
@@ -286,7 +290,7 @@ h2 {
     bottom: 2px;
     right: 3px;
     font-size: 10px;
-    color: black;
+    color: var(--contrast);
     display: none;
 }
 .key-letter,
@@ -311,7 +315,7 @@ h2 {
     margin: 0; /* Remove margins */
     padding: 6px;
     font-size: 18px;
-    background: #fff;
+    background: var(--bg);
     border: 1px solid #aaa;
     border-radius: 5px;
     cursor: pointer;
@@ -320,19 +324,21 @@ h2 {
 }
 
 #report-missing-word-button {
+    color: var(--contrast);
     display: none;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
     box-shadow: 1px 1px red;
-    background-color: white;
+    background-color: var(--bg);
 }
 #got-it-button {
-    border: 1px solid black;
+    color: var(--contrast);
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
     box-shadow: 1px 1px green;
-    background-color: white;
+    background-color: var(--bg);
 }
 
 .report-missing-word-button-paused {
@@ -346,17 +352,17 @@ h2 {
     padding-left: 5px;
     padding-right: 5px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px purple;
     display: none;
 }
 
 #copy-results-button {
     display: none;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px green;
 }
 
@@ -393,23 +399,23 @@ h2 {
 
 #timer, #score {
     margin: 0px;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     padding: 3px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     display: none;
     box-shadow: 1px 1px skyblue;
 }
 
 #mode-button, #how-to-play-button {
     margin: 0px;
-    border: 1px solid black;
+    border: 1px solid var(--contrast);
     /* padding-top: 3px;
     padding-bottom: 3px; */
     padding-left: 4px;
     padding-right: 4px;
     border-radius: 5px;
-    background-color: white;
+    background-color: var(--bg);
     box-shadow: 1px 1px purple;
     text-decoration: none;
 }

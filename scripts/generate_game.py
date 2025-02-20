@@ -2,9 +2,7 @@ import sqlite3
 import random
 import json
 import time
-import sys
 from datetime import datetime, timedelta
-import pdb
 
 db_path = "database.db"
 conn = sqlite3.connect(db_path)

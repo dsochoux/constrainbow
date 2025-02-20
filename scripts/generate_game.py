@@ -53,7 +53,6 @@ def generate_game_new(desired):
         total += 1
     return words
 
-num_valid_symbol_assignments = 0
 num_possible_boards = 0
 
 # generate a query whose WHERE clause concerns only that the contrained letters
@@ -213,40 +212,6 @@ def generate_solutions_wildcards_constrained():
     global num_possible_boards
     num_possible_boards += given_symbols_num_possibilities
 
-# this function will be called when we want to generate all solutions to a promising
-# constraint assignment where the wildcards can be anything
-def generate_solutions_wildcards_free():
-    # we would like to know how many possible different boards can emerge from a single
-    # symbol mapping. to do this, we will multiply the number of possible solutions for each word
-    # with each other. (how many ways can the first word be * how many ways can the second word be * ...)
-    given_symbols_num_possibilities = 1 # start at 1 for multiplications sake
-    solution_object = {
-        "constraint_assignments": {**symbol_to_letter},
-    }
-    for i, word in enumerate(words):
-        # construct the query
-        query_stub = '''
-        SELECT first_letter, second_letter, third_letter, fourth_letter, fifth_letter FROM words
-        WHERE
-        '''
-        query, query_args = verify_constraints_query(query_stub, word)
-        cursor.execute(query, query_args)
-        raw_solutions = cursor.fetchall()
-        solutions = [] # all of the different possible word choices
-        for raw_solution in raw_solutions:
-            solutions.append("".join(raw_solution))
-        given_symbols_num_possibilities *= len(solutions)
-        
-        solution_object[f"word_{i + 1}"] = {
-            "num_solutions": len(solutions),
-            "solutions": solutions
-        }
-    solutions_result.append(solution_object)
-    
-    # we will want to add the computed number of possibilites for this symbol arrangement to a total 
-    global num_possible_boards
-    num_possible_boards += given_symbols_num_possibilities
-
 def find_solution(constraint):
     if constraint == len(constraints) + 1:
         # at this point, we have assigned each symbol a letter
@@ -255,10 +220,7 @@ def find_solution(constraint):
         # around with the idea that wildcards cannnot be the same letter as another symbol.
         # therefore, I must now check to make sure that for each word, there is a solution
         # where the wildcards are not the same as any of the symbols
-        # generate_solutions_wildcards_free()
         generate_solutions_wildcards_constrained()
-        global num_valid_symbol_assignments
-        num_valid_symbol_assignments += 1
         return
     # symbol is an int pointing to the current symbol to be tried
     for letter in alphabet:
@@ -282,7 +244,6 @@ def find_solution(constraint):
     constraint_assignments[constraint - 1] = ''
 
 
-
 def main(game_id, num_colored, game_mode):
     result = {
     } # the result object that will be converted to JSON at the end
@@ -297,7 +258,6 @@ def main(game_id, num_colored, game_mode):
             result["constraints"][words[i][j]].append([i, j])
     find_solution(1)
     end = time.time()
-    # result["num_valid_constraint_assignments"] = num_valid_symbol_assignments
     if num_possible_boards == 0:
         return
     result["num_possible_solutions"] = num_possible_boards

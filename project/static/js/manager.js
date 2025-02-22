@@ -94,6 +94,12 @@ export class Manager {
         document.getElementById('copy-results-button').addEventListener('click', () => {
             this.board.copyResults();
         });
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                this.board.pause();
+            }
+        });
     }
 
     showHowToPlayIfFirstTime() {

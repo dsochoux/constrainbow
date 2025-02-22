@@ -98,7 +98,7 @@ export class SpeedBoard extends Board {
     }
 
     pause() {
-        if (this.is_paused || this.isSolutionFound) {
+        if (this.isPaused || this.isSolutionFound) {
             return;
         }
         this.pauseTimer();

@@ -93,6 +93,7 @@ h2 {
     background-color: var(--bg);
     cursor: pointer;
     box-sizing: border-box; /* Ensure padding and border are included in the tile size */
+    user-select: none;
 }
 
 .letter-text {
@@ -275,6 +276,7 @@ h2 {
     cursor: pointer;
     text-align: center;
     box-shadow: 1px 1px var(--contrast);
+    user-select: none;
 }
 
 .key-letter {

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file
+from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file, Response
 import os
 import fcntl
 import json
@@ -138,6 +138,30 @@ def log_solution():
 @app.route('/words', methods=['GET'])
 def get_words():
     return send_file('../word_files/words.txt')
+
+@app.route('/speedlog', methods=['GET'])
+def get_speed_log():
+    game_id = get_game_id()
+    file_path = f'./logs/{game_id}/speed.csv'
+    return return_log(file_path, "speed")
+
+@app.route('/scorelog', methods=['GET'])
+def get_score_log():
+    game_id = get_game_id()
+    file_path = f'./logs/{game_id}/score.csv'
+    return return_log(file_path, "score")
+
+def return_log(file_path, mode):
+    if not os.path.exists(file_path):
+        return f"Nobody has solved today's {mode} game yet.", 200
+    # Open the CSV file and read its content
+    with open(file_path, 'r') as file:
+        file_content = file.read()
+
+    # Return the file content as a response with text/plain MIME type
+    return Response(file_content, 
+                    mimetype='text/plain', 
+                    headers={"Content-Disposition": f"inline; filename={mode}log.txt"})
 
 
 if __name__ == '__main__':

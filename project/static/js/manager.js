@@ -207,8 +207,8 @@ export class Manager {
     reportMissingWords() {
         let incorrectWords = [];
         this.board.words.forEach(word => {
-            if (word.isAllLettersFilled() && !word.isValidWord) {
-                // a full word not in the invalid state is one we should report
+            if (word.isAllLettersFilled() && !this.isValidWord(word.getWordString())) {
+                // if a word is full and not in the word list, report it
                 incorrectWords.push(word.getWordString());
             }
         });

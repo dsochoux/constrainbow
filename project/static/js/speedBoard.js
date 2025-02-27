@@ -131,8 +131,9 @@ export class SpeedBoard extends Board {
     }
 
     handleLetterKeyPressed(letter) {
-        super.handleLetterKeyPressed(letter);
-        this.check();
+        if (super.handleLetterKeyPressed(letter)) {
+            this.check();
+        }
     }
 
     handlePlayPauseClicked() {

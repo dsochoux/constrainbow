@@ -63,9 +63,10 @@ export class ScoreBoard extends Board {
     }
 
     handleLetterKeyPressed(letter) {
-        super.handleLetterKeyPressed(letter);
-        this.calculateScore();
-        this.check();
+        if (super.handleLetterKeyPressed(letter)) {
+            this.calculateScore();
+            this.check();
+        }
     }
 
     handleBackspacePressed() {

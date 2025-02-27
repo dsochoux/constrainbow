@@ -274,19 +274,20 @@ export class Board {
     }
     
 
+    // returns true if the state of the board was changed, false otherwise
     handleLetterKeyPressed(letter) {
         // if the key is already the current letter, save a bunch of work and do nothing
         if (this.selectedLetter.value === letter) {
-            return;
+            return false;
         }
         
         if (this.selectedLetter.isConstrained()) {
             // check if there are conflicts, and if so, flash the conflicting letters
             if (this.flashConflictingConstrainedLetters(letter)) {
-                return;
+                return false;
             }
             if (this.flashConflictingWildcardLetters(letter)) {
-                return;
+                return false;
             }
             // update all of the tiles of the same constraint of the selected tile
             this.constraints[this.selectedLetter.constraint].forEach(position => {
@@ -297,7 +298,7 @@ export class Board {
         } else {
             // only need to check if a constrained tile is using the letter
             if (this.flashConflictingConstrainedLetters(letter)) {
-                return;
+                return false;
             }
             this.blackLetters[this.selectedLetter.value]--;
             this.blackLetters[letter] = getWithDefault(this.blackLetters, letter, 0) + 1;
@@ -314,6 +315,7 @@ export class Board {
                 }
             }
         }
+        return true;
     }
 
     handleBackspacePressed() {
@@ -351,25 +353,6 @@ export class Board {
             this.showItems();
         }
         
-        // // update the report missing word button
-        // let numInvalid = 0;
-        // this.words.forEach(word => {        
-        //     if (word.isInvalid) {
-        //         numInvalid++;
-        //     }
-        // });
-        // if (numInvalid) {
-        //     if (numInvalid == 1) {
-        //         this.reportMissingWordButton.textContent = "REPORT MISSING WORD";
-        //     } else {
-        //         this.reportMissingWordButton.textContent = "REPORT MISSING WORDS";
-        //     }
-        // } else {
-        //     this.reportMissingWordButton.style.display = "none";
-        //     if (this.first_solution_found) {
-        //         this.copyButton.style.display = "inline-block";
-        //     }
-        // }
         this.manager.updateKeyboard();
         this.manager.hideCopyButton();
     }

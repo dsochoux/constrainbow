@@ -11,7 +11,9 @@ abort
 about
 above
 abuse
+abuzz
 abyss
+achoo
 acorn
 acrid
 actor
@@ -26,6 +28,7 @@ adopt
 adore
 adorn
 adult
+aegis
 affix
 afire
 afoot
@@ -43,6 +46,7 @@ agony
 agree
 ahead
 aider
+aioli
 aisle
 alarm
 album
@@ -60,6 +64,7 @@ allot
 allow
 alloy
 aloft
+aloha
 alone
 along
 aloof
@@ -72,6 +77,7 @@ amaze
 amber
 amble
 amend
+amino
 amiss
 amity
 among
@@ -100,11 +106,13 @@ aping
 apnea
 apple
 apply
+april
 apron
 aptly
 arbor
 ardor
 arena
+arepa
 argue
 arise
 armor
@@ -204,6 +212,7 @@ billy
 binge
 bingo
 biome
+biped
 birch
 birth
 bison
@@ -256,7 +265,9 @@ booty
 booze
 boozy
 borax
+bored
 borne
+boron
 bosom
 bossy
 botch
@@ -267,6 +278,7 @@ bowel
 boxer
 brace
 braid
+brail
 brain
 brake
 brand
@@ -344,6 +356,7 @@ canon
 caper
 caput
 carat
+caret
 cargo
 carol
 carry
@@ -385,9 +398,12 @@ child
 chili
 chill
 chime
+chimp
 china
 chirp
+chive
 chock
+chode
 choir
 choke
 chord
@@ -424,6 +440,7 @@ cling
 clink
 cloak
 clock
+clomp
 clone
 close
 cloth
@@ -440,6 +457,8 @@ coast
 cobra
 cocky
 cocoa
+coded
+coder
 colon
 color
 comet
@@ -500,6 +519,7 @@ crock
 crone
 crony
 crook
+croon
 cross
 croup
 crowd
@@ -520,6 +540,7 @@ curry
 curse
 curve
 curvy
+cuter
 cutie
 cyber
 cycle
@@ -611,6 +632,7 @@ drift
 drill
 drink
 drive
+droid
 droit
 droll
 drone
@@ -625,6 +647,7 @@ dryad
 dryer
 dryly
 duchy
+ducky
 dully
 dummy
 dumpy
@@ -702,6 +725,7 @@ evoke
 exact
 exalt
 excel
+exeat
 exert
 exile
 exist
@@ -719,6 +743,7 @@ false
 fancy
 fanny
 farce
+farro
 fatal
 fatty
 fault
@@ -836,6 +861,7 @@ froth
 frown
 froze
 fruit
+fryer
 fudge
 fugue
 fully
@@ -965,6 +991,8 @@ gummy
 guppy
 gusto
 gusty
+gyatt
+gyoza
 gypsy
 habit
 haiku
@@ -1022,6 +1050,7 @@ house
 hovel
 hover
 howdy
+hubby
 human
 humid
 humor
@@ -1044,6 +1073,7 @@ idiom
 idiot
 idler
 idyll
+iftar
 igloo
 iliac
 image
@@ -1072,6 +1102,7 @@ islet
 issue
 itchy
 ivory
+jammy
 jaunt
 jazzy
 jelly
@@ -1079,6 +1110,7 @@ jerky
 jetty
 jewel
 jiffy
+jimmy
 joint
 joist
 joker
@@ -1095,6 +1127,7 @@ juror
 kappa
 karma
 kayak
+kazoo
 kebab
 kefir
 khaki
@@ -1119,6 +1152,7 @@ labor
 laden
 ladle
 lager
+laggy
 lance
 lanky
 lapel
@@ -1134,6 +1168,7 @@ lathe
 latte
 laugh
 layer
+layup
 leach
 leafy
 leaky
@@ -1180,10 +1215,12 @@ lodge
 lofty
 logic
 login
+loner
 loopy
 loose
 lorry
 loser
+lotus
 louse
 lousy
 loved
@@ -1255,9 +1292,11 @@ mercy
 merge
 merit
 merry
+messy
 metal
 meter
 metro
+mezze
 micro
 midge
 midst
@@ -1275,6 +1314,7 @@ mirth
 miser
 missy
 misty
+mixed
 mixer
 mocha
 modal
@@ -1374,6 +1414,7 @@ older
 olive
 ombre
 omega
+onery
 onion
 onset
 opera
@@ -1411,8 +1452,10 @@ panda
 panel
 panic
 pansy
+panty
 papal
 paper
+parch
 parer
 parka
 parry
@@ -1496,9 +1539,11 @@ point
 poise
 poker
 polar
+polio
 polka
 polyp
 pooch
+poopy
 poppy
 porch
 poser
@@ -1514,6 +1559,7 @@ preen
 press
 price
 prick
+pricy
 pride
 pried
 prime
@@ -1525,6 +1571,7 @@ prism
 privy
 prize
 probe
+promo
 prone
 prong
 proof
@@ -1560,10 +1607,12 @@ quark
 quart
 quash
 quasi
+queef
 queen
 queer
 quell
 query
+queso
 quest
 queue
 quick
@@ -1581,6 +1630,7 @@ racer
 radar
 radii
 radio
+rager
 rainy
 raise
 rajah
@@ -1597,6 +1647,7 @@ ratio
 ratty
 raven
 rayon
+razed
 razor
 reach
 react
@@ -1681,6 +1732,7 @@ rumor
 rupee
 rural
 rusty
+saber
 sadly
 safer
 saint
@@ -1691,6 +1743,7 @@ salsa
 salty
 salve
 salvo
+samba
 sandy
 saner
 sappy
@@ -2003,8 +2056,11 @@ stove
 strap
 straw
 stray
+strep
 strew
 strip
+strop
+strum
 strut
 stuck
 study
@@ -2015,6 +2071,7 @@ stunk
 stunt
 style
 suave
+suede
 sugar
 suing
 suite
@@ -2027,6 +2084,7 @@ surer
 surge
 surly
 sushi
+swain
 swami
 swamp
 swarm
@@ -2042,6 +2100,7 @@ swift
 swill
 swine
 swing
+swipe
 swirl
 swish
 swoon
@@ -2135,6 +2194,7 @@ today
 toddy
 token
 tonal
+toner
 tonga
 tonic
 tooth
@@ -2193,7 +2253,9 @@ tubal
 tuber
 tulip
 tulle
+tummy
 tumor
+tuner
 tunic
 turbo
 tutor
@@ -2201,6 +2263,7 @@ twang
 tweak
 tweed
 tweet
+twerk
 twice
 twine
 twirl
@@ -2255,6 +2318,7 @@ vapor
 vault
 vaunt
 vegan
+veiny
 venom
 venue
 verge
@@ -2308,6 +2372,7 @@ weigh
 weird
 welch
 welsh
+wetly
 whack
 whale
 wharf
@@ -2338,6 +2403,7 @@ wimpy
 wince
 winch
 windy
+wired
 wiser
 wispy
 witch
@@ -2370,6 +2436,7 @@ wrong
 wrote
 wrung
 wryly
+xylem
 yacht
 yearn
 yeast
@@ -2377,6 +2444,8 @@ yield
 yodel
 young
 youth
+yummy
 zebra
 zesty
+zilch
 zonal

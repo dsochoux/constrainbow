@@ -42,7 +42,7 @@ class Game:
     }
 
     thresholds = {
-        "speed": 10000,
+        "speed": 15000,
         "score": 50000
     }
 
@@ -279,19 +279,28 @@ class Game:
         
         result["num_possible_solutions"] = self.num_solutions
         result["num_possible_points"] = self.best_solution["points"]
+        result["best_solution"] = self.best_solution
 
         output_file = f"games/{self.mode}/{self.game_id}.json"
         # output_file = f"generated_games/solution.json"
         with open(output_file, "w") as f:
             json.dump(result, f, indent=4)
         
-        result["best_solution"] = self.best_solution
-        result["solutions"] = self.solutions
-        output_file = f"game_solutions/{self.mode}/{self.game_id}.json"
-        with open(output_file, "w") as f:
-            json.dump(result, f, indent=4)
+        # result["solutions"] = self.solutions
+        # output_file = f"game_solutions/{self.mode}/{self.game_id}.json"
+        # with open(output_file, "w") as f:
+        #     json.dump(result, f, indent=4)
 
 
 if __name__ == "__main__":
-    g = Game(datetime(2025, 3, 1), "score", 9)
-    g.generate()
+    start_date = datetime(2025, 4, 16)
+    end_date = datetime(2025, 4, 30)
+
+    # loop through all the dates in the range
+    for i in range((end_date - start_date).days + 1):
+        date = start_date + timedelta(days=i)
+        print(f"Generating games for {date.strftime('%m/%d/%Y')}")
+        speed = Game(date, "speed", 10)
+        speed.generate()
+        score = Game(date, "score", 9)
+        score.generate()

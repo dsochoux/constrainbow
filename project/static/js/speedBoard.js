@@ -162,6 +162,9 @@ export class SpeedBoard extends Board {
 
     getMetric(doIncludeEmoji) {
         if (doIncludeEmoji) {
+            if (this.manager.gameId.substring(0, 4) === "0408") {
+                return `🎈 ${formatTime(this.elapsedSeconds)}`;
+            }
             return `⏱️ ${formatTime(this.elapsedSeconds)}`;
         }
         return `${formatTime(this.elapsedSeconds)}`;

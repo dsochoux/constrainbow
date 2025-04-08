@@ -11,6 +11,11 @@ db_path = "database.db"
 eastern = ZoneInfo("America/New_York")
 
 words = []
+
+emoji_overrides = {
+    "0408": "🎈",
+}
+
 with open('./word_files/words.txt', 'r') as f:
     for word in f:
         words.append(word.strip())
@@ -38,7 +43,7 @@ def speed():
             'game.html',
             game_id=game_id,
             game_mode="speed",
-            mode_emoji="⏱️",
+            mode_emoji=emoji_overrides.get(game_id[:4], "⏱️"),
             other_mode_emoji="🎯",
             other_mode_endpoint="/score",
             date=get_date_string(game_id)
@@ -56,7 +61,7 @@ def score():
             game_id=game_id,
             game_mode="score",
             mode_emoji="🎯",
-            other_mode_emoji = "⏱️",
+            other_mode_emoji = emoji_overrides.get(game_id[:4], "⏱️"),
             other_mode_endpoint = "/speed",
             date=get_date_string(game_id)
         )

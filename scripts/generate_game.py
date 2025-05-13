@@ -293,8 +293,8 @@ class Game:
 
 
 if __name__ == "__main__":
-    start_date = datetime(2025, 4, 16)
-    end_date = datetime(2025, 4, 30)
+    start_date = datetime(2025, 5, 1)
+    end_date = datetime(2025, 5, 31)
 
     # loop through all the dates in the range
     for i in range((end_date - start_date).days + 1):

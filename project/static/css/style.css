@@ -221,6 +221,9 @@ h2 {
     position: relative;
     max-height: 70vh; /* Limit height to 80% of viewport */
     overflow-y: auto; /* Enable scrolling if content overflows */
+    white-space: normal; /* allow wrapping */
+    overflow-x: hidden;  /* optional: hide any accidental overflow */
+    word-wrap: break-word; /* wrap long words or URLs */
 }
 
 /* The close button */

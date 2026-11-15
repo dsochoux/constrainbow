@@ -1,17 +1,29 @@
-import sqlite3
+import os
 import random
 import json
-import time
 from datetime import datetime, timedelta
+
+# number of colored tiles for each mode
+MODES = {
+    "speed": 10,
+    "score": 9,
+}
+
+def game_path(mode, game_id):
+    return f"games/{mode}/{game_id}.json"
+
+def popcount(bits):
+    # number of 1 bits in an int (int.bit_count needs Python 3.10+)
+    return bits.bit_count() if hasattr(bits, "bit_count") else bin(bits).count("1")
 
 
 class Game:
-    db_path = "database.db"
+    words_path = "word_files/words.txt"
 
     word_length = 5
     alphabet = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z')
-    
+
     letter_to_points = {
         'a': 1,
         'b': 3,
@@ -46,6 +58,13 @@ class Game:
         "score": 50000
     }
 
+    # the word index is shared by every Game and built once, the first time a Game is made
+    # see docs/generation-algorithm.md for a full explanation
+    words = None        # list of every accepted word; a word's position in this list is its "bit number"
+    word_points = None  # word_points[i] is the point value of words[i]
+    index = None        # index[position][letter] is a bitset of the words with that letter at that position
+    all_words = None    # a bitset with a 1 for every word
+
     def __init__(self, date, mode, num_colored):
 
         self.game_id = date.strftime("%m%d%Y")
@@ -56,16 +75,23 @@ class Game:
         self.constraint_assignments = ['' for _ in range(len(self.constraints))]
         self.set_vars()
 
-        self.conn = sqlite3.connect(self.db_path)
-        self.cursor = self.conn.cursor()
+        if Game.words is None:
+            Game.build_index()
 
-    def __del__(self):
-        self.conn.close()
-        
-    
+    @classmethod
+    def build_index(cls):
+        with open(cls.words_path, "r") as f:
+            cls.words = [line.strip() for line in f if line.strip()]
+        cls.word_points = [cls.calculate_points_for(word) for word in cls.words]
+        cls.index = [{letter: 0 for letter in cls.alphabet} for _ in range(cls.word_length)]
+        for i, word in enumerate(cls.words):
+            for position, letter in enumerate(word):
+                # turn on bit i in the bitset for (position, letter)
+                cls.index[position][letter] |= 1 << i
+        cls.all_words = (1 << len(cls.words)) - 1
+
     def set_vars(self):
-        self.num_solutions = 0 # not the same as len(self.solutions)
-        self.solutions = []
+        self.num_solutions = 0
         self.best_solution = {
             "points": 0,
             "word_1": "",
@@ -85,7 +111,7 @@ class Game:
         guaranteed_constraints = []
         for i in range(len(self.constraints)):
             guaranteed_constraints.append([shuffled_constraints[i], shuffled_constraints[(i + 1) % 4]])
-        
+
         for i in range(len(self.grid)):
             positions = random.sample(range(self.word_length), 2)
             self.grid[i][positions[0]] = guaranteed_constraints[i][0]
@@ -101,141 +127,76 @@ class Game:
             _constraints.remove(random_constraint)
             self.grid[random_word][random_position] = random_constraint
             total += 1
-    
-    # generate a query whose WHERE clause concerns only that the contrained letters
-    # match their constrained values
-    def verify_constraints_query(self, query_stub, word):
-        positive_index_to_clauses = [
-            " first_letter = ?",
-            " second_letter = ?",
-            " third_letter = ?",
-            " fourth_letter = ?",
-            " fifth_letter = ?"
-        ]
-        query_args = []
-        for i, constraint in enumerate(word):
-            if constraint == 0 or self.constraint_assignments[constraint - 1] == '': continue
-            query_args.append(self.constraint_assignments[constraint - 1])
-            query_stub += positive_index_to_clauses[i]
-            query_stub += " AND"
-        # chop off the last and
-        if query_stub[-4:] == " AND":
-            query_stub = query_stub[:-4]
-        query_stub += ";"
-        return query_stub, query_args
 
-    # generate a query whose WHERE clause concerns that constrained letters match their
-    # constrained value AND where wildcard letters cannot be the same as a constrained
-    # letter
-    def verify_word_query(self, query_stub, word):
-        positive_index_to_clauses = [
-            " first_letter = ?",
-            " second_letter = ?",
-            " third_letter = ?",
-            " fourth_letter = ?",
-            " fifth_letter = ?"
-        ]
-        negative_index_to_clauses = [
-            " first_letter != ?",
-            " second_letter != ?",
-            " third_letter != ?",
-            " fourth_letter != ?",
-            " fifth_letter != ?"
-        ]
-
-        query_args = []
+    # returns a bitset of the words that fit a row of the grid with the current constraint assignments
+    # every colored tile whose constraint has a letter must be that letter (constraints that
+    # are not assigned yet are ignored)
+    # if strict is True, every black tile must also NOT be any assigned constraint letter
+    def matching_words(self, word, strict):
+        bits = self.all_words
         for i, constraint in enumerate(word):
             if constraint == 0:
-                # we need to add clauses to ensure that the ith letter
-                # is not a letter assigned to a constraint
-                for letter in self.constraint_assignments:
-                    query_args.append(letter)
-                    query_stub += negative_index_to_clauses[i]
-                    query_stub += " AND"
+                if strict:
+                    for letter in self.constraint_assignments:
+                        # remove the words that have this constraint letter at this black position
+                        bits &= ~self.index[i][letter]
             else:
-                # need to add clauses that ensure that the ith letter
-                # is the letter assigned to the symbol
-                query_args.append(self.constraint_assignments[constraint - 1])
-                query_stub += positive_index_to_clauses[i]
-                query_stub += " AND"
-        if query_stub[-4:] == " AND":
-            query_stub = query_stub[:-4]
-        query_stub += ";"
-        return query_stub, query_args
-    
+                letter = self.constraint_assignments[constraint - 1]
+                if letter != '':
+                    # keep only the words with this letter at this position
+                    bits &= self.index[i][letter]
+            if bits == 0:
+                break # nothing left, no point checking the other positions
+        return bits
+
     # check to see if there are any potential solutions for the ith word in the words list
+    # (black tiles are allowed to be anything here, which makes this a cheap early check)
     def is_solution_for(self, i):
-        word = self.grid[i]
-        # construct the query
-        query_stub = '''
-        SELECT COUNT(*) FROM words
-        WHERE
-        '''
-        query, query_args = self.verify_constraints_query(query_stub, word)
-        self.cursor.execute(query, query_args)
-        return self.cursor.fetchone()[0] > 0
-    
+        return self.matching_words(self.grid[i], strict=False) != 0
+
     @classmethod
     def calculate_points_for(cls, word):
         points = 0
         for letter in word:
             points += cls.letter_to_points[letter]
         return points
-    
-    # this function will be called when we want to generate all solutions to a promising
-    # constraint assignment where the wildcards are not allowed to be the same letter
-    # as one of the constraints
+
+    # this function will be called when every constraint has a letter
+    # here the wildcards are not allowed to be the same letter as one of the constraints
     def generate_solutions(self):
         num_solutions = 1 # base multiplication factor
-        solution_object = {
-            "constraint_assignments": [c for c in self.constraint_assignments],
-            "best_total_points": 0
-        }
         best_words = [None, None, None, None]
         best_points = [0, 0, 0, 0]
         for i, word in enumerate(self.grid):
-            query_stub = '''
-            SELECT first_letter, second_letter, third_letter, fourth_letter, fifth_letter FROM words
-            WHERE
-            '''
-            query, query_args = self.verify_word_query(query_stub, word)
-            self.cursor.execute(query, query_args)
-            raw_solutions = self.cursor.fetchall()
-            if len(raw_solutions) == 0:
+            bits = self.matching_words(word, strict=True)
+            if bits == 0:
                 # there is no point in continuing, this constraint assignment has nothing for us
                 return
-            solutions = [] # all of the different possible word choices
-            for raw_solution in raw_solutions:
-                solutions.append("".join(raw_solution))
-                points = self.calculate_points_for(raw_solution)
-                if points > best_points[i]:
-                    best_points[i] = points
-                    best_words[i] = "".join(raw_solution)
-            num_solutions *= len(solutions)
-            solution_object[f"word_{i + 1}"] = {
-                "num_solutions": len(solutions),
-                "best_word_option": best_words[i],
-                "best_word_points": best_points[i],
-                "solutions": solutions
-            }
+            num_solutions *= popcount(bits)
+            # walk through the 1 bits to find the highest scoring word for this row
+            while bits:
+                lowest_bit = bits & -bits
+                w = lowest_bit.bit_length() - 1 # the word number of the lowest 1 bit
+                if self.word_points[w] > best_points[i]:
+                    best_points[i] = self.word_points[w]
+                    best_words[i] = self.words[w]
+                bits ^= lowest_bit # turn that bit off and move to the next one
         best_total_points = sum(best_points)
-        solution_object["best_total_points"] = best_total_points
-        self.solutions.append(solution_object)
         if best_total_points > self.best_solution["points"]:
             self.best_solution["points"] = best_total_points
             self.best_solution["word_1"] = best_words[0]
             self.best_solution["word_2"] = best_words[1]
             self.best_solution["word_3"] = best_words[2]
             self.best_solution["word_4"] = best_words[3]
-        # we will want to add the computed number of possibilites for this symbol arrangement to a total 
+        # we will want to add the computed number of possibilites for this symbol arrangement to a total
         self.num_solutions += num_solutions
 
     def find_solution(self, constraint):
         if constraint == len(self.constraints) + 1:
             # at this point, we have assigned each symbol a letter
-            # this assignment is promisng -- there are words that would satisfy the 
-            # constraints if the wildcard letters could by ANYTHING. However, I am messing
-            # around with the idea that wildcards cannnot be the same letter as another symbol.
+            # this assignment is promisng -- there are words that would satisfy the
+            # constraints if the wildcard letters could by ANYTHING. However,
+            # wildcards cannnot be the same letter as another symbol.
             # therefore, I must now check to make sure that for each word, there is a solution
             # where the wildcards are not the same as any of the symbols
             self.generate_solutions()
@@ -260,7 +221,7 @@ class Game:
             # otherwise, let the loop continue to the next letter
         # remove symbol from map before returning
         self.constraint_assignments[constraint - 1] = ''
-    
+
     def generate(self):
         while self.num_solutions < self.thresholds[self.mode]:
             self.set_vars()
@@ -268,39 +229,39 @@ class Game:
             } # the result object that will be converted to JSON at the end
             self.generate_constraints()
             result["grid"] = self.grid
-            
+
             # writing constraints in useful format for the front end
             result["constraints"] = [[] for _ in range(len(self.constraints) + 1)]
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
                     result["constraints"][self.grid[i][j]].append([i, j])
-            
+
             self.find_solution(1)
-        
+
         result["num_possible_solutions"] = self.num_solutions
         result["num_possible_points"] = self.best_solution["points"]
         result["best_solution"] = self.best_solution
 
-        output_file = f"games/{self.mode}/{self.game_id}.json"
-        # output_file = f"generated_games/solution.json"
-        with open(output_file, "w") as f:
+        output_file = game_path(self.mode, self.game_id)
+        # write to a temporary file, then rename it into place, so the web server
+        # can never read a half-written game file
+        temp_file = output_file + ".tmp"
+        with open(temp_file, "w") as f:
             json.dump(result, f, indent=4)
-        
-        # result["solutions"] = self.solutions
-        # output_file = f"game_solutions/{self.mode}/{self.game_id}.json"
-        # with open(output_file, "w") as f:
-        #     json.dump(result, f, indent=4)
+        os.replace(temp_file, output_file)
+
+
+def generate_day(date):
+    for mode, num_colored in MODES.items():
+        Game(date, mode, num_colored).generate()
 
 
 if __name__ == "__main__":
-    start_date = datetime(2025, 7, 1)
-    end_date = datetime(2025, 7, 31)
+    start_date = datetime(2026, 11, 1)
+    end_date = datetime(2026, 11, 30)
 
     # loop through all the dates in the range
     for i in range((end_date - start_date).days + 1):
         date = start_date + timedelta(days=i)
         print(f"Generating games for {date.strftime('%m/%d/%Y')}")
-        speed = Game(date, "speed", 10)
-        speed.generate()
-        score = Game(date, "score", 9)
-        score.generate()
+        generate_day(date)

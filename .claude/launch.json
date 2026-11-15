@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "constrainbow",
+      "runtimeExecutable": "env/bin/python",
+      "runtimeArgs": ["project/app.py"],
+      "port": 5001
+    }
+  ]
+}

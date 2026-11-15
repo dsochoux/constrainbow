@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Standard favicon -->
+    <!-- Standard favicon: the SVG is sharp at any size; the PNGs are fallbacks for older browsers -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon.svg') }}" type="image/svg+xml">
     <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}" sizes="32x32" type="image/png">
     <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}" sizes="16x16" type="image/png">
 

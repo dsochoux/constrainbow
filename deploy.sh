@@ -31,6 +31,8 @@ scp ./project/app.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
 scp ./project/templates/game.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
 # style.css
 scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
+# favicons and the web app manifest
+scp ./project/static/favicon_io/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/favicon_io
 # bundle.js
 scp ./project/static/js/bundle.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
 # words.txt

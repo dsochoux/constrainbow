@@ -24,6 +24,7 @@ constrainbow/
 ├── game_solutions/            old full-solution dumps (gitignored, unused)
 ├── database.db                sqlite: tables words(id, first_letter..fifth_letter), reported_missing_words (unused)
 ├── deploy.sh
+├── design/                   design explorations (mockups.html) and favicon sources (favicon/D*.svg = the chosen rainbow C; rendered to PNG/ICO with headless Chrome + ImageMagick)
 ├── server/constrainbow.service  systemd unit for gunicorn
 └── env/                       Python 3.11 venv (Flask, gunicorn on server)
 ```

@@ -167,6 +167,11 @@ def log_solution():
 
     return '', 200
 
+# browsers ask for /favicon.ico on their own (e.g. for bookmarks), regardless of the <link> tags
+@app.route('/favicon.ico')
+def favicon():
+    return send_file('static/favicon_io/favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 @app.route('/words', methods=['GET'])
 def get_words():
     return send_file('../word_files/words.txt')

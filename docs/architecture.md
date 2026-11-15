@@ -40,7 +40,8 @@ Loads `words.txt` into memory at import. Routes:
 | `GET /words` | send words.txt |
 | `GET /speedlog`, `/scorelog` | today's raw CSV as text/plain (public) |
 
-Production: gunicorn `-w 4 project.app:app -b 0.0.0.0:5001` behind nginx 1.26 on Ubuntu, run as root from `~/constrainbow`. No gzip on JSON responses observed.
+Production: gunicorn `-w 4 project.app:app -b 0.0.0.0:5001` behind nginx 1.26 on Ubuntu, run as root from `/root/constrainbow`. No gzip on JSON responses observed.
+Server (checked 2026-11-15): DigitalOcean droplet with 1 vCPU and 1 GB RAM, clock in UTC, Python 3.12.7 in `env/`. `/root/constrainbow` is not a git checkout. It also holds legacy `generated_games/`, `gunicorn.log`, and the real `logs/` and `reported_missing_words.txt` (477 lines vs 323 locally). The server had 645 speed games vs 628 locally (through 11/30 only), and there was no crontab before the new deploy.sh. The new generator takes ~0.35 s/puzzle there. Access: `ssh root@constrainbow.com`.
 
 ## Puzzle JSON format
 ```jsonc

@@ -7,7 +7,7 @@ Ordered roughly by urgency. None of these have been fixed yet. Discuss with Dann
 2. **Jan–Nov 2026 game files are untracked in git** (the last commit is "july games", 2025). They exist only locally and on the server.
 3. **`/log-solution` path traversal, running as root.** `game_id` and `mode` come from the POST body unchecked and feed `os.makedirs(f'./logs/{game_id}/')` and `open(f'{path}{mode}.csv','a')`. Anyone can create directories and append to `.csv` files anywhere the process can write. gunicorn runs as **root**. Fix: validate `game_id` against `^\d{8}$` and `mode` against `{speed, score}`, and run gunicorn as an unprivileged user. `/game` builds a path the same way, but it only reads `.json` and returns specific keys, so it is low risk. It should still be validated.
 4. `/report-missing-word` and `/log-solution` have no rate limit or size limit, so the logs can be spammed. Solve times/scores are trusted from the client.
-5. The deploy restarts with `pkill` + `nohup` (no systemd unit, no restart on crash or reboot), as root over ssh.
+5. *(Fixed 2026-11-15: gunicorn now runs as the systemd service `constrainbow`, which restarts on crash and starts on boot.)* The deploy used to restart with `pkill` + `nohup`. It still runs as root.
 
 ## Efficiency
 - Every `/game` response includes the full 2,451-word list (~20 KB, **not gzipped** by nginx). Options: enable gzip in nginx, make `words.txt` a cacheable static asset (or keep it in localStorage with a version), or validate server-side.

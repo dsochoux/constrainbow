@@ -53,12 +53,15 @@ ssh $REMOTE_USER@$REMOTE_HOST << EOF
     crontab -l | grep ensure_games
 EOF
 
-echo "Restarting gunicorn..."
+echo "Restarting the constrainbow service (gunicorn)..."
+# gunicorn runs as a systemd service, so it restarts itself if it crashes and starts on boot
+# see server/constrainbow.service
+scp ./server/constrainbow.service $REMOTE_USER@$REMOTE_HOST:/etc/systemd/system/constrainbow.service
 ssh $REMOTE_USER@$REMOTE_HOST << EOF
-    cd $REMOTE_DIR
-    source env/bin/activate
-    pkill gunicorn
-    nohup gunicorn -w 4 project.app:app -b 0.0.0.0:5001 > gunicorn.log 2>&1 &
+    systemctl daemon-reload
+    systemctl enable constrainbow
+    systemctl restart constrainbow
+    systemctl is-active constrainbow
 EOF
 
 echo "Restarting NGINX..."

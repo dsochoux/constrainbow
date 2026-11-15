@@ -24,6 +24,7 @@ constrainbow/
 ├── game_solutions/            old full-solution dumps (gitignored, unused)
 ├── database.db                sqlite: tables words(id, first_letter..fifth_letter), reported_missing_words (unused)
 ├── deploy.sh
+├── server/constrainbow.service  systemd unit for gunicorn
 └── env/                       Python 3.11 venv (Flask, gunicorn on server)
 ```
 
@@ -40,7 +41,7 @@ Loads `words.txt` into memory at import. Routes:
 | `GET /words` | send words.txt |
 | `GET /speedlog`, `/scorelog` | today's raw CSV as text/plain (public) |
 
-Production: gunicorn `-w 4 project.app:app -b 0.0.0.0:5001` behind nginx 1.26 on Ubuntu, run as root from `/root/constrainbow`. No gzip on JSON responses observed.
+Production: gunicorn `-w 4 project.app:app -b 0.0.0.0:5001` behind nginx 1.26 on Ubuntu, run as root from `/root/constrainbow` by the systemd service `constrainbow` (`server/constrainbow.service`: `Restart=always`, enabled at boot, output to `gunicorn.log`). No gzip on JSON responses observed.
 Server (checked 2026-11-15): DigitalOcean droplet with 1 vCPU and 1 GB RAM, clock in UTC, Python 3.12.7 in `env/`. `/root/constrainbow` is not a git checkout. It also holds legacy `generated_games/`, `gunicorn.log`, and the real `logs/` and `reported_missing_words.txt` (477 lines vs 323 locally). The server had 645 speed games vs 628 locally (through 11/30 only), and there was no crontab before the new deploy.sh. The new generator takes ~0.35 s/puzzle there. Access: `ssh root@constrainbow.com`.
 
 ## Puzzle JSON format
@@ -79,4 +80,4 @@ Main block loops a hard-coded date range (currently uncommitted edit: 2026-11-01
 Note: count is over (letter assignment × word choices); different assignments can't produce the same 4 words, so it's a true count of distinct boards.
 
 ## Deploy — `deploy.sh`
-Prompts (bundle rebuilt? dev changes removed?) → scp app.py, game.html, style.css, bundle.js, words.txt → rsync games/ → ssh: `pkill gunicorn; nohup gunicorn ... &` → `systemctl reload nginx`. Server-side `reported_missing_words.txt` and `logs/` are never pulled back automatically.
+Prompts (bundle rebuilt? dev changes removed?) → scp app.py, game.html, style.css, bundle.js, words.txt → scripts + games sync (see generation-algorithm.md) → install `server/constrainbow.service`, `systemctl restart constrainbow` → `systemctl reload nginx`. Server-side `reported_missing_words.txt` and `logs/` are never pulled back automatically.

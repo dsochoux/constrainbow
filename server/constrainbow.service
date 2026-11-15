@@ -1,0 +1,28 @@
+# systemd service for the Constrainbow web app (gunicorn)
+# Installed to /etc/systemd/system/constrainbow.service by deploy.sh
+#
+# Useful commands on the server:
+#   systemctl status constrainbow     # is it running? recent log lines
+#   systemctl restart constrainbow    # restart (deploy.sh does this)
+#   journalctl -u constrainbow -n 50  # service start/stop history
+
+[Unit]
+Description=Constrainbow web app (gunicorn)
+# start after the network is up
+After=network.target
+
+[Service]
+User=root
+# app.py uses paths relative to the repo root, so it must run from here
+WorkingDirectory=/root/constrainbow
+ExecStart=/root/constrainbow/env/bin/gunicorn -w 4 project.app:app -b 0.0.0.0:5001
+# if gunicorn ever exits or crashes, start it again 3 seconds later
+Restart=always
+RestartSec=3
+# keep writing gunicorn's output to the same log file as before
+StandardOutput=append:/root/constrainbow/gunicorn.log
+StandardError=append:/root/constrainbow/gunicorn.log
+
+[Install]
+# start at boot
+WantedBy=multi-user.target

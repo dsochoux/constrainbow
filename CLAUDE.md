@@ -13,7 +13,7 @@ Detailed notes (read these before making changes):
   `esbuild ./project/static/js/script.js --bundle --minify --outfile=./project/static/js/bundle.js`
   (`script.min.js` is a stale, unused artifact.)
 - Puzzles: the **server generates its own** with a nightly cron job (`scripts/ensure_games.py`, keeping 30 days ahead, never overwriting). Locally: `env/bin/python scripts/ensure_games.py [--days N]` from the root. The generator uses in-memory bitsets over `words.txt` (~0.15 s/puzzle); `database.db` is no longer needed. Full explanation: [docs/generation-algorithm.md](docs/generation-algorithm.md).
-- Deploy: `./deploy.sh` (scp to `root@constrainbow.com`; rsyncs games both ways with `--ignore-existing`; runs ensure_games and (re)installs the cron line; restarts gunicorn with `pkill` + `nohup`; reloads nginx). It asks two y/n questions first.
+- Deploy: `./deploy.sh` (scp to `root@constrainbow.com`; rsyncs games both ways with `--ignore-existing`; runs ensure_games and (re)installs the cron line; installs `server/constrainbow.service` and `systemctl restart constrainbow`; reloads nginx). It asks two y/n questions first.
 - Game day boundary is midnight **America/New_York**; game id format is `MMDDYYYY`.
 - As of 2026-11-15, local games exist through 2026-12-31. The live server had them only through 11/30 until the new deploy.sh is run. The 2026 game files are untracked in git. The live site matched local code exactly (bundle.js, style.css, rendered HTML).
 

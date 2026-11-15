@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file, Response
 import os
+import re
 import fcntl
 import json
 from datetime import datetime
@@ -19,6 +20,21 @@ emoji_overrides = {
 with open('./word_files/words.txt', 'r') as f:
     for word in f:
         words.append(word.strip())
+
+# validation for anything that comes from a request and ends up in a file path or a file
+GAME_ID_PATTERN = re.compile(r"[0-9]{8}")      # MMDDYYYY
+WORD_PATTERN = re.compile(r"[a-z]{5}")         # a full word
+BOARD_WORD_PATTERN = re.compile(r"[a-z-]{5}")  # a word on the board, '-' for blanks
+METRIC_PATTERN = re.compile(r"[0-9:/]{1,20}")  # "0:41", "1:02:03", "64/64"
+GAME_MODES = ("speed", "score")
+
+def is_valid_game(game_id, game_mode):
+    return (isinstance(game_id, str) and GAME_ID_PATTERN.fullmatch(game_id) is not None
+            and game_mode in GAME_MODES)
+
+def is_list_of(value, pattern, max_length):
+    return (isinstance(value, list) and len(value) <= max_length
+            and all(isinstance(item, str) and pattern.fullmatch(item) for item in value))
 
 def get_game_id():
     return datetime.now(eastern).strftime("%m%d%Y")
@@ -79,6 +95,8 @@ def game():
         # game id in hidden input supplied by /
         game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
         game_mode = request.args.get("game-mode", "speed")
+        if not is_valid_game(game_id, game_mode):
+            return '', 404
         selected_game_file = game_id + '.json'
         
         # convert the json file to a dictionary
@@ -100,8 +118,10 @@ def game():
 
 @app.route('/report-missing-word', methods=['POST'])
 def report():
-    data = request.get_json()
-    words = data['words']
+    data = request.get_json(silent=True) or {}
+    words = data.get('words')
+    if not is_list_of(words, WORD_PATTERN, 4):
+        return '', 400
     # add words to text file
     with open('./word_files/reported_missing_words.txt', 'a') as f:
         fcntl.flock(f, fcntl.LOCK_EX)
@@ -112,12 +132,19 @@ def report():
 
 @app.route('/log-solution', methods=['POST'])
 def log_solution():
-    data = request.get_json()
-    game_id = data['game_id']  # Used in the file name
+    data = request.get_json(silent=True) or {}
+    game_id = data.get('game_id')  # Used in the file name
     time = datetime.now(eastern).strftime("%H:%M:%S")
-    mode = data['mode']
-    metric = data['metric']
-    words = data['words']
+    mode = data.get('mode')
+    metric = data.get('metric')
+    words = data.get('words')
+
+    # these values become a folder name, a file name, and a line of CSV, so only accept exactly
+    # what the game sends; anything else could write files outside of ./logs
+    if (not is_valid_game(game_id, mode)
+            or not isinstance(metric, str) or METRIC_PATTERN.fullmatch(metric) is None
+            or not is_list_of(words, BOARD_WORD_PATTERN, 4)):
+        return '', 400
 
     file_path = f'./logs/{game_id}/'
     file_name = f'{file_path}{mode}.csv'

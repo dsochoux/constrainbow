@@ -65,6 +65,8 @@ ssh $REMOTE_USER@$REMOTE_HOST << EOF
     mkdir -p $REMOTE_DIR/logs
     touch $REMOTE_DIR/word_files/reported_missing_words.txt
     chown -R constrainbow:constrainbow $REMOTE_DIR/logs $REMOTE_DIR/word_files/reported_missing_words.txt
+    # everything else stays owned by root, but the app user must be able to read it
+    chmod -R a+rX $REMOTE_DIR/project $REMOTE_DIR/word_files $REMOTE_DIR/games $REMOTE_DIR/scripts
     systemctl daemon-reload
     systemctl enable constrainbow
     systemctl restart constrainbow

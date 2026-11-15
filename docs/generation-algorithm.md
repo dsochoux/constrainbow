@@ -235,9 +235,9 @@ env/bin/python scripts/ensure_games.py --days 60  # further ahead
 ### Nightly cron on the server
 `deploy.sh` now installs this crontab line for root (idempotently: it replaces any older `ensure_games` line rather than adding duplicates):
 ```
-15 3 * * * cd ~/constrainbow && env/bin/python scripts/ensure_games.py >> generate.log 2>&1
+15 3 * * * cd /srv/constrainbow && env/bin/python scripts/ensure_games.py >> generate.log 2>&1
 ```
-That's 3:15 server time every night. With a 30-day buffer, the site keeps working for a month even if the job breaks, and there's no need to worry about the exact timezone. Output goes to `~/constrainbow/generate.log` on the server.
+That's 3:15 server time every night. With a 30-day buffer, the site keeps working for a month even if the job breaks, and there's no need to worry about the exact timezone. Output goes to `/srv/constrainbow/generate.log` on the server.
 
 A night's run normally generates 2 puzzles (one new day) in well under a second, even on the $6 droplet. The first run fills the whole buffer in about 10–20 s.
 
@@ -251,9 +251,9 @@ A night's run normally generates 2 puzzles (one new day) in well under a second,
 
 ### Day-to-day
 - **Nothing to do monthly any more.**
-- To check on it: `ssh root@constrainbow.com 'tail ~/constrainbow/generate.log; crontab -l'`.
+- To check on it: `ssh root@constrainbow.com 'tail /srv/constrainbow/generate.log; crontab -l'`.
 - **Word-list changes:** deploy the new `words.txt` as usual. Puzzles generated from then on use it. Already-generated puzzles (up to 30 days ahead) keep their old solution counts. To regenerate the future ones, delete those files on the server and run `ensure_games.py`. Only delete days nobody has played yet.
 
 ### Requirements on the server
-- Python 3.9+ in `~/constrainbow/env`. `zoneinfo` needs 3.9, and `app.py` already uses it, so this is already true.
+- Python 3.9+ in `/srv/constrainbow/env`. `zoneinfo` needs 3.9, and `app.py` already uses it, so this is already true.
 - No new packages: only the standard library.

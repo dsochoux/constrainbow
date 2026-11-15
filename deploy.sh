@@ -2,7 +2,7 @@
 
 REMOTE_USER="root"
 REMOTE_HOST="constrainbow.com"
-REMOTE_DIR="constrainbow"
+REMOTE_DIR="/srv/constrainbow"  # the app runs from here as the unprivileged user "constrainbow"
 
 
 read -p "Have you updated your bundle.js and is game.html using it? (Y/n) " confirm
@@ -45,7 +45,7 @@ rsync -avz --ignore-existing ./games/ $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/game
 rsync -avz --ignore-existing $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/games/ ./games
 
 echo "Generating any missing games and installing the nightly cron job..."
-CRON_LINE="15 3 * * * cd ~/$REMOTE_DIR && env/bin/python scripts/ensure_games.py >> generate.log 2>&1"
+CRON_LINE="15 3 * * * cd $REMOTE_DIR && env/bin/python scripts/ensure_games.py >> generate.log 2>&1"
 ssh $REMOTE_USER@$REMOTE_HOST << EOF
     cd $REMOTE_DIR
     env/bin/python scripts/ensure_games.py
@@ -58,6 +58,11 @@ echo "Restarting the constrainbow service (gunicorn)..."
 # see server/constrainbow.service
 scp ./server/constrainbow.service $REMOTE_USER@$REMOTE_HOST:/etc/systemd/system/constrainbow.service
 ssh $REMOTE_USER@$REMOTE_HOST << EOF
+    # the app runs as "constrainbow", a user that can't log in; it may only write its logs and missing-word reports
+    id constrainbow >/dev/null 2>&1 || useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin constrainbow
+    mkdir -p $REMOTE_DIR/logs
+    touch $REMOTE_DIR/word_files/reported_missing_words.txt
+    chown -R constrainbow:constrainbow $REMOTE_DIR/logs $REMOTE_DIR/word_files/reported_missing_words.txt
     systemctl daemon-reload
     systemctl enable constrainbow
     systemctl restart constrainbow

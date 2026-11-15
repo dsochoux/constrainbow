@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#fbf4e6">
+    <meta name="description" content="A daily word puzzle: fill four five-letter words that fit the colour constraints.">
     <title>CONSTRAINBOW</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Standard favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}" sizes="32x32" type="image/png">
@@ -18,111 +23,79 @@
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
-
-
 </head>
 <body>
     <input type="hidden" id="game-id" value="{{ game_id }}" />
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
+    {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
+
+    {# the how-to-play examples: colours per tile (0 = black) and the words of one solution #}
+    {% set example_colors = [[2, 4, 2, 0, 0], [2, 0, 3, 0, 0], [0, 1, 3, 0, 0], [1, 0, 1, 4, 0]] %}
+    {% set example_words = ["FIFTY", "FLASK", "SPARK", "PUPIL"] %}
+    {# fill: "none" = empty board, "colors" = only coloured tiles filled, "all" = the full solution #}
+    {% macro example_board(fill) %}
+    <div class="example-board" aria-hidden="true">
+        {% for row in example_colors %}{% set w = loop.index0 %}{% for color in row %}
+        <div class="example-letter{% if color %} c{{ color }}{% endif %}">{% if fill == "all" or (fill == "colors" and color) %}{{ example_words[w][loop.index0] }}{% endif %}</div>
+        {% endfor %}{% endfor %}
+    </div>
+    {% endmacro %}
+
     <div class="overlay" id="how-to-play-overlay">
-        <div class="popup">
-            <button id="close-button">&times;</button>
-            <h2>How to play <span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span></h2>
-            <p>The object of the game is to come up with four five-letter English words (no regular plurals or regular past tense) that fit the colored constraints.</p>
-            <p>Tiles of the same color must be the same letter. Different colored tiles may not be the same letter. For example, if one orange is an F, all of the oranges must be F. The red and the orange tiles may not both be F.</p>
-            <div id="example-board">
-                <div class="example-letter c2">F</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter"></div>
-                <div class="example-letter"></div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter"></div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter"></div>
-                <div class="example-letter"></div>
-                <div class="example-letter"></div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter"></div>
-                <div class="example-letter"></div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter"></div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter"></div>
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="how-to-play-title">
+            <button id="close-button" aria-label="Close">&times;</button>
+            <h2 id="how-to-play-title">How to play</h2>
+            <div class="steps">
+                <section class="step active">
+                    {{ example_board("none") }}
+                    <p><strong>Fill the grid with four five-letter words.</strong> No regular plurals or regular past tenses.</p>
+                </section>
+                <section class="step">
+                    {{ example_board("colors") }}
+                    <p><strong>Same colour, same letter.</strong> If one orange tile is F, every orange tile is F.</p>
+                    <p><strong>Different colours, different letters.</strong> Red and orange can't both be F.</p>
+                </section>
+                <section class="step">
+                    {{ example_board("all") }}
+                    <p><strong>Black tiles take any other letter.</strong> Never one a colour is using (here F, I, A, P), but they can repeat.</p>
+                    <p>Four real words: solved!</p>
+                </section>
+                <section class="step">
+                    <ul class="modes">
+                        <li><span class="mode-icon">{{ speed_emoji }}</span><span><strong>Speed:</strong> find any solution, as fast as you can.</span></li>
+                        <li><span class="mode-icon">🎯</span><span><strong>Score:</strong> letters are worth points. Find the highest-scoring solution.</span></li>
+                    </ul>
+                    <p>A new puzzle comes out every day at midnight ET. Each one has thousands of solutions, so compare yours with friends!</p>
+                    <p class="fine-print">Feedback? <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
+                    <p class="fine-print hash">d93e21acf596e047bc0c18f8f036e00a6f3ece3fede494d97f76e3b1d031098d</p>
+                </section>
             </div>
-            <p>The black tiles can be any letters that a colored tile is not. We can continue by filling the black tiles using all letters of the alphabet except for P, F, A, and I.</p>
-            <div id="example-board">
-                <div class="example-letter c2">F</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter">T</div>
-                <div class="example-letter">Y</div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter">L</div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter">S</div>
-                <div class="example-letter">K</div>
-                <div class="example-letter"></div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter">R</div>
-                <div class="example-letter"></div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter">U</div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter"></div>
+            <div class="step-nav">
+                <button id="step-back" class="pill">BACK</button>
+                <div class="step-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                <button id="step-next" class="pill primary">NEXT</button>
             </div>
-            <p>Although we are not allowed to use the letters that the colored tiles are (P, F, A and I), we can repeat black letters. So, we can finish up this puzzle by filling in an S, K, and L, even though they are already used by other black tiles.</p>
-            <div id="example-board">
-                <div class="example-letter c2">F</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter">T</div>
-                <div class="example-letter">Y</div>
-                <div class="example-letter c2">F</div>
-                <div class="example-letter">L</div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter">S</div>
-                <div class="example-letter">K</div>
-                <div class="example-letter">S</div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c3">A</div>
-                <div class="example-letter">R</div>
-                <div class="example-letter">K</div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter">U</div>
-                <div class="example-letter c1">P</div>
-                <div class="example-letter c4">I</div>
-                <div class="example-letter">L</div>
-            </div>
-            <p>This is a solution! Four words that fit the constraints. (BTW, you don't have to fill the tiles in any particular order. It's totally up to you.)</p>
-            <p>For each puzzle, which comes out at 12:00am EST, there are many different solutions. For speed mode, find any solution as fast as possible. For score mode, try to find the highest scoring solution possible. Your solutions will look different than your friends', so don't forget to compare!</p>
-            <div style="display: flex; justify-content: center;">
-                <button id="got-it-button">GOT IT!</button>
-            </div>
-            <p>For feedback or support, contact <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
-            <p>d93e21acf596e047bc0c18f8f036e00a6f3ece3fede494d97f76e3b1d031098d</p>
         </div>
     </div>
     <div id="container">
         <div id="header-div">
-            <h2><span class="t0">C</span><span class="t1">O</span><span class="t2">N</span><span class="t3">S</span><span class="t4">T</span><span class="t5">R</span><span class="t6">A</span><span class="t7">I</span><span class="t8">N</span><span class="t9">B</span><span class="t10">O</span><span class="t11">W</span>
-            </h2>
-            <h2 id="date">{{ date }}</h2>
-            <a id="mode-button" href="{{ other_mode_endpoint }}">{{ other_mode_emoji }}</a>
-            <button id="how-to-play-button">❓</button>
+            <h1 class="wordmark" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</h1>
+            <div id="sub-header">
+                <nav id="mode-switch" aria-label="Game mode">
+                    <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>{{ speed_emoji }} SPEED</a>
+                    <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
+                </nav>
+                <button id="how-to-play-button" aria-label="How to play">?</button>
+            </div>
         </div>
-        <p class="description" id="description">Today's {{ mode_emoji }} puzzle has <strong id="num-possible-solutions"></strong> unique solutions.</p>
+        <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.</p>
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
-            <p id="timer">00:00</p>
-            <p id="score"></p>
-            <button id="play-pause-button">...</button>
-            <button id="report-missing-word-button">REPORT MISSING WORD</button>
-            <button id="copy-results-button">COPY RESULTS!</button>
+            <p id="timer" class="pill">0:00</p>
+            <p id="score" class="pill"></p>
+            <button id="play-pause-button" class="pill primary">...</button>
+            <button id="report-missing-word-button" class="pill">REPORT MISSING WORD</button>
+            <button id="copy-results-button" class="pill primary">COPY RESULTS!</button>
         </div>
         <div id="board"></div>
         <div id="keyboard-container">
@@ -207,8 +180,8 @@
                 </button>
             </div>
             <div class="keyboard-row" id="bottom-keyboard-row">
-                <!-- <button class="key" id="refresh-key" data-key=2000>&#x21bb;</button> -->
-                <button class="key" id="refresh-key" data-key="Clear">↺</button>
+                <button class="key key-icon" id="refresh-key" data-key="Clear" aria-label="Clear board"><span class="key-word">CLEAR</span>
+                </button>
                 <button class="key" id="key-Z" data-key="Z">
                     <span class="key-letter">Z</span>
                     <span class="key-points">10</span>
@@ -237,7 +210,8 @@
                     <span class="key-letter">M</span>
                     <span class="key-points">3</span>
                 </button>
-                <button class="key" id="delete-key" data-key="Backspace">⌫</button>
+                <button class="key key-icon" id="delete-key" data-key="Backspace" aria-label="Delete"><span class="key-word">DEL</span>
+                </button>
             </div>
         </div>
     </div>

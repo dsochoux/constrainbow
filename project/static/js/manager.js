@@ -4,7 +4,9 @@ import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
     constructor() {
+        this.board = null;
         this.pauseKeyboard();
+        this.setUpHowToPlay(); // set up before the game loads, so the popup always works
         this.showHowToPlayIfFirstTime();
         this.fetchGame().then(() => {
             this.addEventListeners();
@@ -43,6 +45,11 @@ export class Manager {
             this.board = new SpeedBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
+            // score mode has no start button, so start with the first empty tile selected
+            // (otherwise typing does nothing until a tile is tapped)
+            if (!this.board.isSolutionFound) {
+                this.board.selectFirstBlank();
+            }
         }
     }
 
@@ -67,24 +74,6 @@ export class Manager {
             });
         });
 
-        // how to play overlay
-        const howToPlayOverlay = document.getElementById('how-to-play-overlay');
-        const showOverlay = () => {
-            howToPlayOverlay.style.visibility = 'visible';
-            this.board.pause();
-        }
-        document.getElementById('how-to-play-button').addEventListener('click', showOverlay);
-        const closeOverlay = () => {
-            howToPlayOverlay.style.visibility = 'hidden';
-        }
-        document.getElementById('close-button').addEventListener('click', closeOverlay);
-        document.getElementById('got-it-button').addEventListener('click', closeOverlay);
-        howToPlayOverlay.addEventListener('click', (event) => {
-            if (event.target === howToPlayOverlay) {
-                closeOverlay();
-            }
-        });
-
         // report missing word
         document.getElementById('report-missing-word-button').addEventListener('click', () => {
             this.reportMissingWords();
@@ -102,9 +91,55 @@ export class Manager {
         });
     }
 
+    // the how-to-play popup is a short series of steps with BACK / NEXT buttons
+    setUpHowToPlay() {
+        this.howToPlayOverlay = document.getElementById('how-to-play-overlay');
+        this.steps = document.querySelectorAll('.step');
+        this.stepDots = document.querySelectorAll('.step-dots span');
+        this.stepBackButton = document.getElementById('step-back');
+        this.stepNextButton = document.getElementById('step-next');
+
+        document.getElementById('how-to-play-button').addEventListener('click', () => this.showHowToPlay());
+        document.getElementById('close-button').addEventListener('click', () => this.hideHowToPlay());
+        this.howToPlayOverlay.addEventListener('click', (event) => {
+            if (event.target === this.howToPlayOverlay) {
+                this.hideHowToPlay();
+            }
+        });
+        this.stepBackButton.addEventListener('click', () => this.showStep(this.stepIndex - 1));
+        this.stepNextButton.addEventListener('click', () => {
+            if (this.stepIndex === this.steps.length - 1) {
+                this.hideHowToPlay();
+            } else {
+                this.showStep(this.stepIndex + 1);
+            }
+        });
+        this.showStep(0);
+    }
+
+    showStep(index) {
+        this.stepIndex = Math.max(0, Math.min(index, this.steps.length - 1));
+        this.steps.forEach((step, i) => step.classList.toggle('active', i === this.stepIndex));
+        this.stepDots.forEach((dot, i) => dot.classList.toggle('active', i === this.stepIndex));
+        this.stepBackButton.classList.toggle('hidden', this.stepIndex === 0);
+        this.stepNextButton.textContent = this.stepIndex === this.steps.length - 1 ? "LET'S PLAY" : "NEXT";
+    }
+
+    showHowToPlay() {
+        this.showStep(0);
+        this.howToPlayOverlay.style.visibility = 'visible';
+        if (this.board) {
+            this.board.pause();
+        }
+    }
+
+    hideHowToPlay() {
+        this.howToPlayOverlay.style.visibility = 'hidden';
+    }
+
     showHowToPlayIfFirstTime() {
         if (!localStorage.getItem('visited')) {
-            document.getElementById('how-to-play-overlay').style.visibility = 'visible'; // Show instructions
+            this.showHowToPlay(); // Show instructions
             localStorage.setItem('visited', 'true'); // Mark as visited
         }
     }

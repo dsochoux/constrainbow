@@ -141,10 +141,9 @@ export class SpeedBoard extends Board {
             return;
         }
         if (this.isPaused) {
-            // if there is no currently selected letter, select the first letter of the first word
-            if (this.selectedLetter === null) {
-                this.selectedLetter = this.words[0].letters[0];
-                this.selectedLetter.setIsSelected(true);
+            // if there is no currently selected letter, select the first empty tile
+            if (this.selectedLetter === null && !this.selectFirstBlank()) {
+                this.selectLetter(this.words[0].letters[0]);
             }
             this.resume();
         } else {

@@ -26,13 +26,14 @@ Both modes are on one page; a button in the header switches between them. A cook
 - You can keep improving after the first solve, but only the **first** solution is logged to the server.
 
 ## Controls
-- Tap a tile to select it. Tapping the **already-selected** tile deselects it, and then keys do nothing.
-- On-screen keyboard or a physical keyboard. Arrow keys and space move the cursor, wrapping between rows. Backspace clears the letter, or moves back if the tile is blank. ↺ clears the whole board.
+- Tap a tile to select it (tapping the selected tile keeps it selected). Score mode starts with the first empty tile selected, and speed mode selects it on START.
+- On-screen keyboard or a physical keyboard. Arrow keys and space move the cursor, wrapping between rows. Backspace (DEL key) clears the letter, or moves back if the tile is blank. The CLEAR key clears the whole board. The selected tile lifts (bigger shadow) and shows a blinking cursor bar.
 - Typing a letter on a coloured tile fills **every** tile of that colour. The cursor then jumps to the next blank tile in reading order.
 - Illegal letters are refused, and the conflicting tiles flash pink for 200 ms. Illegal means a letter already owned by another colour, or (on a coloured tile) a letter already used on a black tile.
 - Keyboard greying: keys you can't use on the selected tile turn grey.
 - A completed word that isn't in the list turns red. The cursor stays on it, and the timer/score display is replaced by **REPORT MISSING WORD(S)**, which POSTs the word to the server.
-- On solving, a cascade animation runs: tiles go green-bordered and dark one by one, then revert.
+- Animations: a letter pops into its tile. Filling a colour pops every tile of that colour at once. Conflicts and invalid words shake. Solving plays a diagonal wave (each tile jumps and flashes its colour, black tiles flash ink) and then a burst of confetti in the four colours. All of this is disabled under `prefers-reduced-motion`.
+- Coloured tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for colour-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.
 
 ## Sharing

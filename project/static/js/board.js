@@ -1,4 +1,4 @@
-import { BOARD_ID, NUM_WORDS, WORD_LENGTH, getWithDefault, delayedForEach } from './helpers.js';
+import { BOARD_ID, NUM_WORDS, WORD_LENGTH, getWithDefault, launchConfetti } from './helpers.js';
 export class Board {
     constructor(manager, data) {
         this.manager = manager;
@@ -215,20 +215,32 @@ export class Board {
     }
 
     // this is the callback that a Letter object will call when it is clicked
+    // clicking the tile that is already selected keeps it selected (it used to deselect it,
+    // which silently swallowed the next key presses)
     handleLetterClicked(w, l) {
-        let didClickCurrentlySelected = false;
-        if (this.selectedLetter !== null) {
-            didClickCurrentlySelected = (w == this.selectedLetter.w && l == this.selectedLetter.l);
-            this.selectedLetter.setIsSelected(false);
-            this.selectedLetter = null;
-        }
+        this.selectLetter(this.words[w].letters[l]);
+    }
 
-        if (!didClickCurrentlySelected) {
-            // toggle new on
-            this.selectedLetter = this.words[w].letters[l];
-            this.selectedLetter.setIsSelected(true);
+    selectLetter(letter) {
+        if (this.selectedLetter !== null) {
+            this.selectedLetter.setIsSelected(false);
         }
+        this.selectedLetter = letter;
+        this.selectedLetter.setIsSelected(true);
         this.manager.updateKeyboard();
+    }
+
+    // selects the first empty tile in reading order; returns false if the board is full
+    selectFirstBlank() {
+        for (const word of this.words) {
+            for (const letter of word.letters) {
+                if (letter.isBlank()) {
+                    this.selectLetter(letter);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // need two functions to answer two different questions
@@ -240,6 +252,7 @@ export class Board {
             let w = conflicting_letter[0];
             let l = conflicting_letter[1];
             this.words[w].letters[l].tileElement.classList.add('conflict');
+            this.words[w].letters[l].shake();
         });
         setTimeout(() => {
             positions.forEach(conflicting_letter => {
@@ -247,7 +260,7 @@ export class Board {
                 let l = conflicting_letter[1];
                 this.words[w].letters[l].tileElement.classList.remove('conflict');
             });
-        }, 200);
+        }, 400);
     }
 
     flashConflictingConstrainedLetters(pressedLetter) {
@@ -293,6 +306,7 @@ export class Board {
             this.constraints[this.selectedLetter.constraint].forEach(position => {
                 this.words[position[0]].updateLetter(position[1], letter);
             });
+            this.popConstraint(this.selectedLetter);
             // update the constraint assignment
             this.constraintAssignments[this.selectedLetter.constraint - 1] = letter;
         } else {
@@ -303,6 +317,7 @@ export class Board {
             this.blackLetters[this.selectedLetter.value]--;
             this.blackLetters[letter] = getWithDefault(this.blackLetters, letter, 0) + 1;
             this.words[this.selectedLetter.w].updateLetter(this.selectedLetter.l, letter);
+            this.selectedLetter.pop();
         }
         
         if (this.words[this.selectedLetter.w].isValid || !this.words[this.selectedLetter.w].isAllLettersFilled()) {
@@ -403,20 +418,23 @@ export class Board {
         this.handleSolutionFound();
     }
 
-    async celebrate() {
-        const delayTime = 100;
-        // loop through the letters and add celebrate class
-        await delayedForEach(this.words, (word) => {
-            delayedForEach(word.letters, (letter) => {
-                letter.celebrate()
-            }, delayTime);
-        }, delayTime);
-        // loop through the letters and remove celebrate class
-        await delayedForEach(this.words, (word) => {
-            delayedForEach(word.letters, (letter) => {
-                letter.stopCelebrating()
-            }, delayTime);
-        }, delayTime);
+    // when a colour gets a letter, every tile of that colour pops in at the same moment
+    // (a staggered ripple was tried, but it made typing feel laggy)
+    popConstraint(typedLetter) {
+        this.constraints[typedLetter.constraint].forEach(position => {
+            this.words[position[0]].letters[position[1]].pop();
+        });
+    }
+
+    // a diagonal wave: each tile jumps and flashes its colour, then confetti
+    celebrate() {
+        const delayTime = 70;
+        this.words.forEach((word, w) => {
+            word.letters.forEach((letter, l) => {
+                letter.celebrate((w + l) * delayTime);
+            });
+        });
+        setTimeout(launchConfetti, 350);
     }
 
     getEmojiBoard() {

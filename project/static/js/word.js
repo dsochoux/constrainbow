@@ -54,6 +54,7 @@ export class Word {
     turnRed() {
         this.letters.forEach(letter => {
             letter.tileElement.classList.add('incorrect');
+            letter.shake();
         });
     }
     

@@ -61,10 +61,32 @@ export class Letter {
         return this.value === '';
     }
 
-    celebrate() {
-        this.tileElement.classList.add('celebrate');
+    // plays a one-shot CSS animation (pop, shake, celebrate) on the tile, after delay milliseconds
+    // the class is removed again when the animation ends, so it can be played again later
+    playAnimation(className, delay = 0) {
+        const tile = this.tileElement;
+        tile.style.setProperty('--delay', `${delay}ms`);
+        tile.classList.remove(className);
+        void tile.offsetWidth; // forces the browser to notice the removal, so the animation restarts
+        tile.classList.add(className);
+        const onEnd = (e) => {
+            if (e.target === tile) {
+                tile.classList.remove(className);
+                tile.removeEventListener('animationend', onEnd);
+            }
+        };
+        tile.addEventListener('animationend', onEnd);
     }
-    stopCelebrating() {
-        this.tileElement.classList.remove('celebrate');
+
+    pop(delay = 0) {
+        this.playAnimation('pop', delay);
+    }
+
+    shake() {
+        this.playAnimation('shake');
+    }
+
+    celebrate(delay = 0) {
+        this.playAnimation('celebrate', delay);
     }
 }

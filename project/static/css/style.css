@@ -1,285 +1,452 @@
+/* ============================================================
+   CONSTRAINBOW — "Paper pop" theme
+   chunky ink borders, hard offset shadows, warm paper background
+   ============================================================ */
+
 :root {
-    --letter-border-thickness: 2px;
-    --example-letter-border-thickness: 2px;
-    --c1: #c30000;
-    --c2: #ff9019;
-    --c3: #d4c600;
-    --c4: #3a2fda;
-    --bg: white;
-    /* --bg: rgb(31, 31, 31); */
-    --contrast: black;
+    /* ink and paper */
+    --ink: #1d1b20;
+    --paper: #fbf4e6;
+    --card: #ffffff;
+    --muted: #8a8478;
+    --key-off: #ddd6c8;
+    --bad: #e0352b;
+    --bad-tint: #ffb4ab;
+
+    /* constraint colours (1 red, 2 orange, 3 yellow, 4 blue) and their tile tints */
+    --c1: #e0352b;
+    --c2: #ff8a1f;
+    --c3: #e6c200;
+    --c4: #3a3fd9;
+    --t1: #fde0dc;
+    --t2: #ffe7cc;
+    --t3: #fff6c2;
+    --t4: #dfe1ff;
+
+    --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
+    --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
+
+    /* board sizing: tiles shrink to fit both narrow and short screens */
+    --gap: 8px;
+    --tile: clamp(44px, min(calc((100vw - 32px - 4 * var(--gap)) / 5), calc((100dvh - 400px) / 4)), 72px);
+    /* everything (title, mode switch, board, keyboard) is exactly as wide as the board */
+    --content: calc(5 * var(--tile) + 4 * var(--gap));
+    /* keyboard: 10 keys fill the top row; the wide keys fill the bottom row */
+    --key-gap: 5px;
+    --key: calc((var(--content) - 9 * var(--key-gap)) / 10);
+    --key-wide: calc(1.5 * var(--key) + var(--key-gap) / 2);
+    --radius: 12px;
+    --border: 2.5px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 html, body {
     margin: 0;
-    height: 100vh; /* Full viewport height */
-    display: flex;
-    align-items: flex-start; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    background-color: var(--bg);
-    font-family: Arial, Helvetica, sans-serif;
-    overflow-x: hidden;
-    padding-top: 10px;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--ui-font);
+    -webkit-tap-highlight-color: transparent;
 }
 
 button {
     all: unset; /* Resets most properties to their initial value */
+    box-sizing: border-box; /* all: unset also resets this, which made borders add to a button's width */
     display: inline-block; /* Needed for proper button-like behavior */
     cursor: pointer; /* Ensures it looks clickable */
     touch-action: manipulation;
 }
 
+button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--c4);
+    outline-offset: 2px;
+}
+
 #container {
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center; /* Center items horizontally */
-    text-align: center; /* Center-align text */
+    flex-direction: column;
+    align-items: center;
     justify-content: space-between;
-    height: 95dvh;
-    max-height: 650px;
+    gap: 10px;
+    width: 100%;
+    max-width: 460px;
+    min-height: 100dvh;
+    max-height: 760px;
+    margin: 0 auto;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    text-align: center;
 }
 
-h2 {
-    margin: 0; /* Remove default margin */
-    font-size: 1.5rem;
-    color: var(--contrast);
+@media (min-height: 800px) {
+    #container {
+        min-height: 0;
+        height: 760px;
+        margin-top: calc((100dvh - 760px) / 2);
+    }
 }
 
- .t0, .t4, .t8 {
-    text-shadow: 1px 1px var(--c1);
- }
- .t1, .t5, .t9 {
-    text-shadow: 1px 1px var(--c2);
- }
- .t2, .t6, .t10 {
-    text-shadow: 1px 1px var(--c3);
- }
- .t3, .t7, .t11 {
-    text-shadow: 1px 1px var(--c4);
- }
+/* ---------- header ---------- */
+
+#header-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: var(--content);
+}
+
+/* the 12 letter tiles stretch to exactly the board's width */
+.wordmark {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    width: 100%;
+    margin: 0;
+    font-size: 0; /* spans set their own size */
+}
+
+.wordmark span {
+    --c: var(--c1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 0.82;
+    font-family: var(--display-font);
+    font-size: calc((var(--content) - 33px) / 12 * 0.6);
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    box-shadow: 2px 2px 0 var(--c);
+}
+.wordmark span:nth-child(4n + 2) { --c: var(--c2); }
+.wordmark span:nth-child(4n + 3) { --c: var(--c3); }
+.wordmark span:nth-child(4n + 4) { --c: var(--c4); }
+
+#sub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+#mode-switch {
+    display: flex;
+    flex: 1; /* fills the row next to the ? button, so it's never wider than the title */
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: 2px 2px 0 var(--ink);
+    overflow: hidden;
+}
+
+#mode-switch a {
+    flex: 1;
+    padding: 5px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+#mode-switch a.active {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+#how-to-play-button {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    line-height: 26px;
+    text-align: center;
+    font-family: var(--display-font);
+    font-size: 16px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--card);
+    box-shadow: 2px 2px 0 var(--ink);
+}
 
 .description {
+    width: var(--content);
     margin: 0;
-    font-size: 1rem;
-    color: var(--contrast); /* Optional: light gray text */
+    font-size: 15px;
 }
+
+#loading-text {
+    margin: 0;
+    font-weight: 700;
+}
+
+/* ---------- pills: timer, score, and action buttons ---------- */
+
+#actions-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    min-height: 34px;
+}
+
+.pill {
+    margin: 0;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 18px;
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+button.pill:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.pill.primary {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 2px 2px 0 var(--c4);
+}
+
+#timer, #score, #play-pause-button, #copy-results-button, #report-missing-word-button {
+    display: none; /* the board decides which ones to show */
+}
+
+#report-missing-word-button {
+    box-shadow: 2px 2px 0 var(--bad);
+}
+
+#copy-results-button {
+    animation: pop-in 400ms cubic-bezier(.3, 1.6, .5, 1);
+}
+
+/* ---------- the board ---------- */
 
 #board {
     display: grid;
-    grid-template-columns: repeat(5, 67px);
-    grid-gap: 8px;
-    overflow: visible;
-    padding: 3px;
+    grid-template-columns: repeat(5, var(--tile));
+    gap: var(--gap);
 }
 
-#example-board {
-    display: grid;
-    grid-template-columns: repeat(5, 50px);
-    grid-gap: 3px;
-    overflow: visible;
-    padding: 1px;
-}
 .letter {
+    --c: var(--ink);
     position: relative; /* Ensures child elements position relative to the tile */
-    font-size: 40px;
-    width: 67px;
-    height: 67px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: var(--letter-border-thickness) solid var(--contrast);
-    box-shadow: 3px 3px var(--contrast);
-    border-radius: 10px;
-    background-color: var(--bg);
+    width: var(--tile);
+    height: var(--tile);
+    font-family: var(--display-font);
+    font-size: calc(var(--tile) * 0.5);
+    background-color: var(--card);
+    border: var(--border) solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: 3px 3px 0 var(--c);
     cursor: pointer;
-    box-sizing: border-box; /* Ensure padding and border are included in the tile size */
     user-select: none;
+    -webkit-user-select: none;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out;
 }
 
 .letter-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Keeps letter centered */
-    font-weight: bold;
+    line-height: 1;
 }
 
 .letter-points {
     position: absolute;
-    bottom: 2px;
-    right: 3px;
-    font-size: 12px; /* Slightly smaller than the letter */
-    color: var(--contrast);
+    bottom: 3px;
+    right: 5px;
+    font-family: var(--ui-font);
+    font-size: 11px;
+    font-weight: 700;
     pointer-events: none; /* Ensures clicks still register on the .letter div */
 }
 
-.example-letter {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: var(--example-letter-border-thickness) solid var(--contrast);
-    border-radius: 5px;
-    background-color: var(--bg);
-    cursor: pointer;
-    box-sizing: border-box; /* Ensure padding and border are included in the tile size */
-    font-weight: bold;
-    font-size: 1.7rem;
+/* coloured tiles: tinted fill, coloured shadow, and a small shape so colour isn't the only cue */
+.c1 { --c: var(--c1); --t: var(--t1); }
+.c2 { --c: var(--c2); --t: var(--t2); }
+.c3 { --c: var(--c3); --t: var(--t3); }
+.c4 { --c: var(--c4); --t: var(--t4); }
+
+.letter.c1, .letter.c2, .letter.c3, .letter.c4 {
+    background-color: var(--t);
 }
 
-/* The overlay background */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px); /* Blur effect */
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 1000; /* Ensure it's above other content */
-    visibility: hidden;
-    padding-top: 5px;
+.letter.c1::before, .letter.c2::before, .letter.c3::before, .letter.c4::before,
+.example-letter.c1::before, .example-letter.c2::before, .example-letter.c3::before, .example-letter.c4::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 9px;
+    height: 9px;
+    background: var(--c);
 }
+.c1::before { border-radius: 50%; }                                     /* red: circle */
+.c2::before { border-radius: 2px; }                                     /* orange: square */
+.c3::before { transform: rotate(45deg) scale(0.85); border-radius: 1px; } /* yellow: diamond */
+.c4::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }            /* blue: triangle */
 
-@media (min-width: 1024px) {
-    html, body {
-        align-items: center;
-        padding-top: 0px;
-    }
-    .overlay {
-        align-items: center;
-        padding-top: 0px;
-    }
-}
-
+/* selected: the tile lifts toward you (bigger shadow) and shows a blinking cursor bar */
 .letter.selected {
-    background-color: #dcdcdc;
+    transform: translate(-3px, -3px);
+    box-shadow: 6px 6px 0 var(--c);
+}
+.letter.selected::after {
+    content: '';
+    position: absolute;
+    left: 26%;
+    right: 26%;
+    bottom: 12%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--ink);
+    animation: caret-blink 1.1s steps(2, jump-none) infinite;
+}
+@keyframes caret-blink {
+    50% { opacity: 0; }
 }
 
-.letter.c1 {
-    border: var(--letter-border-thickness) solid var(--c1);
-    box-shadow: 3px 3px var(--c1);
-}
-
-.example-letter.c1 {
-    border: var(--example-letter-border-thickness) solid var(--c1);
-}
-
-.letter.c2 {
-    border: var(--letter-border-thickness) solid var(--c2);
-    box-shadow: 3px 3px var(--c2);
-}
-.example-letter.c2 {
-    border: var(--example-letter-border-thickness) solid var(--c2);
-}
-.letter.c3 {
-    border: var(--letter-border-thickness) solid var(--c3);
-    box-shadow: 3px 3px var(--c3);
-}
-.example-letter.c3 {
-    border: var(--example-letter-border-thickness) solid var(--c3);
-}
-.letter.c4 {
-    border: var(--letter-border-thickness) solid var(--c4);
-    box-shadow: 3px 3px var(--c4);
-}
-.example-letter.c4 {
-    border: var(--example-letter-border-thickness) solid var(--c4);
-}
 .letter.conflict {
-    background-color: rgb(255, 172, 172);
+    background-color: var(--bad-tint);
 }
+
 .letter.incorrect {
-    color: rgb(255, 76, 76);
+    color: var(--bad);
 }
-.letter.celebrate {
-    border: var(--letter-border-thickness) solid green;
-    box-shadow: 3px 3px green;
-    background-color: #525252;
-    color: white;
-}
+
+/* speed mode before starting / while paused: a plain board, no colours, no letters */
 .letter.paused {
-    /* border: 5px solid #b4b4b4; */
-    border: 2px solid rgb(44, 44, 44);
-    background-color: var(--bg);
+    background-color: #f3ecdc;
     box-shadow: none;
 }
-
-/* The popup window */
-.popup {
-    background-color: var(--bg);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    width: 600px;
-    max-width: 90%;
-    text-align: left;
-    position: relative;
-    max-height: 70vh; /* Limit height to 80% of viewport */
-    overflow-y: auto; /* Enable scrolling if content overflows */
-    white-space: normal; /* allow wrapping */
-    overflow-x: hidden;  /* optional: hide any accidental overflow */
-    word-wrap: break-word; /* wrap long words or URLs */
-}
-
-/* The close button */
-#close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.end-timer {
+.letter.paused::before, .letter.paused::after {
     display: none;
 }
-
-#start-message {
-    color: var(--contrast);
-    /* font-weight: bold; */
-    margin: 0;
-    padding: 0;
+.letter.paused.selected {
+    transform: none;
 }
+
+/* ---------- animations ---------- */
+
+/* a letter lands: the tile bumps and the letter pops in (--delay staggers a colour fill) */
+.letter.pop {
+    animation: bump 260ms ease-out var(--delay, 0ms);
+}
+.letter.pop .letter-text {
+    animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1) var(--delay, 0ms) backwards;
+}
+
+.letter.shake {
+    animation: shake 380ms ease-in-out;
+}
+
+/* solved: a diagonal wave where each tile jumps and flashes its colour */
+.letter.celebrate {
+    animation: celebrate 750ms ease-out var(--delay, 0ms) both;
+}
+
+@keyframes bump {
+    40% { transform: scale(1.08); }
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+@keyframes celebrate {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(-14px) rotate(-4deg); background-color: var(--c); color: var(--card); }
+    55% { transform: translateY(0) rotate(0); background-color: var(--c); color: var(--card); }
+    75% { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+}
+
+.confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 900;
+}
+.confetti i {
+    position: absolute;
+    top: -20px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+    to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, #copy-results-button,
+    .letter.selected::after {
+        animation: none;
+    }
+    .letter {
+        transition: none;
+    }
+    .confetti {
+        display: none;
+    }
+}
+
+/* ---------- keyboard ---------- */
 
 #keyboard-container {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    /* box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); */
-    gap: 5px; /* Add spacing between rows */
-    align-items: center; /* Center align the keyboard rows */
-    /* background-color:#e2e2e2; */
-    /* border-radius: 20px; */
-    padding: 0px;
+    gap: 6px;
+    width: var(--content);
 }
 
 .keyboard-row {
     display: flex;
     justify-content: center;
-    gap: 5px; /* Add spacing between keys */
+    gap: var(--key-gap);
 }
 
 .key {
-    color: var(--contrast);
     position: relative;
-    margin: 0; /* Remove margins */
-    height: 47px; /* Ensure consistent height */
-    width: 30px;
+    flex: none;
+    width: var(--key);
+    height: 50px;
     font-size: 18px;
-    background-color: var(--bg);
-    border: 1px solid var(--contrast);
-    border-radius: 5px;
-    cursor: pointer;
+    font-weight: 700;
     text-align: center;
-    box-shadow: 1px 1px var(--contrast);
+    color: var(--ink);
+    background-color: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
     user-select: none;
+    -webkit-user-select: none;
+}
+
+.key:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
 }
 
 .key-letter {
@@ -287,150 +454,221 @@ h2 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); /* Keeps letter perfectly centered */
-    /* font-weight: bold; */
 }
 
 .key-points {
     position: absolute;
-    bottom: 2px;
+    bottom: 1px;
     right: 3px;
     font-size: 10px;
-    color: var(--contrast);
-    display: none;
+    display: none; /* shown in score mode */
 }
+
 .key-letter,
 .key-points {
     pointer-events: none;
 }
 
-#second-keyboard-row .key, #bottom-keyboard-row .key {
-    width: 34px;
+/* clear and delete: styled like the letter keys but on a paper-coloured background,
+   so they're easy to find without pulling the eye away from the board */
+#refresh-key, #delete-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--key-wide);
+    color: var(--ink);
+    background-color: #f3ecdc;
+}
+
+.key-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none; /* clicks land on the button, which holds data-key */
+}
+
+.key-icon svg .icon-fill {
+    fill: currentColor;
+    stroke-width: 1.5;
+}
+
+/* the clear and delete keys use words instead of symbols */
+.key-word {
+    font-family: var(--display-font);
+    font-size: min(12px, calc(var(--key-wide) * 0.21));
+    pointer-events: none; /* clicks land on the button, which holds data-key */
+}
+
+#refresh-key.paused-key, #delete-key.paused-key {
+    color: var(--muted);
+    box-shadow: none;
 }
 
 .unavailable {
-    background-color: #b4b4b4;
+    background-color: var(--key-off);
+    color: var(--muted);
     box-shadow: none;
 }
+
 .paused-key {
-    background-color: var(--bg);
+    color: var(--muted);
     box-shadow: none;
 }
 
-#reset-button {
-    margin: 0; /* Remove margins */
-    padding: 6px;
-    font-size: 18px;
-    background: var(--bg);
-    border: 1px solid #aaa;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    display: none;
-}
-
-#report-missing-word-button {
-    color: var(--contrast);
-    display: none;
-    border: 1px solid var(--contrast);
-    padding: 3px;
-    border-radius: 5px;
-    box-shadow: 1px 1px red;
-    background-color: var(--bg);
-}
-#got-it-button {
-    color: var(--contrast);
-    border: 1px solid var(--contrast);
-    padding: 3px;
-    border-radius: 5px;
-    box-shadow: 1px 1px green;
-    background-color: var(--bg);
-}
-
-.report-missing-word-button-paused {
-    display: none;
-}
-
-#play-pause-button {
-    border: 1px solid rgb(44, 44, 44);
-    padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 5px;
-    padding-right: 5px;
-    border-radius: 5px;
-    background-color: var(--bg);
-    box-shadow: 1px 1px purple;
-    display: none;
-}
-
-#copy-results-button {
-    display: none;
-    border: 1px solid var(--contrast);
-    padding: 3px;
-    border-radius: 5px;
-    background-color: var(--bg);
-    box-shadow: 1px 1px green;
-}
-
-#refresh-key, #delete-key  {
-    color: rgb(255, 76, 76);
-}
-
-@media screen and (max-height: 645px) {
-    h2 {
-        font-size: 1.4rem;
+@media (max-height: 645px) {
+    .key {
+        height: 42px;
     }
-    #board {
-        grid-template-columns: repeat(5, 60px);
-        grid-gap: 6px;
-    }
-    .letter {
-        width: 60px;
-        height: 60px;
-    }
-    #container {
-        gap: 10px;
-    }
-     .key {
-        height: 40px;
-     }
 }
 
-#header-div {
+/* ---------- how to play ---------- */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    background-color: rgba(29, 27, 32, 0.45);
+    z-index: 1000; /* Ensure it's above other content */
+    visibility: hidden;
+}
+
+.popup {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    padding: 20px;
+    text-align: left;
+    background-color: var(--paper);
+    border: var(--border) solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 5px 5px 0 var(--ink);
+}
+
+.popup h2 {
+    margin: 0 0 14px;
+    font-family: var(--display-font);
+    font-size: 22px;
+    font-weight: normal;
+}
+
+.popup p {
+    margin: 10px 0 0;
+    line-height: 1.45;
+}
+
+#close-button {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.step {
+    display: none;
+    min-height: 300px;
+}
+.step.active {
+    display: block;
+    animation: fade-in 200ms ease-out;
+}
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+}
+
+.example-board {
+    display: grid;
+    grid-template-columns: repeat(5, 46px);
+    gap: 6px;
+    justify-content: center;
+}
+
+.example-letter {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    gap: 8px;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    font-family: var(--display-font);
+    font-size: 22px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 9px;
+    box-shadow: 2px 2px 0 var(--c, var(--ink));
+}
+.example-letter.c1, .example-letter.c2, .example-letter.c3, .example-letter.c4 {
+    background: var(--t);
+}
+.example-letter::before {
+    top: 4px !important;
+    left: 4px !important;
+    width: 7px !important;
+    height: 7px !important;
 }
 
-#timer, #score {
-    margin: 0px;
-    border: 1px solid var(--contrast);
-    padding: 3px;
-    border-radius: 5px;
-    background-color: var(--bg);
-    display: none;
-    box-shadow: 1px 1px skyblue;
+.modes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
-
-#mode-button, #how-to-play-button {
-    margin: 0px;
-    border: 1px solid var(--contrast);
-    /* padding-top: 3px;
-    padding-bottom: 3px; */
-    padding-left: 4px;
-    padding-right: 4px;
-    border-radius: 5px;
-    background-color: var(--bg);
-    box-shadow: 1px 1px purple;
-    text-decoration: none;
-}
-
-#actions-container {
+.modes li {
     display: flex;
-    gap: 10px;
-    /* padding-bottom: 15px; */
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    line-height: 1.4;
+}
+.mode-icon {
+    font-size: 22px;
 }
 
-#date {
-    text-shadow: 1px 1px skyblue;
+.fine-print {
+    font-size: 13px;
+    color: var(--muted);
+}
+.fine-print a {
+    color: var(--ink);
+}
+.hash {
+    font-size: 10px;
+    word-break: break-all;
+}
+
+.step-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.step-dots {
+    display: flex;
+    gap: 6px;
+}
+.step-dots span {
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+.step-dots span.active {
+    background: var(--ink);
+}
+
+#step-back.hidden {
+    visibility: hidden;
 }

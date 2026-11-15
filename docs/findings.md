@@ -17,8 +17,8 @@ Ordered roughly by urgency. None of these have been fixed yet. Discuss with Dann
 - ~~Generator: one SQL query per candidate letter per row.~~ Done 2026-11-15: replaced with bitsets, 86× faster.
 
 ## Bugs / UX friction
-- **Score mode starts with no tile selected**, so keys do nothing until you tap a tile. Speed mode selects (0,0) on START.
-- **Tapping the selected tile deselects it.** Auto-advance often moves the cursor onto the tile you were about to tap, so your next keystrokes are silently ignored (I hit this while playing).
+- *(Fixed 2026-11-15)* **Score mode starts with no tile selected**, so keys do nothing until you tap a tile. Speed mode selects (0,0) on START.
+- *(Fixed 2026-11-15)* **Tapping the selected tile deselects it.** Auto-advance often moves the cursor onto the tile you were about to tap, so your next keystrokes are silently ignored (I hit this while playing).
 - Score mode logs only the *first* solve. Later improvements are never logged, so the server never learns a player's best score.
 - Backspace on a blank tile with nothing to its left (`isTopLeft`) is a no-op. That is fine, but `blackLetters['']` becomes NaN when you type over a blank black tile. It is harmless but sloppy.
 - A page left open past midnight keeps the old game id. Saved progress is keyed per mode, so returning the next day resets correctly, but an open tab doesn't roll over.
@@ -29,6 +29,7 @@ Ordered roughly by urgency. None of these have been fixed yet. Discuss with Dann
 - The share grid shows the puzzle *layout* only, so all players' shares for a day look identical apart from the time or score.
 
 ## Aesthetic observations
+*(2026-11-15: redesigned in the "Paper pop" style, with tile pop and ripple animations, shake on errors, a wave-and-confetti win, colour-blind shapes on coloured tiles, and a 4-step visual how-to-play. The notes below describe the old look. The design exploration is in `design/mockups.html`.)*
 - Neo-brutalist look (thick borders, hard offset shadows), Arial, white background. Clean, but generic. The rainbow-shadow wordmark is the only branding.
 - Few animations. Letter entry has no pop, conflicts get a 200 ms pink flash, the win gets a sequential dark/green cascade, and invalid words just go red.
 - Dark mode is stubbed (`--bg` commented) but not implemented.

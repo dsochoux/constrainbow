@@ -17,6 +17,9 @@ Detailed notes (read these before making changes):
 - Game day boundary is midnight **America/New_York**; game id format is `MMDDYYYY`.
 - As of 2026-11-15, local games exist through 2026-12-31. The live server had them only through 11/30 until the new deploy.sh is run. The 2026 game files are untracked in git. The live site matched local code exactly (bundle.js, style.css, rendered HTML).
 
+## Look
+"Paper pop" (chosen 2026-11-15 from the three directions in `design/mockups.html`): a cream paper background (`--paper`), ink borders with hard offset shadows, Archivo Black for the wordmark and tiles, Space Grotesk for the UI. Coloured tiles get a tint plus a coloured shadow plus a shape. All colours are CSS variables at the top of `style.css`.
+
 ## Conventions
 - No framework, no package.json, no tests. Keep it that way unless Danny agrees otherwise.
 - Danny is proud of having written all the code: explain changes, keep the existing structure and style (class hierarchy Board/Word/Letter with Speed*/Score* subclasses) unless a refactor is agreed.

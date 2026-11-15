@@ -11,10 +11,24 @@ export class Word {
         this.isValid = false;
     }
 
+    // each word sits on its own strip (a "rail"), so it's clear that only the rows are words
+    // the rail turns green when the row is a real word, and red when it's full but not a word
     appendWordElement(container) {
+        this.rowElement = document.createElement('div');
+        this.rowElement.classList.add('word-row');
         this.letters.forEach((letter) => {
-            container.appendChild(letter.tileElement);
+            this.rowElement.appendChild(letter.tileElement);
         });
+        container.appendChild(this.rowElement);
+    }
+
+    setRowState(state) {
+        // state is 'valid', 'invalid', or '' for neither
+        if (!this.rowElement) {
+            return;
+        }
+        this.rowElement.classList.toggle('valid', state === 'valid');
+        this.rowElement.classList.toggle('invalid', state === 'invalid');
     }
 
     // some handy functions might live here,
@@ -52,6 +66,7 @@ export class Word {
     }
 
     turnRed() {
+        this.setRowState('invalid');
         this.letters.forEach(letter => {
             letter.tileElement.classList.add('incorrect');
             letter.shake();
@@ -65,6 +80,7 @@ export class Word {
             }
             letter.tileElement.classList.remove('incorrect');
         });
+        this.setRowState(this.isValid ? 'valid' : '');
     }
 
     // the board will update a letter via this function, so that the word
@@ -81,7 +97,7 @@ export class Word {
             // this letter is completing the word, must check if it is a valid word
             if (this.manager.isValidWord(this.getWordString())) {
                 this.isValid = true;
-                this.clear(false);
+                this.clear(false); // also turns the rail green
             } else {
                 this.isValid = false;
                 this.turnRed();

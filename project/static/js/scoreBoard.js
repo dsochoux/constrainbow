@@ -16,6 +16,15 @@ export class ScoreBoard extends Board {
 
     updateScoreDisplay() {
         this.scoreElement.textContent = `${this.getPointsFraction()} POSSIBLE POINTS`;
+        // every letter on the board counts, even in unfinished rows, so the score can go past
+        // the maximum; when it does, the pill turns red as a hint that something is off
+        const isOver = this.score > this.numPossiblePoints;
+        if (isOver && !this.scoreElement.classList.contains('over')) {
+            this.scoreElement.classList.remove('shake');
+            void this.scoreElement.offsetWidth; // restart the animation
+            this.scoreElement.classList.add('shake');
+        }
+        this.scoreElement.classList.toggle('over', isOver);
     }
 
     initBoard(manager) {

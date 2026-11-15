@@ -23,6 +23,7 @@ Both modes are on one page; a button in the header switches between them. A cook
 ### 🎯 Score (`/score`)
 - Letters carry Scrabble-like point values, which show on the keyboard keys and in each tile's corner.
 - No timer. The display reads `score/max POSSIBLE POINTS`, where max is the best score achievable on that puzzle (precomputed).
+- The score counts every letter on the board, even in unfinished or invalid rows, so it can go past the maximum. That's deliberate: it hints you're on the wrong track. When it does, the score pill turns red and shakes once.
 - You can keep improving after the first solve, but only the **first** solution is logged to the server.
 
 ## Controls
@@ -33,6 +34,7 @@ Both modes are on one page; a button in the header switches between them. A cook
 - Keyboard greying: keys you can't use on the selected tile turn grey.
 - A completed word that isn't in the list turns red. The cursor stays on it, and the timer/score display is replaced by **REPORT MISSING WORD(S)**, which POSTs the word to the server.
 - Animations: a letter pops into its tile. Filling a colour pops every tile of that colour at once. Conflicts and invalid words shake. Solving plays a diagonal wave (each tile jumps and flashes its colour, black tiles flash ink) and then a burst of confetti in the four colours. All of this is disabled under `prefers-reduced-motion`.
+- Each word's tiles are joined by ink "links" (bars between the tiles, never vertically), because players were forgetting that only the rows (across) need to be words. A "rails" alternative (each word on a strip, green when valid, red when invalid) is still in the CSS: remove `class="row-links"` from `<body>` in game.html to switch.
 - Coloured tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for colour-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.
 

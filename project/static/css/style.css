@@ -26,21 +26,39 @@
     --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
     --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
 
-    /* board sizing: tiles shrink to fit both narrow and short screens */
-    --gap: 8px;
-    --tile: clamp(44px, min(calc((100vw - 32px - 4 * var(--gap)) / 5), calc((100dvh - 400px) / 4)), 72px);
-    /* everything (title, mode switch, board, keyboard) is exactly as wide as the board */
-    --content: calc(5 * var(--tile) + 4 * var(--gap));
-    /* keyboard: 10 keys fill the top row; the wide keys fill the bottom row */
+    /* board sizing inputs (the sizes computed from them live on body, below)
+       each word sits on a rail: rail padding + the gaps between its 5 tiles = every row's extra width */
+    --row-gap: 6px;          /* between tiles inside a rail */
+    --rail-pad-start: 3px;   /* rail padding top and left */
+    --rail-pad-end: 5px;     /* rail padding right and bottom (a bit more, to make room for the tile shadows) */
+    --rail-gap: 4px;         /* between rails */
     --key-gap: 5px;
-    --key: calc((var(--content) - 9 * var(--key-gap)) / 10);
-    --key-wide: calc(1.5 * var(--key) + var(--key-gap) / 2);
     --radius: 12px;
     --border: 2.5px;
 }
 
 *, *::before, *::after {
     box-sizing: border-box;
+}
+
+/* row style "links": instead of rails, ink bars join the tiles of each word (no padding, wider gaps)
+   switch styles by adding or removing class="row-links" on <body> in game.html */
+body.row-links {
+    --row-gap: 10px;
+    --rail-pad-start: 0px;
+    --rail-pad-end: 0px;
+    --rail-gap: 8px;
+}
+
+/* sizes computed from the inputs above; declared on body so a body class can change the inputs */
+body {
+    --row-overhead: calc(4 * var(--row-gap) + var(--rail-pad-start) + var(--rail-pad-end));
+    --tile: clamp(44px, min(calc((100vw - 32px - var(--row-overhead)) / 5), calc((100dvh - 420px) / 4)), 72px);
+    /* everything (title, mode switch, board, keyboard) is exactly as wide as the board */
+    --content: calc(5 * var(--tile) + var(--row-overhead));
+    /* keyboard: 10 keys fill the top row; the wide keys fill the bottom row */
+    --key: calc((var(--content) - 9 * var(--key-gap)) / 10);
+    --key-wide: calc(1.5 * var(--key) + var(--key-gap) / 2);
 }
 
 html, body {
@@ -228,6 +246,16 @@ button.pill:active {
     box-shadow: 2px 2px 0 var(--bad);
 }
 
+/* score mode: more points than the puzzle's maximum means something is wrong */
+#score.over {
+    color: var(--bad);
+    border-color: var(--bad);
+    box-shadow: 2px 2px 0 var(--bad);
+}
+#score.shake {
+    animation: shake 380ms ease-in-out;
+}
+
 #copy-results-button {
     animation: pop-in 400ms cubic-bezier(.3, 1.6, .5, 1);
 }
@@ -235,10 +263,50 @@ button.pill:active {
 /* ---------- the board ---------- */
 
 #board {
-    display: grid;
-    grid-template-columns: repeat(5, var(--tile));
-    gap: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--rail-gap);
 }
+
+/* a rail: the strip each word sits on, so it's clear only the rows (across) are words */
+.word-row {
+    display: flex;
+    gap: var(--row-gap);
+    padding: var(--rail-pad-start) var(--rail-pad-end) var(--rail-pad-end) var(--rail-pad-start);
+    background-color: #d9c8a3;
+    box-shadow: inset 0 0 0 2px rgba(29, 27, 32, 0.12); /* a soft outline, without changing the layout */
+    border-radius: calc(var(--radius) + 4px);
+    transition: background-color 200ms ease-out;
+}
+.word-row.valid {
+    background-color: #b3dd98; /* a real word */
+}
+.word-row.invalid {
+    background-color: #f0b6ab; /* full, but not in the word list */
+}
+
+/* links: an ink bar runs behind each word's tiles, showing through the gaps */
+body.row-links .word-row {
+    position: relative;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+body.row-links .word-row::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--tile) / 2);
+    right: calc(var(--tile) / 2);
+    top: 50%;
+    height: 6px;
+    transform: translateY(-50%);
+    background: var(--ink);
+    border-radius: 3px;
+}
+body.row-links .word-row .letter {
+    z-index: 1; /* tiles sit on top of the bar */
+}
+
 
 .letter {
     --c: var(--ink);
@@ -401,7 +469,7 @@ button.pill:active {
 
 @media (prefers-reduced-motion: reduce) {
     .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, #copy-results-button,
-    .letter.selected::after {
+    .letter.selected::after, #score.shake {
         animation: none;
     }
     .letter {
@@ -586,10 +654,46 @@ button.pill:active {
 }
 
 .example-board {
-    display: grid;
-    grid-template-columns: repeat(5, 46px);
-    gap: 6px;
-    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.example-row {
+    display: flex;
+    gap: 5px;
+    padding: 3px 5px 5px 3px;
+    background-color: #d9c8a3;
+    box-shadow: inset 0 0 0 2px rgba(29, 27, 32, 0.12);
+    border-radius: 12px;
+}
+.example-row.valid {
+    background-color: #b3dd98;
+}
+body.row-links .example-board {
+    gap: 8px;
+}
+body.row-links .example-row {
+    position: relative;
+    gap: 9px;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+}
+body.row-links .example-row::before {
+    content: '';
+    position: absolute;
+    left: 23px;
+    right: 23px;
+    top: 50%;
+    height: 5px;
+    transform: translateY(-50%);
+    background: var(--ink);
+    border-radius: 3px;
+}
+body.row-links .example-letter {
+    z-index: 1;
 }
 
 .example-letter {

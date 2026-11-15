@@ -24,7 +24,7 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
 </head>
-<body>
+<body class="row-links">
     <input type="hidden" id="game-id" value="{{ game_id }}" />
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
@@ -35,9 +35,13 @@
     {# fill: "none" = empty board, "colors" = only coloured tiles filled, "all" = the full solution #}
     {% macro example_board(fill) %}
     <div class="example-board" aria-hidden="true">
-        {% for row in example_colors %}{% set w = loop.index0 %}{% for color in row %}
-        <div class="example-letter{% if color %} c{{ color }}{% endif %}">{% if fill == "all" or (fill == "colors" and color) %}{{ example_words[w][loop.index0] }}{% endif %}</div>
-        {% endfor %}{% endfor %}
+        {% for row in example_colors %}{% set w = loop.index0 %}
+        <div class="example-row{% if fill == "all" %} valid{% endif %}">
+            {% for color in row %}
+            <div class="example-letter{% if color %} c{{ color }}{% endif %}">{% if fill == "all" or (fill == "colors" and color) %}{{ example_words[w][loop.index0] }}{% endif %}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
     </div>
     {% endmacro %}
 
@@ -48,7 +52,7 @@
             <div class="steps">
                 <section class="step active">
                     {{ example_board("none") }}
-                    <p><strong>Fill the grid with four five-letter words.</strong> No regular plurals or regular past tenses.</p>
+                    <p><strong>Fill each row with a five-letter word.</strong> Only the rows (across) need to be words, not the columns. No regular plurals or regular past tenses.</p>
                 </section>
                 <section class="step">
                     {{ example_board("colors") }}
@@ -58,7 +62,7 @@
                 <section class="step">
                     {{ example_board("all") }}
                     <p><strong>Black tiles take any other letter.</strong> Never one a colour is using (here F, I, A, P), but they can repeat.</p>
-                    <p>Four real words: solved!</p>
+                    <p>Four real words across: solved!</p>
                 </section>
                 <section class="step">
                     <ul class="modes">

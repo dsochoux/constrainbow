@@ -77,7 +77,7 @@ export async function delayedForEach(array, callback, delayTime) {
     }
 }
 
-// a burst of confetti in the four constraint colours, used when a puzzle is solved
+// a burst of confetti in the four constraint colors, used when a puzzle is solved
 export function launchConfetti(numPieces = 90) {
     const layer = document.createElement('div');
     layer.className = 'confetti';

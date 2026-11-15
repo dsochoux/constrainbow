@@ -23,24 +23,24 @@ Ordered roughly by urgency. None of these have been fixed yet. Discuss with Dann
 - Backspace on a blank tile with nothing to its left (`isTopLeft`) is a no-op. That is fine, but `blackLetters['']` becomes NaN when you type over a blank black tile. It is harmless but sloppy.
 - A page left open past midnight keeps the old game id. Saved progress is keyed per mode, so returning the next day resets correctly, but an open tab doesn't roll over.
 - The "how to play" popup uses `id="example-board"` three times (invalid HTML) and has a visible 64-hex hash string at the bottom (the commit "remove name for hash" suggests proof of authorship). It is capped at 70vh, which leaves dead space on phones.
-- The viewport has `user-scalable=no` (an accessibility concern). Tiles and keys have no aria labels, and colour alone carries meaning (colour-blind players can't tell red from orange easily, and the share emojis are colour-only).
+- The viewport has `user-scalable=no` (an accessibility concern). Tiles and keys have no aria labels, and color alone carries meaning (color-blind players can't tell red from orange easily, and the share emojis are color-only).
 - Speed timer: `setInterval` tick counting can drift; it should use `Date.now()` deltas.
 - `copyResults` decides "include solution?" from the button text, which is fragile.
 - The share grid shows the puzzle *layout* only, so all players' shares for a day look identical apart from the time or score.
 
 ## Aesthetic observations
-*(2026-11-15: redesigned in the "Paper pop" style, with tile pop and ripple animations, shake on errors, a wave-and-confetti win, colour-blind shapes on coloured tiles, and a 4-step visual how-to-play. The notes below describe the old look. The design exploration is in `design/mockups.html`.)*
+*(2026-11-15: redesigned in the "Paper pop" style, with tile pop and ripple animations, shake on errors, a wave-and-confetti win, color-blind shapes on colored tiles, and a 4-step visual how-to-play. The notes below describe the old look. The design exploration is in `design/mockups.html`.)*
 - Neo-brutalist look (thick borders, hard offset shadows), Arial, white background. Clean, but generic. The rainbow-shadow wordmark is the only branding.
 - Few animations. Letter entry has no pop, conflicts get a 200 ms pink flash, the win gets a sequential dark/green cascade, and invalid words just go red.
 - Dark mode is stubbed (`--bg` commented) but not implemented.
 - Desktop layout is just the mobile column centred. 67px tiles.
-- Good for video: the colour-fill cascade when one letter fills 3 tiles, and the win cascade.
+- Good for video: the color-fill cascade when one letter fills 3 tiles, and the win cascade.
 
 ## Feature ideas to discuss
 - Stats/streaks (localStorage), and a results screen with distribution (the server already logs times and scores).
 - An archive/practice mode for past puzzles (597 already exist per mode).
 - Show "you beat X% of players" from the logs.
 - A share text that encodes something player-specific (e.g. score tiles shaded by points, or time).
-- A hint system (reveal one colour), and an "optimal solution" reveal after solving in score mode (`best_solution` already exists in the JSON).
+- A hint system (reveal one color), and an "optimal solution" reveal after solving in score mode (`best_solution` already exists in the JSON).
 - A first-time interactive tutorial instead of the long text popup.
 - A PWA/offline mode (manifest already present).

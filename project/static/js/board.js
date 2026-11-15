@@ -418,7 +418,7 @@ export class Board {
         this.handleSolutionFound();
     }
 
-    // when a colour gets a letter, every tile of that colour pops in at the same moment
+    // when a color gets a letter, every tile of that color pops in at the same moment
     // (a staggered ripple was tried, but it made typing feel laggy)
     popConstraint(typedLetter) {
         this.constraints[typedLetter.constraint].forEach(position => {
@@ -426,7 +426,7 @@ export class Board {
         });
     }
 
-    // a diagonal wave: each tile jumps and flashes its colour, then confetti
+    // a diagonal wave: each tile jumps and flashes its color, then confetti
     celebrate() {
         const delayTime = 70;
         this.words.forEach((word, w) => {

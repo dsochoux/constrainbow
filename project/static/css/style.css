@@ -13,7 +13,7 @@
     --bad: #e0352b;
     --bad-tint: #ffb4ab;
 
-    /* constraint colours (1 red, 2 orange, 3 yellow, 4 blue) and their tile tints */
+    /* constraint colors (1 red, 2 orange, 3 yellow, 4 blue) and their tile tints */
     --c1: #e0352b;
     --c2: #ff8a1f;
     --c3: #e6c200;
@@ -342,7 +342,7 @@ body.row-links .word-row .letter {
     pointer-events: none; /* Ensures clicks still register on the .letter div */
 }
 
-/* coloured tiles: tinted fill, coloured shadow, and a small shape so colour isn't the only cue */
+/* colored tiles: tinted fill, colored shadow, and a small shape so color isn't the only cue */
 .c1 { --c: var(--c1); --t: var(--t1); }
 .c2 { --c: var(--c2); --t: var(--t2); }
 .c3 { --c: var(--c3); --t: var(--t3); }
@@ -395,7 +395,7 @@ body.row-links .word-row .letter {
     color: var(--bad);
 }
 
-/* speed mode before starting / while paused: a plain board, no colours, no letters */
+/* speed mode before starting / while paused: a plain board, no colors, no letters */
 .letter.paused {
     background-color: #f3ecdc;
     box-shadow: none;
@@ -409,7 +409,7 @@ body.row-links .word-row .letter {
 
 /* ---------- animations ---------- */
 
-/* a letter lands: the tile bumps and the letter pops in (--delay staggers a colour fill) */
+/* a letter lands: the tile bumps and the letter pops in (--delay staggers a color fill) */
 .letter.pop {
     animation: bump 260ms ease-out var(--delay, 0ms);
 }
@@ -421,7 +421,7 @@ body.row-links .word-row .letter {
     animation: shake 380ms ease-in-out;
 }
 
-/* solved: a diagonal wave where each tile jumps and flashes its colour */
+/* solved: a diagonal wave where each tile jumps and flashes its color */
 .letter.celebrate {
     animation: celebrate 750ms ease-out var(--delay, 0ms) both;
 }
@@ -537,7 +537,7 @@ body.row-links .word-row .letter {
     pointer-events: none;
 }
 
-/* clear and delete: styled like the letter keys but on a paper-coloured background,
+/* clear and delete: styled like the letter keys but on a paper-colored background,
    so they're easy to find without pulling the eye away from the board */
 #refresh-key, #delete-key {
     display: flex;

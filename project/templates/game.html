@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#fbf4e6">
-    <meta name="description" content="A daily word puzzle: fill four five-letter words that fit the colour constraints.">
+    <meta name="description" content="A daily word puzzle: fill four five-letter words that fit the color constraints.">
     <title>CONSTRAINBOW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,10 +29,10 @@
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
 
-    {# the how-to-play examples: colours per tile (0 = black) and the words of one solution #}
+    {# the how-to-play examples: colors per tile (0 = black) and the words of one solution #}
     {% set example_colors = [[2, 4, 2, 0, 0], [2, 0, 3, 0, 0], [0, 1, 3, 0, 0], [1, 0, 1, 4, 0]] %}
     {% set example_words = ["FIFTY", "FLASK", "SPARK", "PUPIL"] %}
-    {# fill: "none" = empty board, "colors" = only coloured tiles filled, "all" = the full solution #}
+    {# fill: "none" = empty board, "colors" = only colored tiles filled, "all" = the full solution #}
     {% macro example_board(fill) %}
     <div class="example-board" aria-hidden="true">
         {% for row in example_colors %}{% set w = loop.index0 %}
@@ -56,13 +56,13 @@
                 </section>
                 <section class="step">
                     {{ example_board("colors") }}
-                    <p><strong>Same colour, same letter.</strong> If one orange tile is F, every orange tile is F.</p>
-                    <p><strong>Different colours, different letters.</strong> Red and orange can't both be F.</p>
+                    <p><strong>Same color, same letter.</strong> If one orange tile is F, every orange tile is F.</p>
+                    <p><strong>Different colors, different letters.</strong> Red and orange can't both be F.</p>
                 </section>
                 <section class="step">
                     {{ example_board("all") }}
-                    <p><strong>Black tiles take any other letter.</strong> Never one a colour is using (here F, I, A, P), but they can repeat.</p>
-                    <p>Four real words across: solved!</p>
+                    <p><strong>Black tiles are free.</strong> Use any letter the colored tiles haven't claimed: here, anything except F, I, A, and P.</p>
+                    <p>Black tiles can share letters, like the two Ks. Four real words across: solved!</p>
                 </section>
                 <section class="step">
                     <ul class="modes">

@@ -22,28 +22,28 @@ The search itself (how layouts are made, the order letters are tried, the prunin
 The new parts only make sense against the old structure, so here's a recap. `Game(date, mode, num_colored).generate()` does three things.
 
 ### 1a. Make a layout (`generate_constraints`)
-- Shuffle the four colours into an order `s`. Row *i* gets colours `s[i]` and `s[(i+1) % 4]` at two random positions. The colours therefore form a ring (row 0 shares a colour with row 1, row 1 with row 2, …, row 3 with row 0), so every colour appears at least twice and no colour can be solved in isolation.
-- Then add `num_colored − 8` more coloured tiles: 2 for speed, 1 for score. Each extra tile gets a different colour, placed on a random empty tile.
+- Shuffle the four colors into an order `s`. Row *i* gets colors `s[i]` and `s[(i+1) % 4]` at two random positions. The colors therefore form a ring (row 0 shares a color with row 1, row 1 with row 2, …, row 3 with row 0), so every color appears at least twice and no color can be solved in isolation.
+- Then add `num_colored − 8` more colored tiles: 2 for speed, 1 for score. Each extra tile gets a different color, placed on a random empty tile.
 
 ### 1b. Count every solution (`find_solution` → `generate_solutions`)
-This is a backtracking search over **colour → letter assignments**:
+This is a backtracking search over **color → letter assignments**:
 
 ```
-find_solution(colour):
-    if all 4 colours have letters → generate_solutions(); return
+find_solution(color):
+    if all 4 colors have letters → generate_solutions(); return
     for letter in a..z:
-        skip if another colour already has this letter
-        give `colour` this letter
-        PRUNE: for each row containing `colour`, is there at least one word
-               that fits the coloured tiles assigned so far?  (black tiles = anything)
-        if every such row still has a word → find_solution(colour + 1)
-    un-assign `colour`
+        skip if another color already has this letter
+        give `color` this letter
+        PRUNE: for each row containing `color`, is there at least one word
+               that fits the colored tiles assigned so far?  (black tiles = anything)
+        if every such row still has a word → find_solution(color + 1)
+    un-assign `color`
 ```
 
 The pruning check deliberately ignores the black-tile rule. That makes it cheaper, and it still throws away most dead ends early. Black tiles also can't be checked until all four letters are known.
 
-When all four colours have letters (a **leaf**), `generate_solutions` applies the full rules to each row. Coloured tiles must match their letters, and black tiles must **not** be any of the four colour letters. For each row it gets the set of fitting words:
-- **Count:** black letters can repeat across rows, so the rows are independent once the colours are fixed. The number of boards for this assignment is `count(row0) × count(row1) × count(row2) × count(row3)`. That gets added to the total, and that's the "unique solutions" number on the site. Two different colour assignments can never produce the same four words (some coloured tile would differ), so nothing is double-counted.
+When all four colors have letters (a **leaf**), `generate_solutions` applies the full rules to each row. Colored tiles must match their letters, and black tiles must **not** be any of the four color letters. For each row it gets the set of fitting words:
+- **Count:** black letters can repeat across rows, so the rows are independent once the colors are fixed. The number of boards for this assignment is `count(row0) × count(row1) × count(row2) × count(row3)`. That gets added to the total, and that's the "unique solutions" number on the site. Two different color assignments can never produce the same four words (some colored tile would differ), so nothing is double-counted.
 - **Best score:** for the same reason, the best board for this assignment is the best word in each row, added together. The overall best (`num_possible_points`) is the maximum over all leaves.
 
 ### 1c. Retry until the puzzle is roomy enough (`generate`)
@@ -135,19 +135,19 @@ def matching_words(self, word, strict):
         if constraint == 0:                       # black tile
             if strict:
                 for letter in self.constraint_assignments:
-                    bits &= ~self.index[i][letter]    # can't be any colour's letter
-        else:                                     # coloured tile
+                    bits &= ~self.index[i][letter]    # can't be any color's letter
+        else:                                     # colored tile
             letter = self.constraint_assignments[constraint - 1]
             if letter != '':
-                bits &= self.index[i][letter]     # must be this colour's letter
+                bits &= self.index[i][letter]     # must be this color's letter
         if bits == 0:
             break                                 # nothing left; stop early
     return bits
 ```
 
 How each old query maps onto it:
-- `strict=False` is the old `verify_constraints_query`. Only the coloured tiles whose colour already has a letter count; black tiles are ignored. The pruning step uses this through `is_solution_for`, which is now `matching_words(row, strict=False) != 0`.
-- `strict=True` is the old `verify_word_query`. Coloured tiles must match **and** every black tile has all four colour letters removed. Only `generate_solutions` uses it, at a leaf where all four colours have letters.
+- `strict=False` is the old `verify_constraints_query`. Only the colored tiles whose color already has a letter count; black tiles are ignored. The pruning step uses this through `is_solution_for`, which is now `matching_words(row, strict=False) != 0`.
+- `strict=True` is the old `verify_word_query`. Colored tiles must match **and** every black tile has all four color letters removed. Only `generate_solutions` uses it, at a leaf where all four colors have letters.
 
 ### Worked example (toy list)
 Row layout `[yellow, 0, 0, 0, red]`, with the assignment red=`e`, orange=`t`, yellow=`c`, blue=`s`.
@@ -198,7 +198,7 @@ The loop runs once per matching word, so it costs about what the old `fetchall` 
 ## 6. Why the output is byte-for-byte identical
 
 1. **Same random calls in the same order.** `generate_constraints`, `generate`, and the threshold loop are untouched, so a given random seed produces the same layouts.
-2. **Same search order.** `find_solution` is untouched: colours 1→4, letters a→z, the same pruning rule, so the same leaves are visited.
+2. **Same search order.** `find_solution` is untouched: colors 1→4, letters a→z, the same pruning rule, so the same leaves are visited.
 3. **Same sets at every check.** `matching_words` applies exactly the same equal / not-equal conditions as the SQL `WHERE` clauses.
 4. **Same tie-breaking for the best word.** The old code kept the *first* highest-scoring word in the order SQLite returned rows. That's row-id order, which is `words.txt` order, because `db.py` inserts in file order. The new loop visits bits from lowest to highest, which is also `words.txt` order, and keeps the first maximum (strict `>`).
 
@@ -212,7 +212,7 @@ One subtle difference makes the new version *more* correct. The old generator re
 - **Removed:** `sqlite3`, `db_path`, the connection and `__del__`, both query builders, and `self.solutions` (a list of every solution object that was built up but only used by commented-out code; dropping it saves memory).
 - **Atomic writes:** the JSON is written to `MMDDYYYY.json.tmp` and then `os.replace`d into place. Generation now happens on the live server, so this guarantees Flask never reads a half-written puzzle.
 - **Shared helpers:**
-  - `MODES = {"speed": 10, "score": 9}`, so the coloured-tile counts live in one place.
+  - `MODES = {"speed": 10, "score": 9}`, so the colored-tile counts live in one place.
   - `game_path(mode, game_id)`.
   - `generate_day(date)`, which makes both modes for one date.
 - The `__main__` date-range loop still works exactly as before if you ever want to generate a range by hand.

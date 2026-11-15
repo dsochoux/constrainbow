@@ -18,7 +18,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 - ~~Generator: one SQL query per candidate letter per row.~~ Done 2026-11-15: replaced with bitsets, 86× faster.
 
 ## Bugs / UX friction
-- **Reload with an invalid full word** shows the timer/score instead of REPORT MISSING WORD(S): `loadSavedGame` doesn't call `check()`. Open.
+- *(Fixed 2026-11-15)* **Reload with an invalid full word** showed the timer/score instead of REPORT MISSING WORD(S), because `loadSavedGame` never ran the board-wide check. `Board.showReportIfInvalidWords()` now runs after loading (score) or on resume (speed).
 - *(Fixed 2026-11-15)* **Favicons 404'd** after the app moved to the unprivileged user, because `favicon_io/` on the server was root-only (mode 700). deploy.sh now makes served folders world-readable.
 - *(Fixed 2026-11-15)* **Score mode starts with no tile selected**, so keys do nothing until you tap a tile. Speed mode selects (0,0) on START.
 - *(Fixed 2026-11-15)* **Tapping the selected tile deselects it.** Auto-advance often moves the cursor onto the tile you were about to tap, so your next keystrokes are silently ignored (I hit this while playing).

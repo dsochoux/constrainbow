@@ -32,7 +32,7 @@ Both modes are on one page; the SPEED / SCORE switch under the wordmark changes 
 - Typing a letter on a colored tile fills **every** tile of that color. The cursor then jumps to the next blank tile in reading order.
 - Illegal letters are refused, and the conflicting tiles flash pink for 200 ms. Illegal means a letter already owned by another color, or (on a colored tile) a letter already used on a black tile.
 - Keyboard graying: keys you can't use on the selected tile turn gray.
-- A completed word that isn't in the list turns red. The cursor stays on it, and the timer/score display is replaced by **REPORT MISSING WORD(S)**, which POSTs the word to the server.
+- A completed word that isn't in the list turns red. The cursor stays on it, and the timer/score display is replaced by **REPORT MISSING WORD(S)**, which POSTs the word to the server. On reload, a saved invalid word brings the report button back too: right away in score mode, and once the letters are visible again (RESUME or a tile tap) in speed mode.
 - Animations: a letter pops into its tile. Filling a color pops every tile of that color at once. Conflicts and invalid words shake. Solving plays a diagonal wave (each tile jumps and flashes its color, black tiles flash ink) and then a burst of confetti in the four colors. All of this is disabled under `prefers-reduced-motion`.
 - Each word's tiles are joined by ink "links" (bars between the tiles, never vertically), because players were forgetting that only the rows (across) need to be words. A "rails" alternative (each word on a strip, green when valid, red when invalid) is still in the CSS: remove `class="row-links"` from `<body>` in game.html to switch.
 - Colored tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for color-blind players.
@@ -67,6 +67,3 @@ It opens automatically on the first visit (`localStorage.visited`) and from the 
   - In score mode no tile is pre-selected, so keys do nothing until you tap.
   - Tapping the tile that auto-advance just selected deselects it, and the next keystrokes are silently dropped. I hit this while playing.
   - The board is plain Arial; no transitions apart from the conflict flash and the win cascade.
-
-## Known issue
-Reloading a page whose board holds a full but invalid word shows the timer/score instead of REPORT MISSING WORD(S), because `loadSavedGame` doesn't call `check()`. Typing again brings the button back.

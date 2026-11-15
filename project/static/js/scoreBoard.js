@@ -64,6 +64,8 @@ export class ScoreBoard extends Board {
         this.isSolutionFound = JSON.parse(localStorage.getItem('scoreIsSolutionFound')) || false;
         super.loadSavedGame('score');
         this.calculateScore();
+        // a saved invalid word should bring back the report button, not just the red row
+        this.showReportIfInvalidWords();
     }
 
     resetLocalStorage() {

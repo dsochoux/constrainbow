@@ -401,13 +401,21 @@ export class Board {
         return numInvalidWords;
     }
 
-    check() {
+    // if any full word is not in the word list, swap the timer/score for the report missing words button
+    // returns true if the button is showing
+    showReportIfInvalidWords() {
         const numInvalidWords = this.getNumInvalidWords();
         if (numInvalidWords > 0) {
-            // show report missing words button
             this.hideItems();
             this.manager.showReportMissingWordButton(numInvalidWords);
-            return
+            return true;
+        }
+        return false;
+    }
+
+    check() {
+        if (this.showReportIfInvalidWords()) {
+            return;
         }
         this.manager.hideReportMissingWordButton();
         this.showItems();

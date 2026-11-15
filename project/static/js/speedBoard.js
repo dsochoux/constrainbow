@@ -128,6 +128,9 @@ export class SpeedBoard extends Board {
         this.isPaused = false;
         this.resumeLetters();
         this.manager.resumeKeyboard();
+        // a reloaded game starts paused with its letters hidden, so a saved invalid word
+        // only brings back the report button once the letters are visible again
+        this.showReportIfInvalidWords();
     }
 
     handleLetterKeyPressed(letter) {

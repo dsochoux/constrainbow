@@ -46,7 +46,10 @@ DAILY_GIVENS = 5        # always exactly 5 given letters
 NO_REPEAT_DAYS = 90     # an answer word isn't used again within this many days (either side)
 SOLVE_FOLDER = "games/solve"
 TEST_BATCH_FOLDER = "games/solve-test"
-THEMES_PATH = "word_files/solve_themes.json"  # optional hand-picked answers, {"2027-10-31": ["ghost", ...]}
+# optional hand-picked answers per day: {"2027-10-31": ["ghost", ...]}, or with emojis that fall instead of
+# confetti when the puzzle is solved: {"2026-11-26": {"words": ["stuff", ...], "emoji": "🦃"}}
+# ("emoji" can also be a list, like ["🦃", "🥧"], and the falling emojis cycle through it)
+THEMES_PATH = "word_files/solve_themes.json"
 
 
 def solve_path(game_id):
@@ -366,9 +369,18 @@ def load_themes():
         return {}
     with open(THEMES_PATH, "r") as f:
         themes = json.load(f)
-    # keys are written YYYY-MM-DD for people; game ids are MMDDYYYY
-    return {datetime.strptime(day, "%Y-%m-%d").strftime("%m%d%Y"): [w.lower() for w in words]
-            for day, words in themes.items()}
+    # keys are written YYYY-MM-DD for people; game ids are MMDDYYYY. Each theme becomes
+    # {"words": [...], "emoji": [...]}, with no emoji an empty list
+    loaded = {}
+    for day, theme in themes.items():
+        if isinstance(theme, list):
+            theme = {"words": theme}
+        emoji = theme.get("emoji", [])
+        loaded[datetime.strptime(day, "%Y-%m-%d").strftime("%m%d%Y")] = {
+            "words": [w.lower() for w in theme["words"]],
+            "emoji": [emoji] if isinstance(emoji, str) else list(emoji),
+        }
+    return loaded
 
 
 def nearby_answer_words(date):
@@ -404,14 +416,16 @@ def generate_solve_day(date):
 
     theme = load_themes().get(game_id)
     if theme is not None:
-        game = UniqueGame(theme)
+        game = UniqueGame(theme["words"])
         puzzle = game.build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS, rng=rng)
         if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
             puzzle["theme"] = True
+            if theme["emoji"]:
+                puzzle["emoji"] = theme["emoji"]
             write_puzzle(solve_path(game_id), puzzle)
             return puzzle
         # never leave a day without a puzzle: say so loudly, then make a normal one
-        print(f"WARNING: the themed words for {date:%Y-%m-%d} ({', '.join(theme)}) can't make a "
+        print(f"WARNING: the themed words for {date:%Y-%m-%d} ({', '.join(theme['words'])}) can't make a "
               f"{DAILY_GIVENS}-letter puzzle ({game.failure or 'no starter row'}); using random words instead", flush=True)
 
     avoid = nearby_answer_words(date)

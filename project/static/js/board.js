@@ -4,6 +4,7 @@ export class Board {
         this.manager = manager;
         this.element = document.getElementById("board");
         this.words = []; // list of Word objects
+        this.confettiEmoji = data["emoji"] || []; // themed SOLVE days: emojis that fall instead of confetti
         this.selectedLetter = null; // the currently selected letter (Letter object)
         
         // both SpeedBoard and ScoreBoard will inherit this
@@ -437,7 +438,7 @@ export class Board {
                 letter.celebrate((w + l) * delayTime);
             });
         });
-        setTimeout(launchConfetti, 350);
+        setTimeout(() => launchConfetti(this.confettiEmoji), 350);
     }
 
     getEmojiBoard() {

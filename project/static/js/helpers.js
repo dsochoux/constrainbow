@@ -78,18 +78,27 @@ export async function delayedForEach(array, callback, delayTime) {
 }
 
 // a burst of confetti in the four constraint colors, used when a puzzle is solved
-export function launchConfetti(numPieces = 90) {
+// emojis: if given (a themed day), those fall instead of colored paper, cycling through the list
+export function launchConfetti(emojis = []) {
     const layer = document.createElement('div');
     layer.className = 'confetti';
     const colors = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)'];
+    const numPieces = emojis.length > 0 ? 50 : 90;
     for (let i = 0; i < numPieces; i++) {
         const piece = document.createElement('i');
         piece.style.left = `${Math.random() * 100}%`;
-        piece.style.width = `${6 + Math.random() * 6}px`;
-        piece.style.height = `${10 + Math.random() * 8}px`;
-        piece.style.background = colors[i % colors.length];
+        if (emojis.length > 0) {
+            piece.className = 'emoji';
+            piece.textContent = emojis[i % emojis.length];
+            piece.style.fontSize = `${20 + Math.random() * 14}px`;
+            piece.style.setProperty('--rot', `${(Math.random() - 0.5) * 360}deg`);
+        } else {
+            piece.style.width = `${6 + Math.random() * 6}px`;
+            piece.style.height = `${10 + Math.random() * 8}px`;
+            piece.style.background = colors[i % colors.length];
+            piece.style.setProperty('--rot', `${(Math.random() - 0.5) * 1440}deg`);
+        }
         piece.style.setProperty('--dx', `${(Math.random() - 0.5) * 160}px`);
-        piece.style.setProperty('--rot', `${(Math.random() - 0.5) * 1440}deg`);
         piece.style.animationDuration = `${1.6 + Math.random() * 1.2}s`;
         piece.style.animationDelay = `${Math.random() * 0.4}s`;
         layer.appendChild(piece);

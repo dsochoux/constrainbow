@@ -227,6 +227,7 @@ def game():
                 "grid": game_object["grid"],
                 "givens": game_object["givens"],
                 "solution": game_object["solution"],
+                "emoji": game_object.get("emoji", []),  # themed days: emojis that fall instead of confetti
                 "num_possible_solutions": 1,
                 "num_possible_points": 0,
                 "words": words

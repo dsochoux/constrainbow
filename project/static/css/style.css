@@ -494,6 +494,12 @@ body.row-links .word-row .letter {
     border-radius: 2px;
     animation: confetti-fall linear forwards;
 }
+.confetti i.emoji {
+    top: -40px;
+    border: none;
+    font-style: normal;
+    line-height: 1;
+}
 @keyframes confetti-fall {
     to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); }
 }

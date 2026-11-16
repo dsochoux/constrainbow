@@ -26,7 +26,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
   ⬜🟥⬛️💡⬛️
   ...
   ```
-- Answers come from `word_files/common_words.txt` and aren't reused within 90 days. Hand-picked answers for a date go in `word_files/solve_themes.json`.
+- Answers come from `word_files/common_words.txt` and aren't reused within 90 days. Hand-picked answers for a date go in `word_files/solve_themes.json`, optionally with an emoji (or a list) that falls instead of confetti when the puzzle is solved. First themed day: Thanksgiving 2026-11-26, STUFF / CARVE / GRAVY / THANK with 🦃 🥧 🍂.
 - The 12-puzzle play-test batch is still at `/solve/test?p=N` (unlinked).
 
 ### ⏱️ Speed (`/speed`)

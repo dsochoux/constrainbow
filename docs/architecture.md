@@ -22,7 +22,7 @@ constrainbow/
 │   └── sort_words.py          sorts words.txt in place
 ├── word_files/
 │   ├── words.txt              the big list: accepted words (2,531 on 2026-11-16, lowercase, sorted, no duplicates)
-│   ├── common_words.txt       the small list: everyday, inoffensive words SOLVE answers are drawn from (1,711 on 2026-11-16)
+│   ├── common_words.txt       the small list: everyday, inoffensive words SOLVE answers are drawn from (1,710 on 2026-11-16)
 │   ├── common_reviewed.txt    big-list words Danny has decided for the small list on /review-words (made by the page)
 │   ├── reported_missing_words.txt  appended by /report-missing-word (server copy is the real one)
 │   ├── rejected_words.txt     rejected reports (garbage, regular plurals and past tenses, proper nouns)
@@ -92,6 +92,7 @@ Entry `script.js` → `new Manager()` on DOMContentLoaded. Class layout:
 ## Look — `style.css` ("Paper pop", 2026-11-15)
 Chosen from the three directions in `design/mockups.html`.
 - **Tokens** at the top of the file: `--ink #1d1b20`, `--paper #fbf4e6`, colors `--c1..--c4` (red `#e0352b`, orange `#ff8a1f`, yellow `#e6c200`, blue `#3a3fd9`) and tints `--t1..--t4`. Fonts: Archivo Black (`--display-font`: wordmark, tiles) and Space Grotesk (`--ui-font`), loaded from Google Fonts.
+- **Wordmark**: `h1.wordmark > a[href="/"] > span` ×12. The link holds the 12-column grid, so the gaps between letters are clickable too.
 - **Sizing**: `--tile` drives `--content`, the one width the wordmark, mode switch, board and keyboard all share, so nothing hangs over. `--key` and `--key-wide` are derived from `--content`. They're computed on `body` so a body class can change their inputs. Smaller tiles under `max-height: 645px`.
 - **Tiles**: ink border plus a hard offset shadow. Colored tiles get a tint, a colored shadow and a shape in `::before` (red circle, orange square, yellow diamond, blue triangle) for color-blind players. The selected tile lifts (`translate(-3px,-3px)`, 6px shadow) and shows a blinking caret (`::after`).
 - **Rows**: `<body class="row-links">` joins each word's tiles with ink links (across only, always black). Without the class, rows show as "rails" (a strip behind each word, green when valid, red when invalid).

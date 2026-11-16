@@ -742,6 +742,11 @@ body.row-links .word-row .letter {
 .stats-bar.today {
     background: var(--c3);
 }
+.stats-share {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
 
 .step {
     display: none;

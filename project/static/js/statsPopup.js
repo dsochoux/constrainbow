@@ -52,6 +52,15 @@ export class StatsPopup {
         this.manager = manager;
         this.overlay = document.getElementById('stats-overlay');
         this.content = document.getElementById('stats-content');
+        // the popup's COPY RESULTS button works the page's button, so both copy the same way (in speed
+        // and score, a second click includes the solution) and show the same text
+        this.pageCopyButton = document.getElementById('copy-results-button');
+        new MutationObserver(() => {
+            const copyButton = document.getElementById('stats-copy-button');
+            if (copyButton) {
+                copyButton.textContent = this.pageCopyButton.textContent;
+            }
+        }).observe(this.pageCopyButton, { childList: true, characterData: true, subtree: true });
         document.getElementById('stats-button').addEventListener('click', () => this.show());
         document.getElementById('stats-close-button').addEventListener('click', () => this.hide());
         this.overlay.addEventListener('click', (event) => {
@@ -105,6 +114,16 @@ export class StatsPopup {
                     <span class="stats-bar${i === todayBar ? ' today' : ''}" style="--fill: ${Math.max(counts[i] / most, 0.06)}"><b>${counts[i]}</b></span>
                 `).join('')}
             </div>`}
-            <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. Stats are kept in this browser only.</p>`;
+            <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. Stats are kept in this browser only.</p>
+            ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button></div>` : ''}`;
+        const copyButton = document.getElementById('stats-copy-button');
+        if (copyButton) {
+            copyButton.addEventListener('click', () => this.pageCopyButton.click());
+        }
+    }
+
+    // only once today's puzzle is solved: whenever the page shows its COPY RESULTS button
+    canCopyResults() {
+        return getComputedStyle(this.pageCopyButton).display !== 'none';
     }
 }

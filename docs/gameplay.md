@@ -59,7 +59,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
   - SPEED: best time; times (under 1m, 1–2m, 2–3m, 3–5m, 5m+).
   - SCORE: perfect scores; share of the max score (100%, 90–99%, 75–89%, under 75%). A better score later the same day replaces the day's result.
 - A day counts once its puzzle is finished. In SOLVE, reveals don't matter. The current streak stays alive until a whole day is missed (finishing yesterday but not yet today still shows the streak).
-- The 📊 button next to `?` opens the stats (and pauses the game, like `?`). They also open by themselves about 2 s after today's puzzle is finished for the first time. Today's bar is highlighted.
+- The 📊 button next to `?` opens the stats (and pauses the game, like `?`). They also open by themselves about 2 s after today's puzzle is finished for the first time. Today's bar is highlighted. Once today's puzzle is solved, the popup also has a COPY RESULTS button that works the page's button (same text; in speed and score a second click includes the solution).
 - Only the daily puzzles count: the SOLVE test batch and `/solve/day` have no 📊 button and record nothing.
 - Nothing was recorded before this, so everyone's streak started on 2026-11-16.
 

@@ -4,7 +4,7 @@
 constrainbow/
 ├── project/
 │   ├── app.py                 Flask app (all routes)
-│   ├── templates/game.html    single page for both modes (Jinja): 4-step how-to-play popup, mode switch, on-screen keyboard
+│   ├── templates/game.html    single page for both modes (Jinja): 4-step how-to-play popup (its example is yesterday's SOLVE answer, passed to every page as `tutorial` by a context processor in app.py), mode switch, on-screen keyboard
 │   └── static/
 │       ├── css/style.css      all styles, "Paper pop" (~780 lines)
 │       ├── js/                ES-module sources → bundled to bundle.js

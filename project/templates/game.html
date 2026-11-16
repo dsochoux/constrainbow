@@ -31,9 +31,10 @@
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
     {% set is_solve = game_mode in ["solve", "solve-test"] %}
 
-    {# the how-to-play examples: colors per tile (0 = black) and the words of one solution #}
-    {% set example_colors = [[2, 4, 2, 0, 0], [2, 0, 3, 0, 0], [0, 1, 3, 0, 0], [1, 0, 1, 4, 0]] %}
-    {% set example_words = ["FIFTY", "FLASK", "SPARK", "PUPIL"] %}
+    {# the how-to-play examples: yesterday's SOLVE answer, or a fixed board (see get_tutorial in app.py):
+       colors per tile (0 = black) and the words of the solution #}
+    {% set example_colors = tutorial.colors %}
+    {% set example_words = tutorial.words %}
     {# fill: "none" = empty board, "colors" = only colored tiles filled, "all" = the full solution #}
     {% macro example_board(fill) %}
     <div class="example-board" aria-hidden="true">
@@ -58,13 +59,14 @@
                 </section>
                 <section class="step">
                     {{ example_board("colors") }}
-                    <p><strong>Same color, same letter.</strong> If one orange tile is F, every orange tile is F.</p>
-                    <p><strong>Different colors, different letters.</strong> Red and orange can't both be F.</p>
+                    <p><strong>Same color, same letter.</strong> If one orange tile is {{ tutorial.orange }}, every orange tile is {{ tutorial.orange }}.</p>
+                    <p><strong>Different colors, different letters.</strong> Red and orange can't both be {{ tutorial.orange }}.</p>
                 </section>
                 <section class="step">
                     {{ example_board("all") }}
-                    <p><strong>Black tiles are free.</strong> Use any letter the colored tiles haven't claimed: here, anything except F, I, A, and P.</p>
-                    <p>Black tiles can share letters, like the two Ks. Four real words across: solved!</p>
+                    <p><strong>Black tiles are free.</strong> Use any letter the colored tiles haven't claimed: here, anything except {{ tutorial.claimed }}.</p>
+                    <p>{% if tutorial.shared %}Black tiles can share letters, like the {{ tutorial.shared }}.{% else %}Black tiles can share letters with each other.{% endif %} Four real words across: solved!</p>
+                    {% if tutorial.date %}<p class="fine-print">This is yesterday's Solve answer ({{ tutorial.date }}).</p>{% endif %}
                 </section>
                 <section class="step">
                     <ul class="modes">

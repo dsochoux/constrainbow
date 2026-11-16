@@ -3,7 +3,7 @@ import os
 import re
 import fcntl
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
@@ -60,6 +60,65 @@ def get_game_id():
 
 def get_date_string(game_id):
     return f"{game_id[0]}{game_id[1]}/{game_id[2]}{game_id[3]}"
+
+# the how-to-play popup shows yesterday's SOLVE answer as its example board; this hand-picked
+# board is the fallback when yesterday's puzzle is missing or unusual
+FALLBACK_TUTORIAL = {
+    "colors": [[2, 4, 2, 0, 0], [2, 0, 3, 0, 0], [0, 1, 3, 0, 0], [1, 0, 1, 4, 0]],
+    "words": ["FIFTY", "FLASK", "SPARK", "PUPIL"],
+    "date": None,
+}
+
+def letter_plural(letter):
+    # "Ks", but "A's", "I's" and "U's" so they don't read as words
+    return f"{letter}'s" if letter in "AIU" else f"{letter}s"
+
+def describe_tutorial(example):
+    # adds the letters the how-to-play text mentions, read off the example board
+    colors, words = example["colors"], example["words"]
+    color_letters = {}  # color -> letter, in reading order
+    black_counts = {}   # letter -> how many black tiles hold it, in reading order
+    for row, word in zip(colors, words):
+        for color, letter in zip(row, word):
+            if color:
+                color_letters.setdefault(color, letter)
+            else:
+                black_counts[letter] = black_counts.get(letter, 0) + 1
+    claimed = list(color_letters.values())
+    shared = None
+    most = max(black_counts.values(), default=0)
+    if most >= 2:
+        letter = next(letter for letter, count in black_counts.items() if count == most)
+        number = {2: "two", 3: "three", 4: "four", 5: "five"}.get(most, str(most))
+        shared = f"{number} {letter_plural(letter)}"
+    return {
+        **example,
+        "orange": color_letters[2],
+        "claimed": ", ".join(claimed[:-1]) + ", and " + claimed[-1],
+        "shared": shared,
+    }
+
+def get_tutorial():
+    yesterday = (datetime.now(eastern) - timedelta(days=1)).strftime("%m%d%Y")
+    try:
+        with open(f"./games/solve/{yesterday}.json", 'r') as f:
+            puzzle = json.load(f)
+        example = {
+            "colors": puzzle["grid"],
+            "words": [word.upper() for word in puzzle["solution"]],
+            "date": get_date_string(yesterday),
+        }
+        # the text needs all four colors, and red and orange in particular
+        if sorted({c for row in example["colors"] for c in row if c}) == [1, 2, 3, 4]:
+            return describe_tutorial(example)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        pass
+    return describe_tutorial(FALLBACK_TUTORIAL)
+
+@app.context_processor
+def add_tutorial():
+    # every page renders game.html, which has the how-to-play popup
+    return {"tutorial": get_tutorial()}
 
 
 @app.route('/')

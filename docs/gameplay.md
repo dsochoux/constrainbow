@@ -67,10 +67,10 @@ constrainbow.com/score
 The button then reads "COPIED! INCLUDE SOLUTION?". A second click within 5 s copies the same text plus the four words. The emoji grid shows the puzzle's layout, not the player's answer (unlike Wordle).
 
 ## How to play (intro)
-A 4-step popup with BACK / NEXT and progress dots, each step with a small example board:
+A 4-step popup with BACK / NEXT and progress dots, each step with a small example board. Since 2026-11-16 the example board is **yesterday's SOLVE answer**, and step 3 ends with "This is yesterday's Solve answer (MM/DD)." The letters in the text come from that board (`get_tutorial` and `describe_tutorial` in app.py): the orange letter, the four color letters in reading order, and the most repeated black-tile letter ("like the two Hs"; "A's", "I's", "U's" get an apostrophe). About 1 day in 8 has no repeated black letter; then step 3 says "Black tiles can share letters with each other." If yesterday's file is missing or lacks a color, the fixed FIFTY / FLASK / SPARK / PUPIL board is used, with no caption.
 1. Fill each row with a five-letter word; only the horizontal rows need to be words, not the vertical columns.
 2. Same color, same letter (different colors, different letters).
-3. Black tiles are free: "Use any letter the colored tiles haven't claimed", and black tiles can share letters (the two Ks). Four real words across: solved!
+3. Black tiles are free: "Use any letter the colored tiles haven't claimed", and black tiles can share letters (the two Hs). Four real words across: solved!
 4. The two modes, with the contact email and "Made by Daniel Sochoux. All rights reserved." in fine print.
 
 It opens automatically on the first visit (`localStorage.visited`) and from the `?` button. Players who visited before the redesign already have the flag, so they won't see the new intro unless they tap `?`.

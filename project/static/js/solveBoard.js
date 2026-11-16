@@ -295,7 +295,8 @@ export class SolveBoard extends SpeedBoard {
         }
         const reveals = this.revealedTiles;
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
-        let message = `constrainbow.com\n`;
+        const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : 'constrainbow.com/solve';
+        let message = `${link}\n`;
         message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
         message += this.getEmojiBoard();
         navigator.clipboard.writeText(message.trim()).then(() => {

@@ -64,12 +64,8 @@ def get_date_string(game_id):
 
 @app.route('/')
 def index():
-    # going to / will redirect the user to the mode they were last playing, which is stored in the
-    # cookie; new visitors (no cookie) start with SOLVE
-    game_mode = request.cookies.get('game_mode', 'solve')
-    if game_mode not in GAME_MODES:
-        game_mode = 'solve'
-    return redirect(f'/{game_mode}')
+    # SOLVE is the default mode, so / always goes there
+    return redirect('/solve')
 
 @app.route('/speed')
 def speed():
@@ -85,7 +81,6 @@ def speed():
             date=get_date_string(game_id)
         )
     )
-    response.set_cookie('game_mode', 'speed', max_age=60*60*24*365)
     return response
 
 @app.route('/score')
@@ -102,7 +97,6 @@ def score():
             date=get_date_string(game_id)
         )
     )
-    response.set_cookie('game_mode', 'score', max_age=60*60*24*365)
     return response
 
 # SOLVE: today's single-solution puzzle (see scripts/generate_unique.py)
@@ -120,7 +114,6 @@ def solve():
             num_givens=get_num_givens(f"./games/solve/{game_id}.json"),
         )
     )
-    response.set_cookie('game_mode', 'solve', max_age=60*60*24*365)
     return response
 
 # the numbered batch of SOLVE puzzles from the first play-test (games/solve-test/); not linked

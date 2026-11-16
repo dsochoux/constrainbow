@@ -456,7 +456,7 @@ export class Board {
         if (this.copyResultsTimeout) {
             clearTimeout(this.copyResultsTimeout);
         }
-        let message = "constrainbow.com\n";
+        let message = `constrainbow.com/${this.manager.gameMode}\n`;
         message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}\n`;
         message += this.getEmojiBoard();
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;

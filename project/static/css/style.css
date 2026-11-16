@@ -778,10 +778,6 @@ body.row-links .example-letter {
 .fine-print a {
     color: var(--ink);
 }
-.hash {
-    font-size: 10px;
-    word-break: break-all;
-}
 
 .step-nav {
     display: flex;

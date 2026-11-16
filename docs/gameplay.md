@@ -12,16 +12,16 @@
 - A new puzzle for each mode releases at midnight Eastern. Under the board header a sentence gives the date and how many solutions exist: "Today's puzzle (11/15) has 70,654 solutions." Speed puzzles are generated to have at least 15k solutions and score puzzles at least 50k. Counts in the current files range from about 13k to 6.3M.
 
 ## Modes
-All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. A cookie remembers the last mode, and `/` redirects to it. New visitors start on SOLVE.
+All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. `/` always redirects to SOLVE, the default mode.
 
 ### 🔑 Solve (`/solve`, since 2026-11-15)
 - One puzzle a day with exactly **one** solution, so everyone solves the same four words. 5 letters start filled in (on black tiles), always with at least one row starting with two of them, which makes a natural place to begin. They sit pressed into the board and can't be changed.
 - Plays like speed: START GAME, a timer, PAUSE, letters hidden while paused.
 - **REVEAL** fills in the selected tile from the answer: one black tile, or a whole color (the button reads "REVEAL 3" for a 3-tile color). Revealed tiles show a gray letter and are locked. Reveals count per tile.
 - Progress is saved, so a reload or a trip to another mode resumes where you left off.
-- The share text shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
+- The share text starts with the mode's link (`constrainbow.com/solve`, `/speed` or `/score`), then shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
   ```
-  constrainbow.com
+  constrainbow.com/solve
   11/15 | 🔑 4:37 | 3 reveals
   ⬜🟥⬛️💡⬛️
   ...
@@ -56,7 +56,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 ## Sharing
 The first click on COPY RESULTS copies the following:
 ```
-constrainbow.com
+constrainbow.com/score
 11/15 | 🎯 64/64
 ⬛️🟥⬛️🟧⬛️
 ⬛️⬛️🟦⬛️🟥
@@ -71,7 +71,7 @@ A 4-step popup with BACK / NEXT and progress dots, each step with a small exampl
 1. Fill each row with a five-letter word; only the rows (across) need to be words, not the columns.
 2. Same color, same letter (different colors, different letters).
 3. Black tiles are free: "Use any letter the colored tiles haven't claimed", and black tiles can share letters (the two Ks). Four real words across: solved!
-4. The two modes, with the contact email and the authorship hash in fine print.
+4. The two modes, with the contact email and "Made by Daniel Sochoux. All rights reserved." in fine print.
 
 It opens automatically on the first visit (`localStorage.visited`) and from the `?` button. Players who visited before the redesign already have the flag, so they won't see the new intro unless they tap `?`.
 

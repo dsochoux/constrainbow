@@ -12,7 +12,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 
 ## Efficiency
 - *(Fixed 2026-11-15)* `project/requirements.txt` is pinned, and the server venv is built from it.
-- Every `/game` response includes the full 2,451-word list (~20 KB, **not gzipped** by nginx). Options: enable gzip in nginx, make `words.txt` a cacheable static asset (or keep it in localStorage with a version), or validate server-side.
+- Every `/game` response includes the full word list (2,531 words, ~20 KB, **not gzipped** by nginx). Options: enable gzip in nginx, make `words.txt` a cacheable static asset (or keep it in localStorage with a version), or validate server-side.
 - `bundle.js` and `style.css` have no cache-busting or versioning. There is no `Cache-Control` strategy, so after a deploy users may get stale JS.
 - Point values are defined three times: helpers.js, generate_game.py, and the hard-coded key HTML. The 04/08 balloon is defined twice (app.py and speedBoard.js).
 - `script.min.js` is dead. `game_solutions/`, the `reported_missing_words` DB table, and `getCookie`/`resetCookie`/`getInvalidWords` are unused.
@@ -93,7 +93,7 @@ In priority order. The aim: give players a reason to come back, something to com
    - **Answer-first also works.** Pick 4 words, then choose 4 letters that each appear at least twice in them as the colors. The layout is then forced, because every place a color's letter appears must carry that color (a black tile can never hold a color's letter). Over 40 random word sets, the best choice of colors gave 8–13 colored tiles but was never unique alone (0 of 1,000 random word sets; 91% still had over 1,000 solutions). It needed a median of 5 pre-filled letters (range 2–7), and 4 sets couldn't be made unique with black-tile letters at all. This costs about one more letter than layout-first, in exchange for choosing the answer (common words, themed days).
    - **A 5th color doesn't help**: 1% unique at 14 tiles, and about 10× slower to search.
    - **Uniqueness depends on the word list.** It has to be checked against every word the game *accepts*, or players will find a second valid answer. This conflicts with feature 6 unless uniqueness is checked against the bigger list and the answer itself uses only common words.
-6. **Bigger accepted-word list.** Keep the curated `words.txt` for generating puzzles, but accept a larger list (still no regular plurals or past tenses) when checking answers, so real words aren't rejected. Review the 477 reports on the server.
+6. **Bigger accepted-word list.** Keep the curated `words.txt` for generating puzzles, but accept a larger list (still no regular plurals or past tenses) when checking answers, so real words aren't rejected. *(2026-11-16: the reports were reviewed and the good words added; see Word lists above. A local review page now handles new reports.)*
 7. **Visitor and solve counts** from the nginx logs and solve logs, to see which videos bring players.
 8. Lower priority: hints, dark mode, an installable PWA.
 

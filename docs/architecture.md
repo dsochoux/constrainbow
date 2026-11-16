@@ -4,7 +4,7 @@
 constrainbow/
 ├── project/
 │   ├── app.py                 Flask app (all routes)
-│   ├── templates/game.html    single page for both modes (Jinja): 4-step how-to-play popup (its example is yesterday's SOLVE answer, passed to every page as `tutorial` by a context processor in app.py), mode switch, on-screen keyboard
+│   ├── templates/game.html    single page for every mode (Jinja): 4-step how-to-play popup (its example is yesterday's SOLVE answer, passed to every page as `tutorial` by a context processor in app.py), mode switch, on-screen keyboard
 │   └── static/
 │       ├── css/style.css      all styles, "Paper pop" (~780 lines)
 │       ├── js/                ES-module sources → bundled to bundle.js
@@ -46,7 +46,7 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 |---|---|
 | `GET /` | redirect to `/solve` (the default mode) |
 | `GET /speed`, `/score` | render game.html with `game_id` (today, Eastern), mode, emojis, date `MM/DD` |
-| `GET /game?game-id=&game-mode=` | read `games/{mode}/{id}.json` (modes `solve` and `solve-test` also return `givens` and `solution`; `solve-test` takes a 2-digit id from `games/solve-test/`), return `{game_id, constraints, grid, num_possible_solutions, num_possible_points, words: [all 2,451 words]}`; invalid id/mode or missing file → 404 |
+| `GET /game?game-id=&game-mode=` | read `games/{mode}/{id}.json` (modes `solve`, `solve-test` and `solve-day` also return `givens`, `solution` and `emoji` (themed days' falling emojis, else `[]`); `solve-test` takes a 2-digit id from `games/solve-test/`, `solve-day` reads `games/solve/`), return `{game_id, constraints, grid, num_possible_solutions, num_possible_points, words: [all 2,531 words]}`; invalid id/mode or missing file → 404 |
 | `POST /report-missing-word` `{words:[...]}` | words must match `[a-z]{5}`, else 400; append to `word_files/reported_missing_words.txt` (flock) |
 | `POST /log-solution` `{game_id, mode, metric, words}` | validated (8-digit id, `speed`/`score`, metric `[0-9:/]{1,20}`, words `[a-z-]{5}`), else 400; append `time,metric,w0..w3` to `logs/{game_id}/{mode}.csv` (flock, header on first write) |
 | `GET /words` | send words.txt |
@@ -62,7 +62,7 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 Production: nginx 1.26 (HTTPS via Let's Encrypt, auto-renewed by certbot) proxies to gunicorn `-w 4 project.app:app -b 127.0.0.1:5001`. gunicorn runs from `/srv/constrainbow` as the systemd service `constrainbow` (`server/constrainbow.service`). The service runs as the no-login system user `constrainbow`, restarts on crash and starts at boot. It is sandboxed (`ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `NoNewPrivileges`) and may write only to `logs/` and `word_files/reported_missing_words.txt`; everything else under `/srv/constrainbow` is root-owned and read-only to it. gunicorn's output goes to `gunicorn.log`. The nightly root cron runs `ensure_games.py` from `/srv/constrainbow`. No gzip on JSON responses.
 
 
-Server (checked 2026-11-15): DigitalOcean droplet with 1 vCPU and 1 GB RAM, Ubuntu 24.10, clock in UTC, Python 3.12.7. The venv `env/` was built from `project/requirements.txt` (pinned). `/srv/constrainbow` is not a git checkout. The pre-move folder is kept at `/root/constrainbow-backup-2026-11-15` (contains legacy `generated_games/` and old `gunicorn.log`). The server's `reported_missing_words.txt` had 477 lines vs 323 locally. ufw is inactive; port 5001 is not publicly reachable because gunicorn binds 127.0.0.1. Access: `ssh root@constrainbow.com`. Because the app user isn't root, every file it serves must be world-readable: a root-only `favicon_io/` made every icon 404 after the move, and deploy.sh now runs `chmod -R a+rX` on `project`, `word_files`, `games` and `scripts`.
+Server (checked 2026-11-15): DigitalOcean droplet with 1 vCPU and 1 GB RAM, Ubuntu 24.10, clock in UTC, Python 3.12.7. The venv `env/` was built from `project/requirements.txt` (pinned). `/srv/constrainbow` is not a git checkout. The pre-move folder is kept at `/root/constrainbow-backup-2026-11-15` (contains legacy `generated_games/` and old `gunicorn.log`). The server's `reported_missing_words.txt` is the real one (478 lines on 2026-11-16; the local copy was synced from it that day and every word decided). ufw is inactive; port 5001 is not publicly reachable because gunicorn binds 127.0.0.1. Access: `ssh root@constrainbow.com`. Because the app user isn't root, every file it serves must be world-readable: a root-only `favicon_io/` made every icon 404 after the move, and deploy.sh now runs `chmod -R a+rX` on `project`, `word_files`, `games` and `scripts`.
 
 ## Puzzle JSON format
 ```jsonc
@@ -85,7 +85,7 @@ Entry `script.js` → `new Manager()` on DOMContentLoaded. Class layout:
 - **Word** / SpeedWord / ScoreWord — 5 Letters inside a `.word-row` element; `updateLetter` tracks fill count, validates against word list when full (`turnRed` shakes and calls `setRowState('invalid')`; valid rows get `'valid'`), writes itself to localStorage.
 - **Letter** / SpeedLetter / ScoreLetter — DOM tile (`div.letter.c{n}` > `span.letter-text` [+ `span.letter-points`]); click → board callback; `playAnimation(className, delay)` with `pop`, `shake`, `celebrate`. SpeedLetter adds paused state; ScoreLetter shows point value.
 - **SolveBoard** / SolveWord / SolveLetter — SOLVE mode, the single-solution puzzles (extend the Speed* classes). Givens and revealed tiles are "locked" (`setGiven`, pressed-in style, can't be typed over or deleted, restored after CLEAR). `reveal()` fills the selected black tile, or the selected tile's whole color, first clearing anything that would clash. Progress is saved under its own keys: the daily puzzle in `solveWord0-3` and `solveState` (which stores the answer, so a new day's puzzle starts fresh), test-batch puzzles in `solveTest{NN}Word0-3` and `solveTest{NN}State`. `initBoard` and `startTimer` are overridden so the daily speed game's `speedWord*`, `speedGameId` and `elapsedSeconds` are never touched. The REVEAL button reads "REVEAL N" on a colored tile (via `updateRevealButton`, called from `Manager.updateKeyboard`), and reveals are counted per tile. Results go to `/log-solve` with a random per-browser `solveTester` id. `getEmojiBoard` marks given letters ⬜ and revealed tiles 💡 in the share grid.
-- **helpers.js** — `LETTERS_TO_POINTS` (duplicated in generate_game.py and hard-coded in game.html keys), constants, cookie helpers, `formatTime`, `delayedForEach`, `launchConfetti`.
+- **helpers.js** — `LETTERS_TO_POINTS` (duplicated in generate_game.py and hard-coded in game.html keys), constants, cookie helpers, `formatTime`, `delayedForEach`, `launchConfetti(emojis)` (colored paper, or the given emojis on themed days).
 
 ## Look — `style.css` ("Paper pop", 2026-11-15)
 Chosen from the three directions in `design/mockups.html`.
@@ -110,9 +110,9 @@ Note: count is over (letter assignment × word choices); different assignments c
 
 ## Deploy — `deploy.sh`
 Asks two y/n questions (bundle rebuilt? dev changes removed?), then:
-1. scp `app.py`, `game.html`, `style.css`, `bundle.js`, `favicon_io/*`, `words.txt` and the scripts to `/srv/constrainbow`.
+1. scp `app.py`, `game.html`, `style.css`, `bundle.js`, `favicon_io/*`, `words.txt`, `common_words.txt`, `solve_themes.json` (if any) and the generation scripts to `/srv/constrainbow`. The word review page (`word_review.py`, `word_review.html`) and the list-maintenance scripts are deliberately not copied.
 2. rsync games both ways with `--ignore-existing` (never overwrites), run `ensure_games.py`, and (re)install the cron line `15 3 * * * cd /srv/constrainbow && env/bin/python scripts/ensure_games.py >> generate.log 2>&1`.
 3. Create the `constrainbow` user if missing; make sure `logs/` and `reported_missing_words.txt` exist and belong to it; `chmod -R a+rX` the read-only folders.
 4. Install `server/constrainbow.service`, `daemon-reload`, `enable`, `restart`; reload nginx.
 
-Non-interactive: `printf 'y\ny\n' | ./deploy.sh`. Server-side `reported_missing_words.txt` and `logs/` are never pulled back automatically.
+Non-interactive: `printf 'y\ny\n' | ./deploy.sh`. Server-side `reported_missing_words.txt` and `logs/` are never pulled back automatically. Because games are never overwritten, a remade or recounted game (`check_solve_unique.py --fix`, `recount_games.py`, `generate_unique.py --day`) has to be copied to the server by hand, e.g. `rsync -az --files-from=<list> games/ root@constrainbow.com:/srv/constrainbow/games/`.

@@ -1,7 +1,7 @@
 # Gameplay
 
 ## The puzzle
-- A 4×5 grid: four rows, each a five-letter English word. Word list: `word_files/words.txt` (2,451 hand-curated words; no regular plurals or regular past tenses).
+- A 4×5 grid: four rows, each a five-letter English word. Word list: `word_files/words.txt` (2,531 hand-curated words on 2026-11-16; no regular plurals or regular past tenses). Players can report a full row that isn't accepted; reports are decided on the local review page (see architecture.md).
 - Some tiles have a colored border: red, orange, yellow, blue (constraints 1–4; CSS vars `--c1..--c4`). Black-bordered tiles are "wildcards" (constraint 0).
 - Rules:
   1. All tiles of one color hold the same letter.
@@ -9,7 +9,7 @@
   3. A black tile may hold any letter **except** one used by a color. Black letters can repeat freely.
 - Every color appears at least twice, and the colors are linked in a cycle across the rows (row i always has colors s[i] and s[i+1]), so all four colors interact.
 - Speed puzzles have 10 colored tiles; score puzzles have 9. SOLVE puzzles have whatever their answer gives (at least 9), plus 5 letters filled in.
-- A new puzzle for each mode releases at midnight Eastern. Under the board header a sentence gives the date and how many solutions exist: "Today's puzzle (11/15) has 70,654 solutions." Speed puzzles are generated to have at least 15k solutions and score puzzles at least 50k. Counts in the current files range from about 13k to 6.3M.
+- A new puzzle for each mode releases at midnight Eastern. Under the board header a sentence gives the date and how many solutions exist: "Today's puzzle (11/15) has 70,654 solutions." Speed puzzles are generated to have at least 15k solutions and score puzzles at least 50k. After the 2026-11-16 recount against the bigger word list, upcoming puzzles (11/16–12/31) range from about 16k to 3.1M.
 
 ## Modes
 All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. `/` always redirects to SOLVE, the default mode.
@@ -48,7 +48,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 - Illegal letters are refused, and the conflicting tiles flash pink for 200 ms. Illegal means a letter already owned by another color, or (on a colored tile) a letter already used on a black tile.
 - Keyboard graying: keys you can't use on the selected tile turn gray.
 - A completed word that isn't in the list turns red. The cursor stays on it, and the timer/score display is replaced by **REPORT MISSING WORD(S)**, which POSTs the word to the server. On reload, a saved invalid word brings the report button back too: right away in score mode, and once the letters are visible again (RESUME or a tile tap) in speed mode.
-- Animations: a letter pops into its tile. Filling a color pops every tile of that color at once. Conflicts and invalid words shake. Solving plays a diagonal wave (each tile jumps and flashes its color, black tiles flash ink) and then a burst of confetti in the four colors. All of this is disabled under `prefers-reduced-motion`.
+- Animations: a letter pops into its tile. Filling a color pops every tile of that color at once. Conflicts and invalid words shake. Solving plays a diagonal wave (each tile jumps and flashes its color, black tiles flash ink) and then a burst of confetti in the four colors (on a themed SOLVE day, the theme's emojis fall instead). All of this is disabled under `prefers-reduced-motion`.
 - Each word's tiles are joined by ink "links" (bars between the tiles, never vertically), because players were forgetting that only the rows (across) need to be words. A "rails" alternative (each word on a strip, green when valid, red when invalid) is still in the CSS: remove `class="row-links"` from `<body>` in game.html to switch.
 - Colored tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for color-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.

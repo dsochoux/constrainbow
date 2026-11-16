@@ -252,7 +252,7 @@ A night's run normally generates 2 puzzles (one new day) in well under a second,
 ### Day-to-day
 - **Nothing to do monthly any more.**
 - To check on it: `ssh root@constrainbow.com 'tail /srv/constrainbow/generate.log; crontab -l'`.
-- **Word-list changes:** deploy the new `words.txt` as usual. Puzzles generated from then on use it. Already-generated puzzles (up to 30 days ahead) keep their old solution counts. To regenerate the future ones, delete those files on the server and run `ensure_games.py`. Only delete days nobody has played yet.
+- **Word-list changes:** deploy the new `words.txt` as usual. Puzzles generated from then on use it. Already-generated puzzles (up to 30 days ahead) keep their old counts, so run `scripts/recount_games.py` (recounts speed/score from today on, layouts unchanged) and `scripts/check_solve_unique.py --fix` (remakes upcoming SOLVE days that are no longer unique), then copy the changed files to the server. Done on 2026-11-16 after the word list grew to 2,531; the explanation below uses the old 2,451-word list for its numbers.
 
 ### Requirements on the server
 - Python 3.9+ in `/srv/constrainbow/env`. `zoneinfo` needs 3.9, and `app.py` already uses it, so this is already true.

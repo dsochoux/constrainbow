@@ -40,6 +40,15 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 - Desktop layout is just the mobile column centered. 67px tiles.
 - Good for video: the color-fill cascade when one letter fills 3 tiles, and the win cascade.
 
+## Word lists (2026-11-16)
+- Downloaded the server's `reported_missing_words.txt` (478 lines, 376 different words; it contains all of the old local copy). Of the 146 not yet decided:
+  - **Rejected (58):** typos and garbage (abwab, bptch, glowr…), regular plurals and -s verbs (books, races, wants…), regular past tenses (aimed, named, saved…), proper nouns (amish, korea, santa…). Added to `rejected_words.txt`.
+  - **Added to the big list (61):** clearly fine words such as argon, beige, chewy, emoji, nacho, umami, upend, xenon. Not added to the small list; that's Danny's call on the review page.
+  - **Left for Danny (27):** ahold, amnio, annal, arcus, cupid, dohyo, estop, gouda, griot, haulm, hicky, intel, katsu, lanai, laude, loden, lycra, nabob, otary, pecky, snarf, stoma, synch, thunk, wahoo, wives, yahoo.
+- Removed the duplicate "minty" from words.txt.
+- The new words gave 3 SOLVE puzzles a second answer: 11/20 and 12/16 were remade (now STAFF/PROMO/VILLA/FRYER and WEIRD/STRAW/PIECE/PHONY), and test puzzle 12 (already played) was left as it is.
+- Speed and score puzzles made before a word was added under-count their solutions a little ("has N solutions"). Harmless.
+
 ## Features to work on (agreed 2026-11-15)
 In priority order. The aim: give players a reason to come back, something to compare, and more to play for people who arrive from a video.
 1. **Streaks and stats.** Kept in localStorage, no accounts: current/best streak, games played, a speed time histogram, score % of max.

@@ -11,8 +11,16 @@ profane, sexual or grim. Reviewed by hand on 2026-11-15. Left out on purpose:
   - informal or slangy words (bloke, homie, gyatt)
   - grim words for a cheerful daily game (abuse, tumor, vomit)
 
-To change it, edit EXCLUDE and run from the repo root:  python3 scripts/build_common_words.py
+This script made the first list. Since 2026-11-16 the list is edited on the local word review page
+(http://localhost:5001/review-words, see project/word_review.py), so running this again would throw
+away those decisions; it refuses to unless given --force.
 """
+import os
+import sys
+
+if os.path.exists('word_files/common_reviewed.txt') and '--force' not in sys.argv:
+    raise SystemExit("common_words.txt has been edited on /review-words since this script made it; "
+                     "rerunning would undo that (use --force if you really mean to)")
 EXCLUDE = """
 aback abase abate abbot abhor abled abode abuzz achoo acrid adage aegis affix afire afoot afoul agape agate aglet aglow aider aioli
 allay allot aloft aloof amass amble amino amiss amity amply angst annex annul anode antic aorta aphid apian aping apnea april aptly

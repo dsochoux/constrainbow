@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon.svg') }}" type="image/svg+xml">
+    <style>
+        /* the same "Paper pop" colors and fonts as the game (style.css), kept separate so the game's
+           page styles don't apply here */
+        :root {
+            --ink: #1d1b20;
+            --paper: #fbf4e6;
+            --card: #ffffff;
+            --muted: #8a8478;
+            --key-off: #ddd6c8;
+            --c1: #e0352b;
+            --c2: #ff8a1f;
+            --c3: #e6c200;
+            --c4: #3a3fd9;
+            --t1: #fde0dc;
+            --t2: #ffe7cc;
+            --t3: #fff6c2;
+            --t4: #dfe1ff;
+            --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
+            --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px 16px 48px;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: var(--ui-font);
+            font-weight: 500;
+        }
+        main { max-width: 720px; margin: 0 auto; }
+        h1 { font-family: var(--display-font); font-weight: 400; font-size: 28px; margin: 0 0 4px; letter-spacing: 1px; }
+        .lede { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        button, select, input {
+            font: inherit;
+            color: var(--ink);
+            border: 2.5px solid var(--ink);
+            border-radius: 10px;
+            background: var(--card);
+            padding: 8px 14px;
+            box-shadow: 3px 3px 0 var(--ink);
+            cursor: pointer;
+        }
+        input { cursor: text; }
+        button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+        button:disabled { opacity: 0.4; cursor: default; }
+        .tabs button.active { background: var(--ink); color: var(--paper); }
+        .warning {
+            display: none;
+            border: 2.5px solid var(--c1);
+            background: var(--t1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+        .warning code { font-size: 13px; }
+        .card {
+            background: var(--card);
+            border: 2.5px solid var(--ink);
+            border-radius: 14px;
+            box-shadow: 5px 5px 0 var(--ink);
+            padding: 22px 18px;
+            text-align: center;
+        }
+        .tiles { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+        .tile {
+            width: 58px; height: 58px;
+            display: grid; place-items: center;
+            font-family: var(--display-font);
+            font-size: 30px;
+            border: 2.5px solid var(--ink);
+            border-radius: 10px;
+            background: var(--paper);
+            box-shadow: 3px 3px 0 var(--ink);
+        }
+        .meta { color: var(--muted); font-size: 14px; margin-bottom: 4px; }
+        .meta a { color: var(--ink); }
+        .state { font-weight: 700; margin-bottom: 16px; }
+        .choices { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .choices button.current { outline: 3px solid var(--c4); outline-offset: 2px; }
+        button.reject { background: var(--t1); }
+        button.big { background: var(--t2); }
+        button.small { background: var(--t3); }
+        button.undecided { background: var(--key-off); }
+        kbd {
+            font-family: var(--ui-font);
+            font-size: 12px;
+            border: 1.5px solid var(--ink);
+            border-radius: 4px;
+            padding: 0 4px;
+            margin-right: 4px;
+            background: var(--paper);
+        }
+        .nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
+        .position { color: var(--muted); }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip {
+            font-family: var(--display-font);
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 3px 7px;
+            border: 2px solid var(--ink);
+            border-radius: 6px;
+            background: var(--card);
+            cursor: pointer;
+            box-shadow: none;
+        }
+        .chip.selected { outline: 3px solid var(--c4); outline-offset: 1px; }
+        .chip.pending { background: var(--card); }
+        .chip.rejected { background: var(--t1); color: var(--muted); text-decoration: line-through; }
+        .chip.big { background: var(--t2); }
+        .chip.small { background: var(--t3); }
+        .chip.unreviewed { border-style: dashed; }
+        .legend { font-size: 13px; color: var(--muted); margin: 12px 0 8px; }
+        .empty { color: var(--muted); padding: 30px 0; }
+        .error { color: var(--c1); min-height: 1.4em; margin-top: 10px; font-size: 14px; }
+        @media (max-width: 420px) {
+            .tile { width: 48px; height: 48px; font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>WORD REVIEW</h1>
+    <p class="lede">The <strong>big list</strong> (words.txt) is every word the game accepts. The <strong>small list</strong> (common_words.txt) is the everyday words SOLVE answers are drawn from. Changes save as you go. Local only.</p>
+
+    <div class="tabs">
+        <button id="tab-reported">Reported words</button>
+        <button id="tab-big">Big list</button>
+    </div>
+
+    <div class="warning" id="warning"></div>
+
+    <div class="nav">
+        <button id="prev" aria-label="Previous word">‹ <kbd>←</kbd></button>
+        <span class="position" id="position"></span>
+        <select id="filter" aria-label="Which words"></select>
+        <input id="search" placeholder="Find a word" size="10" maxlength="5" aria-label="Find a word">
+        <button id="next" aria-label="Next word"><kbd>→</kbd> ›</button>
+    </div>
+
+    <div class="card" id="card"></div>
+    <div class="error" id="error"></div>
+
+    <p class="legend" id="legend"></p>
+    <div class="chips" id="chips"></div>
+</main>
+
+<script>
+    // what each tab can filter by, and what its buttons do
+    const FILTERS = {
+        reported: [
+            ["pending", "To decide", (item) => item.status === "pending"],
+            ["all", "All reported", () => true],
+            ["added", "Added", (item) => item.status === "big" || item.status === "small"],
+            ["rejected", "Rejected", (item) => item.status === "rejected"],
+        ],
+        big: [
+            ["unreviewed", "Not reviewed yet", (item) => !item.reviewed],
+            ["all", "All", () => true],
+            ["small", "On the small list", (item) => item.small],
+            ["not-small", "Not on the small list", (item) => !item.small],
+        ],
+    };
+    const CHOICES = {
+        reported: [
+            ["reject", "x", "Reject", "reject"],
+            ["big", "b", "Big list only", "big"],
+            ["small", "s", "Big + small", "small"],
+            ["pending", "u", "Undecided", "undecided"],
+        ],
+        big: [
+            ["in-small", "s", "On the small list", "small"],
+            ["not-small", "n", "Not on the small list", "big"],
+        ],
+    };
+    const STATE_TEXT = {
+        pending: "Not decided yet",
+        rejected: "Rejected",
+        big: "In the big list only",
+        small: "In the big and small lists",
+    };
+
+    let data = null;
+    let tab = "reported";
+    let filter = "pending";
+    let items = [];   // the words in the current filter, kept in place while you decide (so ‹ goes back)
+    let index = 0;
+
+    const $ = (id) => document.getElementById(id);
+
+    function itemsFor(tabName) {
+        return tabName === "reported" ? data.reported : data.big;
+    }
+
+    function find(word) {
+        return itemsFor(tab).find((item) => item.word === word);
+    }
+
+    // the current state of a word, as a class name and as text
+    function stateOf(item) {
+        if (tab === "reported") {
+            return item.status;
+        }
+        return item.small ? "small" : "big";
+    }
+
+    function applyFilter() {
+        const test = FILTERS[tab].find(([name]) => name === filter)[2];
+        items = itemsFor(tab).filter(test).map((item) => item.word);
+        index = 0;
+        render();
+    }
+
+    function setTab(name) {
+        tab = name;
+        filter = FILTERS[tab][0][0];
+        $("filter").innerHTML = FILTERS[tab].map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
+        $("filter").value = filter;
+        $("tab-reported").classList.toggle("active", tab === "reported");
+        $("tab-big").classList.toggle("active", tab === "big");
+        $("legend").textContent = tab === "reported"
+            ? "White: to decide · orange: big list · yellow: big + small · red: rejected. Most-reported first."
+            : "Orange: big list only · yellow: also on the small list · dashed: not reviewed yet.";
+        applyFilter();
+    }
+
+    function updateCounts() {
+        const pending = data.reported.filter((item) => item.status === "pending").length;
+        const unreviewed = data.big.filter((item) => !item.reviewed).length;
+        $("tab-reported").textContent = `Reported words (${pending} to decide)`;
+        $("tab-big").textContent = `Big list (${data.big.length.toLocaleString()}, ${unreviewed.toLocaleString()} not reviewed)`;
+        const warning = $("warning");
+        if (data.not_unique.length > 0) {
+            warning.style.display = "block";
+            warning.innerHTML = `With the current big list, ${data.not_unique.length === 1 ? "this upcoming SOLVE puzzle has" : "these upcoming SOLVE puzzles have"} more than one answer: ` +
+                `<strong>${data.not_unique.join(", ")}</strong>. When you're done, run ` +
+                `<code>env/bin/python scripts/check_solve_unique.py --fix</code> to remake the days that haven't happened yet.`;
+        } else {
+            warning.style.display = "none";
+        }
+    }
+
+    function render() {
+        updateCounts();
+        const card = $("card");
+        $("prev").disabled = index <= 0;
+        $("next").disabled = index >= items.length - 1;
+        $("position").textContent = items.length ? `${index + 1} of ${items.length}` : "";
+        if (items.length === 0) {
+            card.innerHTML = `<p class="empty">Nothing here. ${filter === "pending" || filter === "unreviewed" ? "All done!" : ""}</p>`;
+        } else {
+            const item = find(items[index]);
+            const state = stateOf(item);
+            const meta = [];
+            if (tab === "reported") {
+                meta.push(`reported ${item.count} time${item.count === 1 ? "" : "s"}`);
+            } else {
+                meta.push(item.reviewed ? "reviewed" : "not reviewed yet");
+            }
+            meta.push(`<a href="https://www.merriam-webster.com/dictionary/${item.word}" target="_blank" rel="noopener">dictionary</a>`);
+            const text = tab === "reported" ? STATE_TEXT[state] : (item.small ? "On the small list" : "Not on the small list");
+            card.innerHTML = `
+                <div class="tiles">${item.word.toUpperCase().split("").map((ch) => `<div class="tile">${ch}</div>`).join("")}</div>
+                <div class="meta">${meta.join(" · ")}</div>
+                <div class="state">${text}</div>
+                <div class="choices">${CHOICES[tab].map(([choice, key, label, style]) => {
+                    const isCurrent = tab === "reported" ? choice === state
+                        : (item.reviewed && ((choice === "in-small") === item.small));
+                    return `<button class="${style}${isCurrent ? " current" : ""}" data-choice="${choice}"><kbd>${key.toUpperCase()}</kbd>${label}</button>`;
+                }).join("")}</div>`;
+            card.querySelectorAll("button[data-choice]").forEach((button) => {
+                button.addEventListener("click", () => decide(button.dataset.choice));
+            });
+        }
+        renderChips();
+    }
+
+    function renderChips() {
+        const chips = $("chips");
+        chips.innerHTML = items.map((word, i) => {
+            const item = find(word);
+            const classes = ["chip", stateOf(item)];
+            if (tab === "big" && !item.reviewed) {
+                classes.push("unreviewed");
+            }
+            if (i === index) {
+                classes.push("selected");
+            }
+            return `<button class="${classes.join(" ")}" data-index="${i}">${word.toUpperCase()}</button>`;
+        }).join("");
+        chips.querySelectorAll("button").forEach((chip) => {
+            chip.addEventListener("click", () => { index = Number(chip.dataset.index); render(); });
+        });
+        const selected = chips.querySelector(".selected");
+        if (selected) {
+            selected.scrollIntoView({ block: "nearest" });
+        }
+    }
+
+    async function decide(choice) {
+        if (items.length === 0) {
+            return;
+        }
+        $("error").textContent = "";
+        const response = await fetch("/review-words/decide", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ word: items[index], choice }),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            $("error").textContent = result.error;
+            return;
+        }
+        data = result;
+        // move on to the next word (the list stays as it was, so ‹ still goes back to this one)
+        const nextWord = items[Math.min(index + 1, items.length - 1)];
+        // a word can leave this tab altogether (a rejected word isn't in the big list any more)
+        items = items.filter((word) => find(word) !== undefined);
+        index = Math.max(0, items.indexOf(nextWord));
+        render();
+    }
+
+    function move(step) {
+        index = Math.max(0, Math.min(items.length - 1, index + step));
+        render();
+    }
+
+    $("tab-reported").addEventListener("click", () => setTab("reported"));
+    $("tab-big").addEventListener("click", () => setTab("big"));
+    $("filter").addEventListener("change", (e) => { filter = e.target.value; applyFilter(); });
+    $("prev").addEventListener("click", () => move(-1));
+    $("next").addEventListener("click", () => move(1));
+    $("search").addEventListener("input", (e) => {
+        const text = e.target.value.trim().toLowerCase();
+        if (!text) {
+            return;
+        }
+        let i = items.findIndex((word) => word.startsWith(text));
+        if (i === -1 && itemsFor(tab).some((item) => item.word.startsWith(text))) {
+            // not in this filter: show everything, then find it
+            filter = "all";
+            $("filter").value = "all";
+            items = itemsFor(tab).map((item) => item.word);
+            i = items.findIndex((word) => word.startsWith(text));
+        }
+        if (i !== -1) {
+            index = i;
+            render();
+        }
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
+        if (e.key === "ArrowLeft") {
+            move(-1);
+        } else if (e.key === "ArrowRight") {
+            move(1);
+        } else {
+            const choice = CHOICES[tab].find(([, key]) => key === e.key.toLowerCase());
+            if (choice) {
+                decide(choice[0]);
+            }
+        }
+    });
+
+    fetch("/review-words/data").then((response) => response.json()).then((result) => {
+        data = result;
+        setTab("reported");
+    });
+</script>
+</body>
+</html>

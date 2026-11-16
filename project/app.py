@@ -417,4 +417,8 @@ def return_log(file_path, mode):
 
 
 if __name__ == '__main__':
+    # the word-list review page (/review-words) exists only when running locally like this, never under
+    # gunicorn on the server; see word_review.py
+    from word_review import word_review
+    app.register_blueprint(word_review)
     app.run(host='0.0.0.0', port=5001, debug=True)

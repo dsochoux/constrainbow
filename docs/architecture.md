@@ -15,13 +15,15 @@ constrainbow/
 │   ├── generate_unique.py     SOLVE puzzles (single solution, answer first): `generate_solve_day` for dailies, `--day`, `--test-batch`, `--words a b c d`
 │   ├── build_common_words.py  builds common_words.txt from words.txt minus a hand-reviewed exclude list
 │   ├── db.py                  rebuilds `words` table in database.db (no longer needed)
-│   ├── filter_reported_words.py  reported_missing − words − rejected → filtered_reported_missing_words.txt
+│   ├── check_solve_unique.py  checks every SOLVE puzzle is still unique against words.txt; --fix remakes upcoming days
+│   ├── filter_reported_words.py  reported_missing − words − rejected → filtered_reported_missing_words.txt (superseded by /review-words)
 │   └── sort_words.py          sorts words.txt in place
 ├── word_files/
-│   ├── words.txt              accepted words (2,451, lowercase, sorted; "minty" is listed twice)
-│   ├── common_words.txt       the 1,529 everyday, inoffensive words single-solution answers are drawn from
+│   ├── words.txt              the big list: accepted words (2,511 on 2026-11-16, lowercase, sorted, no duplicates)
+│   ├── common_words.txt       the small list: everyday, inoffensive words SOLVE answers are drawn from (1,529 on 2026-11-16)
+│   ├── common_reviewed.txt    big-list words Danny has decided for the small list on /review-words (made by the page)
 │   ├── reported_missing_words.txt  appended by /report-missing-word (server copy is the real one)
-│   ├── rejected_words.txt     manually rejected reports
+│   ├── rejected_words.txt     rejected reports (garbage, regular plurals and past tenses, proper nouns)
 │   └── filtered_reported_missing_words.txt
 ├── games/solve/MMDDYYYY.json  daily SOLVE puzzles (5 given letters), made by ensure_games.py like speed/score
 ├── games/solve-test/NN.json  the SOLVE play-test batch (12 puzzles at 3/5/7 given letters, easiest first)
@@ -47,6 +49,7 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 | `POST /report-missing-word` `{words:[...]}` | words must match `[a-z]{5}`, else 400; append to `word_files/reported_missing_words.txt` (flock) |
 | `POST /log-solution` `{game_id, mode, metric, words}` | validated (8-digit id, `speed`/`score`, metric `[0-9:/]{1,20}`, words `[a-z-]{5}`), else 400; append `time,metric,w0..w3` to `logs/{game_id}/{mode}.csv` (flock, header on first write) |
 | `GET /words` | send words.txt |
+| `GET /review-words` (+ `/data`, `POST /decide`) | **local only**: the word review page (`project/word_review.py`, `templates/word_review.html`). Registered only in app.py's `__main__` block, so gunicorn never has it; answers only 127.0.0.1/::1 without `X-Forwarded-For`; deploy.sh doesn't copy it. Reported words: reject / big list / big + small / undecided. Big list: on or off the small list. Every change rewrites the lists (sorted, deduplicated) and rechecks upcoming SOLVE puzzles for uniqueness. A word can only leave words.txt if it was reported and isn't a SOLVE answer |
 | `GET /solve` | today's SOLVE puzzle |
 | `GET /solve/day?d=YYYY-MM-DD` | any day's SOLVE puzzle, past or future (unlisted, for trying out themed days), `game_mode="solve-day"`, with ‹ › links to the days around it. 404 if that day has no puzzle; a bad date means today. Progress is saved under `solveDay{MMDDYYYY}`, and solves aren't logged |
 | `GET /solve/test?p=N` | SOLVE test-batch puzzle N (unlisted; out-of-range N is clamped), `game_mode="solve-test"`. The old `/playtest?p=N` redirects here |

@@ -1,6 +1,6 @@
 # Review findings (2026-11-15)
 
-Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were done on 2026-11-15; the rest are still open. Discuss with Danny before changing gameplay.
+Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were done on 2026-11-15 or later (dated); the rest are still open. Discuss with Danny before changing gameplay.
 
 ## Urgent / operational
 1. *(Fixed 2026-11-15: games exist through 12/31, and the server's nightly cron keeps 30 days ahead. See generation-algorithm.md.)* **Puzzles run out on 2026-12-01.** The last game files are for 11/30. The live `/game?game-id=12012026` returns 404, so the page will show "SORRY, I FORGOT TO MAKE TODAY'S GAME 😭". Generate December (or more) and deploy. Longer term, consider auto-generation, or a warning when fewer than N days are left.
@@ -8,6 +8,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 3. *(Fixed 2026-11-15.)* `/log-solution`, `/report-missing-word` and `/game` used request values in file paths and file contents without checking them. `app.py` now accepts only an 8-digit game id, `speed`/`score`, word lists matching `[a-z]{5}` (or `[a-z-]{5}` for boards), and a short metric. Anything else gets a 400 or 404. The server showed no sign the hole had been used. The app now also runs as an unprivileged, sandboxed user (see 5).
 4. `/report-missing-word` and `/log-solution` have no rate limit or size limit, so the logs can be spammed. Solve times/scores are trusted from the client.
 5. *(Fixed 2026-11-15.)* gunicorn used to be started with `pkill` + `nohup` as root, bound to 0.0.0.0:5001 (reachable from the internet, bypassing HTTPS). It now runs as the sandboxed systemd service `constrainbow`, as an unprivileged user, from `/srv/constrainbow`, listening on 127.0.0.1 only.
+6. **SOLVE answers are public.** The repo is public, and `games/solve/*.json` contains each day's solution, 30+ days ahead. Danny decided on 2026-11-16 that this is fine for now. If the game grows, stop tracking `games/solve/` in git (the server makes its own puzzles), or keep the answer out of the files and check a submitted board against the word list on the server.
 
 ## Efficiency
 - *(Fixed 2026-11-15)* `project/requirements.txt` is pinned, and the server venv is built from it.
@@ -29,7 +30,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 - *(Mostly fixed 2026-11-15: `user-scalable=no` removed, colored tiles carry shapes, CLEAR/DEL/close/`?` and the mode switch have labels. Tiles themselves still have no aria labels, and share emojis are still color-only.)* The viewport had `user-scalable=no` (an accessibility concern). Tiles and keys have no aria labels, and color alone carries meaning (color-blind players can't tell red from orange easily, and the share emojis are color-only).
 - Speed timer: `setInterval` tick counting can drift; it should use `Date.now()` deltas.
 - `copyResults` decides "include solution?" from the button text, which is fragile.
-- The share grid shows the puzzle *layout* only, so all players' shares for a day look identical apart from the time or score.
+- The share grid shows the puzzle *layout* only, so all players' shares for a day look identical apart from the time or score. *(SOLVE shares differ: ⬜ givens and 💡 reveals. Since 2026-11-16 every share starts with the mode's link, e.g. `constrainbow.com/solve`, since the emoji alone didn't say which mode.)*
 
 ## Aesthetic observations
 *(2026-11-15: redesigned in the "Paper pop" style, with tile pop animations (all tiles of a color at once; a ripple was tried and dropped as laggy), shake on errors, a wave-and-confetti win, color-blind shapes on colored tiles, across-only row links, a red over-max score, a 4-step visual how-to-play and a rainbow-C favicon. The notes below describe the old look. The design exploration is in `design/mockups.html`.)*
@@ -48,6 +49,8 @@ In priority order. The aim: give players a reason to come back, something to com
 5. **Single-solution mode: SOLVE.** A puzzle with exactly one answer, so everyone solves the same thing and can talk about it.
 
    **Status (2026-11-15): daily SOLVE built, first tab and default mode.** One 5-letter puzzle a day at `/solve`, made nightly by `ensure_games.py` (about 1–4 s each), answers not reused within 90 days, themed days from `word_files/solve_themes.json` (a theme that can't make a 5-letter puzzle falls back to random words with a loud warning; check themes first with `--words`). Share grid marks givens ⬜ and reveals 💡. Difficulty is flat for now. Before that: named SOLVE (🔑), and `/solve/test` serves the play-test batch of 12 (four each at 3, 5 and 7 given letters, mixed) with a timer and a REVEAL button. Test-batch solves are logged to `logs/solve-test.csv` (`/solvetestlog`), daily ones to `logs/MMDDYYYY/solve.csv` (`/solvelog`), with time, given letters, reveals (black tiles, colors, and total tiles revealed), and an anonymous tester id. Progress is saved per puzzle. A revealed color counts as one reveal per tile, and the button says how many ("REVEAL 3"). Not linked from the game. Next: Danny and friends play it, then tune the numbers below. Answers come only from `word_files/common_words.txt`: 1,529 of the 2,450 words, reviewed by hand on 2026-11-15 to keep everyday, inoffensive words. `scripts/build_common_words.py` lists what was left out and why. Uniqueness is still checked against all of `words.txt`, since players may type any accepted word. `--words` refuses uncommon words unless given `--allow-uncommon`. Each puzzle gets a difficulty estimate (`UniqueGame.difficulty`, which imitates row-by-row deduction and reports how many boards are left when it gets stuck), and the batch is numbered from easiest to hardest by it. The estimate still needs checking against real solve times. "Check row" is not built yet.
+
+   **2026-11-16:** `/` now always redirects to `/solve` (the `game_mode` cookie that remembered the last mode is gone), and the how-to-play example board is yesterday's SOLVE answer, with a caption, so returning players can see the answer they missed (see gameplay.md).
 
    **First play-test (Danny, all 12, 2026-11-15):**
 

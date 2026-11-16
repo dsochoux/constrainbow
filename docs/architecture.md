@@ -19,8 +19,8 @@ constrainbow/
 │   ├── filter_reported_words.py  reported_missing − words − rejected → filtered_reported_missing_words.txt (superseded by /review-words)
 │   └── sort_words.py          sorts words.txt in place
 ├── word_files/
-│   ├── words.txt              the big list: accepted words (2,511 on 2026-11-16, lowercase, sorted, no duplicates)
-│   ├── common_words.txt       the small list: everyday, inoffensive words SOLVE answers are drawn from (1,529 on 2026-11-16)
+│   ├── words.txt              the big list: accepted words (2,531 on 2026-11-16, lowercase, sorted, no duplicates)
+│   ├── common_words.txt       the small list: everyday, inoffensive words SOLVE answers are drawn from (1,711 on 2026-11-16)
 │   ├── common_reviewed.txt    big-list words Danny has decided for the small list on /review-words (made by the page)
 │   ├── reported_missing_words.txt  appended by /report-missing-word (server copy is the real one)
 │   ├── rejected_words.txt     rejected reports (garbage, regular plurals and past tenses, proper nouns)

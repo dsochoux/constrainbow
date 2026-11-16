@@ -68,7 +68,7 @@ The button then reads "COPIED! INCLUDE SOLUTION?". A second click within 5 s cop
 
 ## How to play (intro)
 A 4-step popup with BACK / NEXT and progress dots, each step with a small example board:
-1. Fill each row with a five-letter word; only the rows (across) need to be words, not the columns.
+1. Fill each row with a five-letter word; only the horizontal rows need to be words, not the vertical columns.
 2. Same color, same letter (different colors, different letters).
 3. Black tiles are free: "Use any letter the colored tiles haven't claimed", and black tiles can share letters (the two Ks). Four real words across: solved!
 4. The two modes, with the contact email and "Made by Daniel Sochoux. All rights reserved." in fine print.

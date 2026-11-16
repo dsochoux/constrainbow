@@ -26,10 +26,10 @@ GAME_ID_PATTERN = re.compile(r"[0-9]{8}")      # MMDDYYYY
 WORD_PATTERN = re.compile(r"[a-z]{5}")         # a full word
 BOARD_WORD_PATTERN = re.compile(r"[a-z-]{5}")  # a word on the board, '-' for blanks
 METRIC_PATTERN = re.compile(r"[0-9:/]{1,20}")  # "0:41", "1:02:03", "64/64"
-GAME_MODES = ("speed", "score")
-SOLVE_ID_PATTERN = re.compile(r"[0-9]{2}")       # SOLVE test puzzle "01", "02", ...
+GAME_MODES = ("solve", "speed", "score")
+SOLVE_TEST_ID_PATTERN = re.compile(r"[0-9]{2}")  # SOLVE test-batch puzzle "01", "02", ...
 TESTER_PATTERN = re.compile(r"[0-9a-f]{8}")      # a random id each SOLVE player's browser makes up
-SOLVE_FOLDER = "./games/solve/"
+SOLVE_TEST_FOLDER = "./games/solve-test/"
 
 def is_valid_game(game_id, game_mode):
     return (isinstance(game_id, str) and GAME_ID_PATTERN.fullmatch(game_id) is not None
@@ -39,10 +39,18 @@ def is_list_of(value, pattern, max_length):
     return (isinstance(value, list) and len(value) <= max_length
             and all(isinstance(item, str) and pattern.fullmatch(item) for item in value))
 
-def get_solve_count():
-    if not os.path.isdir(SOLVE_FOLDER):
+def get_solve_test_count():
+    if not os.path.isdir(SOLVE_TEST_FOLDER):
         return 0
-    return len([name for name in os.listdir(SOLVE_FOLDER) if name.endswith('.json')])
+    return len([name for name in os.listdir(SOLVE_TEST_FOLDER) if name.endswith('.json')])
+
+def get_num_givens(path):
+    # how many letters a SOLVE puzzle fills in (5 for every daily), for the description; None if missing
+    try:
+        with open(path, 'r') as f:
+            return json.load(f)["num_givens"]
+    except (OSError, ValueError, KeyError):
+        return None
 
 def is_small_int(value):
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100000
@@ -56,10 +64,11 @@ def get_date_string(game_id):
 
 @app.route('/')
 def index():
-    # going to / will redirect the user to either speed or score mode
-    # this is determined by what they were last playing, which is stored in the cookie
-    # if the cookie is not set, default to speed mode
-    game_mode = request.cookies.get('game_mode', 'speed')
+    # going to / will redirect the user to the mode they were last playing, which is stored in the
+    # cookie; new visitors (no cookie) start with SOLVE
+    game_mode = request.cookies.get('game_mode', 'solve')
+    if game_mode not in GAME_MODES:
+        game_mode = 'solve'
     return redirect(f'/{game_mode}')
 
 @app.route('/speed')
@@ -96,30 +105,45 @@ def score():
     response.set_cookie('game_mode', 'score', max_age=60*60*24*365)
     return response
 
-# SOLVE: single-solution puzzles (see scripts/generate_unique.py), for now a numbered batch of
-# test puzzles; not linked from the game, share /solve with testers directly
+# SOLVE: today's single-solution puzzle (see scripts/generate_unique.py)
 @app.route('/solve')
 def solve():
-    count = get_solve_count()
+    game_id = get_game_id()
+    response = make_response(
+        render_template(
+            'game.html',
+            game_id=game_id,
+            game_mode="solve",
+            mode_emoji="🔑",
+            other_mode_emoji=emoji_overrides.get(game_id[:4], "⏱️"),
+            date=get_date_string(game_id),
+            num_givens=get_num_givens(f"./games/solve/{game_id}.json"),
+        )
+    )
+    response.set_cookie('game_mode', 'solve', max_age=60*60*24*365)
+    return response
+
+# the numbered batch of SOLVE puzzles from the first play-test (games/solve-test/); not linked
+@app.route('/solve/test')
+def solve_test():
+    count = get_solve_test_count()
     try:
         number = int(request.args.get('p', '1'))
     except ValueError:
         number = 1
     if count == 0:
-        return "No SOLVE puzzles yet.", 404
+        return "No SOLVE test puzzles.", 404
     number = max(1, min(number, count))
     game_id = f"{number:02d}"
-    with open(os.path.join(SOLVE_FOLDER, game_id + '.json'), 'r') as f:
-        num_givens = json.load(f)["num_givens"]
     return render_template(
         'game.html',
         game_id=game_id,
-        game_mode="solve",
-        mode_emoji="⏱️",
-        other_mode_emoji="🎯",
+        game_mode="solve-test",
+        mode_emoji="🔑",
+        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
         puzzle_number=number,
         puzzle_count=count,
-        num_givens=num_givens,
+        num_givens=get_num_givens(os.path.join(SOLVE_TEST_FOLDER, game_id + '.json')),
     )
 
 # returns a game based on the query parameter game-id
@@ -132,18 +156,18 @@ def game():
         # game id in hidden input supplied by /
         game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
         game_mode = request.args.get("game-mode", "speed")
-        is_solve = game_mode == "solve" and SOLVE_ID_PATTERN.fullmatch(game_id) is not None
-        if not is_valid_game(game_id, game_mode) and not is_solve:
+        is_solve_test = game_mode == "solve-test" and SOLVE_TEST_ID_PATTERN.fullmatch(game_id) is not None
+        if not is_valid_game(game_id, game_mode) and not is_solve_test:
             return '', 404
         selected_game_file = game_id + '.json'
         
         # convert the json file to a dictionary
-        generated_game_folder = f"./games/{game_mode}/"
+        generated_game_folder = SOLVE_TEST_FOLDER if is_solve_test else f"./games/{game_mode}/"
         file_path = os.path.join(generated_game_folder, selected_game_file)
         with open(file_path, 'r') as f:
             game_object = json.load(f)
 
-        if is_solve:
+        if game_mode in ("solve", "solve-test"):
             # SOLVE puzzles have one answer; the client needs it for the REVEAL button
             return jsonify({
                 "game_id": game_id,
@@ -192,7 +216,7 @@ def log_solution():
 
     # these values become a folder name, a file name, and a line of CSV, so only accept exactly
     # what the game sends; anything else could write files outside of ./logs
-    if (not is_valid_game(game_id, mode)
+    if (not is_valid_game(game_id, mode) or mode == "solve"  # SOLVE has its own route, /log-solve
             or not isinstance(metric, str) or METRIC_PATTERN.fullmatch(metric) is None
             or not is_list_of(words, BOARD_WORD_PATTERN, 4)):
         return '', 400
@@ -218,27 +242,40 @@ def log_solution():
 
     return '', 200
 
-# one line per SOLVE solve, all in logs/solve.csv
+# one line per SOLVE solve: daily puzzles go to logs/MMDDYYYY/solve.csv (next to speed.csv and
+# score.csv), test-batch puzzles to logs/solve-test.csv
 @app.route('/log-solve', methods=['POST'])
 def log_solve():
     data = request.get_json(silent=True) or {}
     puzzle = data.get('puzzle')
+    mode = data.get('mode')
     tester = data.get('tester')
     words = data.get('words')
     numbers = [data.get(key) for key in ('seconds', 'black_reveals', 'color_reveals', 'revealed_tiles', 'replay')]
-    if (not isinstance(puzzle, str) or SOLVE_ID_PATTERN.fullmatch(puzzle) is None
+    if mode == "solve":
+        valid_id = isinstance(puzzle, str) and GAME_ID_PATTERN.fullmatch(puzzle) is not None
+        puzzle_path = f"./games/solve/{puzzle}.json"
+        file_path = f"./logs/{puzzle}/"
+        file_name = f"{file_path}solve.csv"
+    elif mode == "solve-test":
+        valid_id = isinstance(puzzle, str) and SOLVE_TEST_ID_PATTERN.fullmatch(puzzle) is not None
+        puzzle_path = os.path.join(SOLVE_TEST_FOLDER, f"{puzzle}.json")
+        file_path = "./logs/"
+        file_name = "./logs/solve-test.csv"
+    else:
+        return '', 400
+    # these values become a folder name, a file name, and a line of CSV, so only accept exactly what
+    # the game sends
+    if (not valid_id
             or not isinstance(tester, str) or TESTER_PATTERN.fullmatch(tester) is None
             or not all(is_small_int(n) for n in numbers)
             or not is_list_of(words, WORD_PATTERN, 4)):
         return '', 400
-    puzzle_path = os.path.join(SOLVE_FOLDER, puzzle + '.json')
-    if not os.path.exists(puzzle_path):
+    num_givens = get_num_givens(puzzle_path)
+    if num_givens is None:
         return '', 400
-    with open(puzzle_path, 'r') as f:
-        num_givens = json.load(f)["num_givens"]
 
-    os.makedirs('./logs', exist_ok=True)
-    file_name = './logs/solve.csv'
+    os.makedirs(file_path, exist_ok=True)
     with open(file_name, 'a') as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         if os.stat(file_name).st_size == 0:
@@ -251,7 +288,11 @@ def log_solve():
 
 @app.route('/solvelog', methods=['GET'])
 def get_solve_log():
-    return return_log('./logs/solve.csv', "SOLVE")
+    return return_log(f'./logs/{get_game_id()}/solve.csv', "solve")
+
+@app.route('/solvetestlog', methods=['GET'])
+def get_solve_test_log():
+    return return_log('./logs/solve-test.csv', "SOLVE test")
 
 # the mode was called "playtest" before it was named SOLVE; keep old links working
 @app.route('/playtest')
@@ -260,7 +301,7 @@ def old_playtest():
         number = int(request.args.get('p', '1'))
     except ValueError:
         number = 1
-    return redirect(f'/solve?p={number}')
+    return redirect(f'/solve/test?p={number}')
 
 # browsers ask for /favicon.ico on their own (e.g. for bookmarks), regardless of the <link> tags
 @app.route('/favicon.ico')

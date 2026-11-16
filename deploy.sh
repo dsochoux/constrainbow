@@ -35,11 +35,14 @@ scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
 scp ./project/static/favicon_io/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/favicon_io
 # bundle.js
 scp ./project/static/js/bundle.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
-# words.txt
-scp ./word_files/words.txt $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
+# words.txt (accepted words), common_words.txt (SOLVE answers), and SOLVE themes if there are any
+scp ./word_files/words.txt ./word_files/common_words.txt $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
+if [ -f ./word_files/solve_themes.json ]; then
+    scp ./word_files/solve_themes.json $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
+fi
 # game generation scripts (the server generates its own games every night, see docs/generation-algorithm.md)
 ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_DIR/scripts"
-scp ./scripts/generate_game.py ./scripts/ensure_games.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/scripts
+scp ./scripts/generate_game.py ./scripts/generate_unique.py ./scripts/ensure_games.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/scripts
 # games: --ignore-existing means a game that already exists is never overwritten, in either direction,
 # so a game that players may have already seen can never change
 # push any games the server is missing, then pull down any games the server generated

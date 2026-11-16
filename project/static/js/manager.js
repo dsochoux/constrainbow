@@ -48,7 +48,7 @@ export class Manager {
         
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
-        } else if (this.gameMode === 'solve') {
+        } else if (this.gameMode === 'solve' || this.gameMode === 'solve-test') {
             this.board = new SolveBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
@@ -238,7 +238,7 @@ export class Manager {
     }
 
     logBoard() {
-        if (this.gameMode === 'solve') {
+        if (this.gameMode === 'solve' || this.gameMode === 'solve-test') {
             this.logSolve();
             return;
         }
@@ -257,13 +257,11 @@ export class Manager {
     // SOLVE results are logged with a random id per browser, so one tester's solves can be
     // grouped without knowing who they are
     logSolve() {
-        // (before the mode was named SOLVE, the id was saved as "playtestTester")
-        let tester = localStorage.getItem('solveTester') || localStorage.getItem('playtestTester');
+        let tester = localStorage.getItem('solveTester');
         if (!tester) {
             tester = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
+            localStorage.setItem('solveTester', tester);
         }
-        localStorage.setItem('solveTester', tester);
-        localStorage.removeItem('playtestTester');
         fetch('/log-solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

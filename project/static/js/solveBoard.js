@@ -7,9 +7,9 @@ import { NUM_WORDS, formatTime } from './helpers.js';
 // it plays like speed mode (timer, pause), plus:
 //   - "given" letters that start filled in and can't be changed
 //   - a REVEAL button: on a black tile it fills in that tile, on a colored tile the whole color
-// each puzzle saves its own progress under "solve{NN}..." keys (letters in solve{NN}Word0-3,
-// everything else in solve{NN}State), so you can move between puzzles and come back; nothing
-// here touches the daily speed game's saved progress
+// progress is saved under its own keys, never the speed game's: the daily puzzle uses
+// solveWord0-3 and solveState (the saved answer tells a new day's puzzle to start fresh), and each
+// test-batch puzzle uses solveTest{NN}Word0-3 and solveTest{NN}State, so testers can move between them
 export class SolveBoard extends SpeedBoard {
     constructor(manager, data) {
         super(manager, data); // calls this.initBoard below
@@ -21,10 +21,11 @@ export class SolveBoard extends SpeedBoard {
         this.revealedTiles = 0;  // tiles revealed in all (a color counts once per tile)
         this.revealButton = document.getElementById("reveal-button");
         this.revealButton.addEventListener('click', () => this.reveal());
-        this.prefix = `solve${this.manager.gameId}`;
+        this.isTestPuzzle = this.manager.gameMode === 'solve-test';
+        this.prefix = SolveBoard.storagePrefix(this.manager);
         this.stateKey = `${this.prefix}State`;
+        this.givenPositions = data["givens"].map(([w, l]) => [w, l]);
 
-        this.moveOldSavedProgress();
         const state = this.loadSavedLetters();
         data["givens"].forEach(([w, l]) => this.lock(w, l, false));
         state.revealed.forEach(([w, l]) => this.lock(w, l, true));
@@ -34,21 +35,9 @@ export class SolveBoard extends SpeedBoard {
         this.saveState(); // so the saved letters always have an answer to be checked against
     }
 
-    // the mode was called "playtest" before it was named SOLVE; progress saved under the old
-    // names ("playtest{NN}State", ...) moves to the new ones the first time a puzzle is opened
-    moveOldSavedProgress() {
-        const id = this.manager.gameId;
-        ['State', 'Word0', 'Word1', 'Word2', 'Word3', 'Solved'].forEach((suffix) => {
-            const oldKey = suffix === 'Solved' ? `playtestSolved${id}` : `playtest${id}${suffix}`;
-            const newKey = suffix === 'Solved' ? `solveSolved${id}` : `solve${id}${suffix}`;
-            const value = localStorage.getItem(oldKey);
-            if (value !== null) {
-                if (localStorage.getItem(newKey) === null) {
-                    localStorage.setItem(newKey, value);
-                }
-                localStorage.removeItem(oldKey);
-            }
-        });
+    // also used by SolveWord, which saves its letters under the same prefix
+    static storagePrefix(manager) {
+        return manager.gameMode === 'solve-test' ? `solveTest${manager.gameId}` : 'solve';
     }
 
     // puts the saved letters back on the board, and returns the rest of the saved state
@@ -262,11 +251,14 @@ export class SolveBoard extends SpeedBoard {
 
     // what the manager sends to /log-solve
     getSolveResult() {
-        const key = `solveSolved${this.manager.gameId}`;
-        const replay = localStorage.getItem(key) !== null;
-        localStorage.setItem(key, JSON.stringify(this.elapsedSeconds));
+        // remembers the answers this browser has solved, to flag a second solve of the same puzzle
+        const key = `${this.prefix}Solved`;
+        const answer = this.solution.join('');
+        const replay = localStorage.getItem(key) === answer;
+        localStorage.setItem(key, answer);
         return {
             'puzzle': this.manager.gameId,
+            'mode': this.manager.gameMode,
             'seconds': this.elapsedSeconds,
             'black_reveals': this.blackReveals,
             'color_reveals': this.colorReveals,
@@ -276,13 +268,35 @@ export class SolveBoard extends SpeedBoard {
         };
     }
 
+    // the layout, plus where this player started and where they needed help:
+    // ⬜ given letters (the same for everyone), 💡 tiles they revealed, colors and ⬛️ for the rest
+    getEmojiBoard() {
+        const emojis = ['⬛️', '🟥', '🟧', '🟨', '🟦'];
+        const isAt = (positions, w, l) => positions.some(([pw, pl]) => pw === w && pl === l);
+        let boardString = "";
+        this.grid.forEach((word, w) => {
+            word.forEach((constraint, l) => {
+                if (isAt(this.givenPositions, w, l)) {
+                    boardString += '⬜';
+                } else if (isAt(this.revealedPositions, w, l)) {
+                    boardString += '💡';
+                } else {
+                    boardString += emojis[constraint];
+                }
+            });
+            boardString += "\n";
+        });
+        return boardString;
+    }
+
     copyResults() {
         if (this.copyResultsTimeout) {
             clearTimeout(this.copyResultsTimeout);
         }
         const reveals = this.revealedTiles;
+        const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
         let message = `constrainbow.com\n`;
-        message += `SOLVE #${parseInt(this.manager.gameId, 10)} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
+        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
         message += this.getEmojiBoard();
         navigator.clipboard.writeText(message.trim()).then(() => {
             this.copyButton.textContent = "COPIED!";

@@ -1,9 +1,10 @@
 import { Word } from './word.js';
 import { SpeedWord } from './speedWord.js';
 import { SolveLetter } from './solveLetter.js';
+import { SolveBoard } from './solveBoard.js';
 import { WORD_LENGTH } from './helpers.js';
 
-// a SpeedWord made of SolveLetters, saved per puzzle under "solve{NN}Word0"...
+// a SpeedWord made of SolveLetters, saved under the SOLVE board's own keys (see SolveBoard.storagePrefix)
 // (SpeedWord saves under "speedWord0"..., which would overwrite the daily speed game)
 export class SolveWord extends SpeedWord {
     initWord(word, clickHandler) {
@@ -14,6 +15,6 @@ export class SolveWord extends SpeedWord {
     }
 
     updateLetter(l, letter) {
-        Word.prototype.updateLetter.call(this, l, letter, `solve${this.manager.gameId}`);
+        Word.prototype.updateLetter.call(this, l, letter, SolveBoard.storagePrefix(this.manager));
     }
 }

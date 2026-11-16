@@ -8,11 +8,26 @@
   2. Different colors hold different letters.
   3. A black tile may hold any letter **except** one used by a color. Black letters can repeat freely.
 - Every color appears at least twice, and the colors are linked in a cycle across the rows (row i always has colors s[i] and s[i+1]), so all four colors interact.
-- Speed puzzles have 10 colored tiles; score puzzles have 9.
+- Speed puzzles have 10 colored tiles; score puzzles have 9. SOLVE puzzles have whatever their answer gives (at least 9), plus 5 letters filled in.
 - A new puzzle for each mode releases at midnight Eastern. Under the board header a sentence gives the date and how many solutions exist: "Today's puzzle (11/15) has 70,654 solutions." Speed puzzles are generated to have at least 15k solutions and score puzzles at least 50k. Counts in the current files range from about 13k to 6.3M.
 
 ## Modes
-Both modes are on one page; the SPEED / SCORE switch under the wordmark changes between them. A cookie remembers the last mode, and `/` redirects to it (speed by default).
+All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. A cookie remembers the last mode, and `/` redirects to it. New visitors start on SOLVE.
+
+### 🔑 Solve (`/solve`, since 2026-11-15)
+- One puzzle a day with exactly **one** solution, so everyone solves the same four words. 5 letters start filled in (on black tiles), always with at least one row starting with two of them, which makes a natural place to begin. They sit pressed into the board and can't be changed.
+- Plays like speed: START GAME, a timer, PAUSE, letters hidden while paused.
+- **REVEAL** fills in the selected tile from the answer: one black tile, or a whole color (the button reads "REVEAL 3" for a 3-tile color). Revealed tiles show a gray letter and are locked. Reveals count per tile.
+- Progress is saved, so a reload or a trip to another mode resumes where you left off.
+- The share text shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
+  ```
+  constrainbow.com
+  11/15 | 🔑 4:37 | 3 reveals
+  ⬜🟥⬛️💡⬛️
+  ...
+  ```
+- Answers come from `word_files/common_words.txt` and aren't reused within 90 days. Hand-picked answers for a date go in `word_files/solve_themes.json`.
+- The 12-puzzle play-test batch is still at `/solve/test?p=N` (unlinked).
 
 ### ⏱️ Speed (`/speed`)
 - The board is hidden (blank black tiles) until you press **START GAME** or tap a tile. A timer then runs.

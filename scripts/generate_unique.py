@@ -1,8 +1,10 @@
 """Single-solution puzzles, built answer first.
 
 Run from the repo root:
-    env/bin/python scripts/generate_unique.py --words ghost crypt witch skull     (one puzzle from your words)
+    env/bin/python scripts/generate_unique.py --words ghost crypt witch skull     (try a puzzle from your words)
+    env/bin/python scripts/generate_unique.py --day 2026-12-25                  (make one day's SOLVE puzzle)
     env/bin/python scripts/generate_unique.py --test-batch                      (the SOLVE test batch)
+Daily puzzles are normally made by scripts/ensure_games.py (the nightly cron), which calls generate_solve_day.
 
 How a puzzle is made (see docs/findings.md, "Single-solution mode"):
 1. Start from the 4 answer words.
@@ -28,6 +30,7 @@ import json
 import os
 import random
 from collections import Counter
+from datetime import datetime, timedelta
 
 from generate_game import Game, popcount
 
@@ -37,6 +40,17 @@ MAX_GIVENS_PER_ROW = 2
 MIN_COLORED = 9     # layout filter: at least this many colored tiles
 NUM_LAYOUTS_TO_TRY = 6  # only the layouts with the fewest solutions get the (slower) given-letter search
 COMMON_WORDS_PATH = "word_files/common_words.txt"
+
+# daily SOLVE puzzles (decided after the first play-test, see docs/findings.md)
+DAILY_GIVENS = 5        # always exactly 5 given letters
+NO_REPEAT_DAYS = 90     # an answer word isn't used again within this many days (either side)
+SOLVE_FOLDER = "games/solve"
+TEST_BATCH_FOLDER = "games/solve-test"
+THEMES_PATH = "word_files/solve_themes.json"  # optional hand-picked answers, {"2027-10-31": ["ghost", ...]}
+
+
+def solve_path(game_id):
+    return f"{SOLVE_FOLDER}/{game_id}.json"
 
 
 def load_common_words():
@@ -341,6 +355,75 @@ class UniqueGame(Game):
         }
 
 
+def has_starter_row(puzzle):
+    # at least one row starts with two given letters: a natural place to begin
+    per_row = Counter(row for row, _, _ in puzzle["givens"])
+    return max(per_row.values(), default=0) >= 2
+
+
+def load_themes():
+    if not os.path.exists(THEMES_PATH):
+        return {}
+    with open(THEMES_PATH, "r") as f:
+        themes = json.load(f)
+    # keys are written YYYY-MM-DD for people; game ids are MMDDYYYY
+    return {datetime.strptime(day, "%Y-%m-%d").strftime("%m%d%Y"): [w.lower() for w in words]
+            for day, words in themes.items()}
+
+
+def nearby_answer_words(date):
+    """every answer word used by a SOLVE puzzle within NO_REPEAT_DAYS of date (before or after)"""
+    words = set()
+    for offset in range(-NO_REPEAT_DAYS, NO_REPEAT_DAYS + 1):
+        if offset == 0:
+            continue
+        path = solve_path((date + timedelta(days=offset)).strftime("%m%d%Y"))
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                words.update(json.load(f)["solution"])
+    return words
+
+
+def write_puzzle(path, puzzle):
+    # write to a temporary file, then rename it into place, so the web server never reads half a file
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    temp_path = path + ".tmp"
+    with open(temp_path, "w") as f:
+        json.dump(puzzle, f, indent=4)
+    os.replace(temp_path, path)
+
+
+def generate_solve_day(date):
+    """makes the SOLVE puzzle for one day: 5 given letters, a starter row, common answer words not used
+    nearby, or the hand-picked words from solve_themes.json for that day. Seeded by the date, so
+    running it again for the same day (with the same neighbours) gives the same puzzle."""
+    if Game.words is None:
+        Game.build_index()
+    game_id = date.strftime("%m%d%Y")
+    rng = random.Random(int(game_id))
+
+    theme = load_themes().get(game_id)
+    if theme is not None:
+        game = UniqueGame(theme)
+        puzzle = game.build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS, rng=rng)
+        if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
+            puzzle["theme"] = True
+            write_puzzle(solve_path(game_id), puzzle)
+            return puzzle
+        # never leave a day without a puzzle: say so loudly, then make a normal one
+        print(f"WARNING: the themed words for {date:%Y-%m-%d} ({', '.join(theme)}) can't make a "
+              f"{DAILY_GIVENS}-letter puzzle ({game.failure or 'no starter row'}); using random words instead", flush=True)
+
+    avoid = nearby_answer_words(date)
+    candidates = [word for word in load_common_words() if word not in avoid]
+    while True:
+        answer = rng.sample(candidates, 4)
+        puzzle = UniqueGame(answer).build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS, rng=rng)
+        if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
+            write_puzzle(solve_path(game_id), puzzle)
+            return puzzle
+
+
 def show(puzzle):
     # colors as lowercase r/o/y/b, given letters in capitals, empty black tiles as ·
     names = "·royb"
@@ -383,15 +466,14 @@ def make_test_batch(seed=2026):
         puzzles.append(puzzle)
 
     puzzles.sort(key=difficulty_key)
-    folder = "games/solve"
+    folder = TEST_BATCH_FOLDER
     os.makedirs(folder, exist_ok=True)
     for name in os.listdir(folder):
         if name.endswith(".json"):
             os.remove(os.path.join(folder, name))
     for number, puzzle in enumerate(puzzles, start=1):
         path = f"{folder}/{number:02d}.json"
-        with open(path, "w") as f:
-            json.dump(puzzle, f, indent=4)
+        write_puzzle(path, puzzle)
         print(f"{path}:")
         show(puzzle)
 
@@ -401,13 +483,19 @@ if __name__ == "__main__":
     parser.add_argument("--words", nargs=4, help="the four answer words")
     parser.add_argument("--target", type=int, default=TARGET_GIVENS, help="top up to this many given letters")
     parser.add_argument("--out", help="write the puzzle JSON here")
-    parser.add_argument("--test-batch", action="store_true", help="write the SOLVE test batch to games/solve/")
+    parser.add_argument("--test-batch", action="store_true", help="write the SOLVE test batch to games/solve-test/")
+    parser.add_argument("--day", help="make the daily SOLVE puzzle for this date (YYYY-MM-DD), replacing any existing one")
     parser.add_argument("--allow-uncommon", action="store_true",
                         help="let --words use words that aren't in common_words.txt")
     args = parser.parse_args()
 
     if args.test_batch:
         make_test_batch()
+    elif args.day:
+        date = datetime.strptime(args.day, "%Y-%m-%d")
+        puzzle = generate_solve_day(date)
+        print(f"{solve_path(date.strftime('%m%d%Y'))}:")
+        show(puzzle)
     elif args.words:
         Game.build_index()
         missing = [w for w in args.words if w.lower() not in Game.words]
@@ -417,12 +505,18 @@ if __name__ == "__main__":
         if uncommon and not args.allow_uncommon:
             raise SystemExit(f"not in common_words.txt: {', '.join(uncommon)} "
                              f"(use --allow-uncommon if you really want them)")
-        # hand-picked words accept however many letters they need
+        # trying out words: accept however many letters they need, and say whether they'd work as a
+        # daily theme (exactly 5 letters with a starter row)
         game = UniqueGame(args.words)
         puzzle = game.build(target=args.target, max_givens=20)
         if puzzle is None:
             raise SystemExit(f"couldn't make a puzzle: {game.failure}. Try swapping a word.")
         show(puzzle)
+        daily = UniqueGame(args.words).build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS)
+        if daily is not None and daily["num_givens"] == DAILY_GIVENS and has_starter_row(daily):
+            print(f"   these words work as a daily theme: add them to {THEMES_PATH}")
+        else:
+            print(f"   these words can't be a daily puzzle ({DAILY_GIVENS} letters with a starter row)")
         if args.out:
             with open(args.out, "w") as f:
                 json.dump(puzzle, f, indent=4)

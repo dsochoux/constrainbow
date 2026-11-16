@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from generate_game import MODES, Game, game_path
+from generate_unique import generate_solve_day, solve_path
 
 eastern = ZoneInfo("America/New_York") # same day boundary as app.py
 
@@ -32,6 +33,11 @@ def main():
             Game(date, mode, num_colored).generate()
             num_generated += 1
             print(f"{datetime.now(eastern):%Y-%m-%d %H:%M:%S} generated {mode} game for {date:%m/%d/%Y}", flush=True)
+        # SOLVE (single-solution) puzzles come from generate_unique.py
+        if not os.path.exists(solve_path(game_id)):
+            generate_solve_day(date)
+            num_generated += 1
+            print(f"{datetime.now(eastern):%Y-%m-%d %H:%M:%S} generated solve game for {date:%m/%d/%Y}", flush=True)
 
     if num_generated == 0:
         print(f"{datetime.now(eastern):%Y-%m-%d %H:%M:%S} all games through "

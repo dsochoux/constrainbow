@@ -12,7 +12,7 @@ constrainbow/
 ├── scripts/
 │   ├── generate_game.py       puzzle generator / solver (in-memory bitsets over words.txt)
 │   ├── ensure_games.py        generates any missing games for the next N days (default 30); run nightly by cron
-│   ├── generate_unique.py     SOLVE puzzles (single solution, answer first): `--test-batch`, or `--words a b c d`
+│   ├── generate_unique.py     SOLVE puzzles (single solution, answer first): `generate_solve_day` for dailies, `--day`, `--test-batch`, `--words a b c d`
 │   ├── build_common_words.py  builds common_words.txt from words.txt minus a hand-reviewed exclude list
 │   ├── db.py                  rebuilds `words` table in database.db (no longer needed)
 │   ├── filter_reported_words.py  reported_missing − words − rejected → filtered_reported_missing_words.txt
@@ -23,9 +23,10 @@ constrainbow/
 │   ├── reported_missing_words.txt  appended by /report-missing-word (server copy is the real one)
 │   ├── rejected_words.txt     manually rejected reports
 │   └── filtered_reported_missing_words.txt
-├── games/solve/NN.json       the SOLVE test batch (12 single-solution puzzles at 3/5/7 given letters, easiest first)
+├── games/solve/MMDDYYYY.json  daily SOLVE puzzles (5 given letters), made by ensure_games.py like speed/score
+├── games/solve-test/NN.json  the SOLVE play-test batch (12 puzzles at 3/5/7 given letters, easiest first)
 ├── games/{speed,score}/MMDDYYYY.json   pre-generated puzzles (676 per mode, 2025-02-10 … 2026-12-31 locally; the server keeps 30 days ahead)
-├── logs/MMDDYYYY/{speed,score}.csv     solve logs (gitignored; server copy is real)
+├── logs/MMDDYYYY/{solve,speed,score}.csv  solve logs (gitignored; server copy is real); logs/solve-test.csv for the test batch
 ├── game_solutions/            old full-solution dumps (gitignored, unused)
 ├── database.db                old sqlite word table, unused since the bitset generator
 ├── deploy.sh                  see Deploy below
@@ -42,13 +43,14 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 |---|---|
 | `GET /` | redirect to `/{game_mode cookie or 'speed'}` |
 | `GET /speed`, `/score` | render game.html with `game_id` (today, Eastern), mode, emojis, date `MM/DD`; set `game_mode` cookie (1 yr) |
-| `GET /game?game-id=&game-mode=` | read `games/{mode}/{id}.json` (mode `solve` takes a 2-digit id and also returns `givens` and `solution`), return `{game_id, constraints, grid, num_possible_solutions, num_possible_points, words: [all 2,451 words]}`; invalid id/mode or missing file → 404 |
+| `GET /game?game-id=&game-mode=` | read `games/{mode}/{id}.json` (modes `solve` and `solve-test` also return `givens` and `solution`; `solve-test` takes a 2-digit id from `games/solve-test/`), return `{game_id, constraints, grid, num_possible_solutions, num_possible_points, words: [all 2,451 words]}`; invalid id/mode or missing file → 404 |
 | `POST /report-missing-word` `{words:[...]}` | words must match `[a-z]{5}`, else 400; append to `word_files/reported_missing_words.txt` (flock) |
 | `POST /log-solution` `{game_id, mode, metric, words}` | validated (8-digit id, `speed`/`score`, metric `[0-9:/]{1,20}`, words `[a-z-]{5}`), else 400; append `time,metric,w0..w3` to `logs/{game_id}/{mode}.csv` (flock, header on first write) |
 | `GET /words` | send words.txt |
-| `GET /solve?p=N` | SOLVE test puzzle N (unlisted; out-of-range N is clamped). Renders game.html with `game_mode="solve"`. The old `/playtest?p=N` redirects here |
-| `POST /log-solve` `{puzzle, tester, seconds, black_reveals, color_reveals, revealed_tiles, replay, words}` | validated, appended to `logs/solve.csv` with the puzzle's given-letter count |
-| `GET /solvelog` | `logs/solve.csv` as text |
+| `GET /solve` | today's SOLVE puzzle; sets the `game_mode` cookie. `/` sends visitors without a cookie here (unknown cookie values too) |
+| `GET /solve/test?p=N` | SOLVE test-batch puzzle N (unlisted; out-of-range N is clamped), `game_mode="solve-test"`. The old `/playtest?p=N` redirects here |
+| `POST /log-solve` `{puzzle, mode, tester, seconds, black_reveals, color_reveals, revealed_tiles, replay, words}` | validated; daily (`mode: solve`) solves go to `logs/MMDDYYYY/solve.csv`, test-batch ones to `logs/solve-test.csv`, with the puzzle's given-letter count. `/log-solution` refuses mode `solve` |
+| `GET /solvelog`, `/solvetestlog` | today's SOLVE log / the test-batch log, as text |
 | `GET /favicon.ico` | send `static/favicon_io/favicon.ico` (browsers ask for it at the root) |
 | `GET /speedlog`, `/scorelog` | today's raw CSV as text/plain (public) |
 
@@ -77,7 +79,7 @@ Entry `script.js` → `new Manager()` on DOMContentLoaded. Class layout:
 - **ScoreBoard** — score = sum of `LETTERS_TO_POINTS` over all filled tiles (`scoreGameId`, `scoreIsSolutionFound`). `updateScoreDisplay` adds class `over` (red) when the score passes `numPossiblePoints` and shakes the pill the first time. `pause()` is a no-op inherited from Board.
 - **Word** / SpeedWord / ScoreWord — 5 Letters inside a `.word-row` element; `updateLetter` tracks fill count, validates against word list when full (`turnRed` shakes and calls `setRowState('invalid')`; valid rows get `'valid'`), writes itself to localStorage.
 - **Letter** / SpeedLetter / ScoreLetter — DOM tile (`div.letter.c{n}` > `span.letter-text` [+ `span.letter-points`]); click → board callback; `playAnimation(className, delay)` with `pop`, `shake`, `celebrate`. SpeedLetter adds paused state; ScoreLetter shows point value.
-- **SolveBoard** / SolveWord / SolveLetter — SOLVE mode, the single-solution puzzles (extend the Speed* classes). Givens and revealed tiles are "locked" (`setGiven`, pressed-in style, can't be typed over or deleted, restored after CLEAR). `reveal()` fills the selected black tile, or the selected tile's whole color, first clearing anything that would clash. Each puzzle saves its own progress: letters in `solve{NN}Word0-3`, and the answer, timer, reveal counts, revealed tiles and solved flag in `solve{NN}State`, so players can switch puzzles and resume. If the saved answer doesn't match the puzzle now at that number (the batch was regenerated), the save is thrown away. `initBoard` and `startTimer` are overridden so the daily speed game's `speedWord*`, `speedGameId` and `elapsedSeconds` are never touched. The REVEAL button reads "REVEAL N" on a colored tile (via `updateRevealButton`, called from `Manager.updateKeyboard`), and reveals are counted per tile. Results go to `/log-solve` with a random per-browser `solveTester` id. Progress saved before the rename (`playtest{NN}…`, `playtestTester`) is moved to the new names the first time a puzzle is opened.
+- **SolveBoard** / SolveWord / SolveLetter — SOLVE mode, the single-solution puzzles (extend the Speed* classes). Givens and revealed tiles are "locked" (`setGiven`, pressed-in style, can't be typed over or deleted, restored after CLEAR). `reveal()` fills the selected black tile, or the selected tile's whole color, first clearing anything that would clash. Progress is saved under its own keys: the daily puzzle in `solveWord0-3` and `solveState` (which stores the answer, so a new day's puzzle starts fresh), test-batch puzzles in `solveTest{NN}Word0-3` and `solveTest{NN}State`. `initBoard` and `startTimer` are overridden so the daily speed game's `speedWord*`, `speedGameId` and `elapsedSeconds` are never touched. The REVEAL button reads "REVEAL N" on a colored tile (via `updateRevealButton`, called from `Manager.updateKeyboard`), and reveals are counted per tile. Results go to `/log-solve` with a random per-browser `solveTester` id. `getEmojiBoard` marks given letters ⬜ and revealed tiles 💡 in the share grid.
 - **helpers.js** — `LETTERS_TO_POINTS` (duplicated in generate_game.py and hard-coded in game.html keys), constants, cookie helpers, `formatTime`, `delayedForEach`, `launchConfetti`.
 
 ## Look — `style.css` ("Paper pop", 2026-11-15)

@@ -29,6 +29,7 @@
     <input type="hidden" id="game-id" value="{{ game_id }}" />
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
+    {% set is_solve = game_mode in ["solve", "solve-test"] %}
 
     {# the how-to-play examples: colors per tile (0 = black) and the words of one solution #}
     {% set example_colors = [[2, 4, 2, 0, 0], [2, 0, 3, 0, 0], [0, 1, 3, 0, 0], [1, 0, 1, 4, 0]] %}
@@ -67,10 +68,11 @@
                 </section>
                 <section class="step">
                     <ul class="modes">
+                        <li><span class="mode-icon">🔑</span><span><strong>Solve:</strong> one hidden answer, with 5 letters filled in to start you off. Stuck? REVEAL fills in a tile.</span></li>
                         <li><span class="mode-icon">{{ speed_emoji }}</span><span><strong>Speed:</strong> find any solution, as fast as you can.</span></li>
                         <li><span class="mode-icon">🎯</span><span><strong>Score:</strong> letters are worth points. Find the highest-scoring solution.</span></li>
                     </ul>
-                    <p>A new puzzle comes out every day at midnight ET. Each one has thousands of solutions, so compare yours with friends!</p>
+                    <p>New puzzles come out every day at midnight ET. Solve has one answer everyone shares; Speed and Score have thousands, so compare yours with friends!</p>
                     <p class="fine-print">Feedback? <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
                     <p class="fine-print hash">d93e21acf596e047bc0c18f8f036e00a6f3ece3fede494d97f76e3b1d031098d</p>
                 </section>
@@ -86,15 +88,16 @@
         <div id="header-div">
             <h1 class="wordmark" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</h1>
             <div id="sub-header">
-                {% if game_mode == "solve" %}
+                {% if game_mode == "solve-test" %}
                 {# SOLVE test puzzles: previous / this one / next, in the same pill as the mode switch #}
-                <nav id="mode-switch" aria-label="SOLVE puzzle">
-                    <a href="/solve?p={{ puzzle_number - 1 }}" class="step-link{% if puzzle_number == 1 %} disabled{% endif %}" aria-label="Previous puzzle">‹</a>
+                <nav id="mode-switch" aria-label="SOLVE test puzzle">
+                    <a href="/solve/test?p={{ puzzle_number - 1 }}" class="step-link{% if puzzle_number == 1 %} disabled{% endif %}" aria-label="Previous puzzle">‹</a>
                     <a class="active" aria-current="page">🔑 SOLVE {{ puzzle_number }} / {{ puzzle_count }}</a>
-                    <a href="/solve?p={{ puzzle_number + 1 }}" class="step-link{% if puzzle_number == puzzle_count %} disabled{% endif %}" aria-label="Next puzzle">›</a>
+                    <a href="/solve/test?p={{ puzzle_number + 1 }}" class="step-link{% if puzzle_number == puzzle_count %} disabled{% endif %}" aria-label="Next puzzle">›</a>
                 </nav>
                 {% else %}
                 <nav id="mode-switch" aria-label="Game mode">
+                    <a href="/solve" {% if game_mode == "solve" %}class="active" aria-current="page"{% endif %}>🔑 SOLVE</a>
                     <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>{{ speed_emoji }} SPEED</a>
                     <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
                 </nav>
@@ -103,6 +106,8 @@
             </div>
         </div>
         {% if game_mode == "solve" %}
+        <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong>one</strong> solution.{% if num_givens %} {{ num_givens }} letters are filled in to start you off.{% endif %}</p>
+        {% elif game_mode == "solve-test" %}
         <p class="description" id="description">This puzzle has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Stuck? REVEAL fills in the selected tile.</p>
         {% else %}
         <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.</p>
@@ -114,7 +119,7 @@
             <button id="play-pause-button" class="pill primary">...</button>
             <button id="report-missing-word-button" class="pill">REPORT MISSING WORD</button>
             <button id="copy-results-button" class="pill primary">COPY RESULTS!</button>
-            {% if game_mode == "solve" %}<button id="reveal-button" class="pill">REVEAL</button>{% endif %}
+            {% if is_solve %}<button id="reveal-button" class="pill">REVEAL</button>{% endif %}
         </div>
         <div id="board"></div>
         <div id="keyboard-container">

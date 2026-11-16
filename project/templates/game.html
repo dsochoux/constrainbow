@@ -86,14 +86,27 @@
         <div id="header-div">
             <h1 class="wordmark" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</h1>
             <div id="sub-header">
+                {% if game_mode == "playtest" %}
+                {# play-test puzzles: previous / this one / next, in the same pill as the mode switch #}
+                <nav id="mode-switch" aria-label="Play-test puzzle">
+                    <a href="/playtest?p={{ puzzle_number - 1 }}" class="step-link{% if puzzle_number == 1 %} disabled{% endif %}" aria-label="Previous puzzle">‹</a>
+                    <a class="active" aria-current="page">TEST {{ puzzle_number }} / {{ puzzle_count }}</a>
+                    <a href="/playtest?p={{ puzzle_number + 1 }}" class="step-link{% if puzzle_number == puzzle_count %} disabled{% endif %}" aria-label="Next puzzle">›</a>
+                </nav>
+                {% else %}
                 <nav id="mode-switch" aria-label="Game mode">
                     <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>{{ speed_emoji }} SPEED</a>
                     <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
                 </nav>
+                {% endif %}
                 <button id="how-to-play-button" aria-label="How to play">?</button>
             </div>
         </div>
+        {% if game_mode == "playtest" %}
+        <p class="description" id="description">This puzzle has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Stuck? REVEAL fills in the selected tile.</p>
+        {% else %}
         <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.</p>
+        {% endif %}
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
             <p id="timer" class="pill">0:00</p>
@@ -101,6 +114,7 @@
             <button id="play-pause-button" class="pill primary">...</button>
             <button id="report-missing-word-button" class="pill">REPORT MISSING WORD</button>
             <button id="copy-results-button" class="pill primary">COPY RESULTS!</button>
+            {% if game_mode == "playtest" %}<button id="reveal-button" class="pill">REVEAL</button>{% endif %}
         </div>
         <div id="board"></div>
         <div id="keyboard-container">

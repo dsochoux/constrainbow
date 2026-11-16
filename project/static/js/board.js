@@ -163,11 +163,11 @@ export class Board {
         let new_l = this.selectedLetter.l;
         new_l--;
         if (new_l < 0) {
+            // off the left edge: go to the end of the row above, and from the top-left tile
+            // all the way around to the last tile (the mirror of moveRight)
             new_l = 4;
-            if (new_w != 0) {
-                this.moveUp();
-                new_w = this.selectedLetter.w;
-            }
+            this.moveUp();
+            new_w = this.selectedLetter.w;
         }
         this.selectedLetter.setIsSelected(false);
         this.selectedLetter = this.words[new_w].letters[new_l];
@@ -335,15 +335,10 @@ export class Board {
 
     handleBackspacePressed() {
 
-        // backspace only produces motion if the current letter is blank
+        // on an empty tile, delete works like the left arrow key: it moves back one tile
+        // (wrapping from the top-left tile to the last tile); on a filled tile it deletes the letter
         if (this.selectedLetter.isBlank()) {
-            if (this.isEmpty()) {
-                this.moveLeft();
-            } else {
-                while (this.selectedLetter.isBlank() && !this.selectedLetter.isTopLeft()) {
-                    this.moveLeft();
-                }
-            }
+            this.moveLeft();
             return;
         }
 

@@ -28,7 +28,7 @@ Both modes are on one page; the SPEED / SCORE switch under the wordmark changes 
 
 ## Controls
 - Tap a tile to select it (tapping the selected tile keeps it selected). Score mode starts with the first empty tile selected, and speed mode selects it on START.
-- On-screen keyboard or a physical keyboard. Arrow keys and space move the cursor, wrapping between rows. Backspace (DEL key) clears the letter, or moves back if the tile is blank. The CLEAR key clears the whole board. The selected tile lifts (bigger shadow) and shows a blinking cursor bar.
+- On-screen keyboard or a physical keyboard. Arrow keys and space move the cursor, wrapping between rows and from the last tile back to the first (and, with left arrow, from the first tile to the last). Backspace (DEL key) clears the letter on a filled tile (the cursor stays put); on an empty tile (or a play-test given letter) it moves back one tile, exactly like the left arrow. The CLEAR key clears the whole board. The selected tile lifts (bigger shadow) and shows a blinking cursor bar.
 - Typing a letter on a colored tile fills **every** tile of that color. The cursor then jumps to the next blank tile in reading order.
 - Illegal letters are refused, and the conflicting tiles flash pink for 200 ms. Illegal means a letter already owned by another color, or (on a colored tile) a letter already used on a black tile.
 - Keyboard graying: keys you can't use on the selected tile turn gray.

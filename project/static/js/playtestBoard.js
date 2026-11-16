@@ -1,0 +1,276 @@
+import { Board } from './board.js';
+import { SpeedBoard } from './speedBoard.js';
+import { PlaytestWord } from './playtestWord.js';
+import { NUM_WORDS, formatTime } from './helpers.js';
+
+// a single-solution puzzle for play-testing (puzzles come from scripts/generate_unique.py)
+// it plays like speed mode (timer, pause), plus:
+//   - "given" letters that start filled in and can't be changed
+//   - a REVEAL button: on a black tile it fills in that tile, on a colored tile the whole color
+// each puzzle saves its own progress under "playtest{NN}..." keys (letters in playtest{NN}Word0-3,
+// everything else in playtest{NN}State), so you can move between puzzles and come back; nothing
+// here touches the daily speed game's saved progress
+export class PlaytestBoard extends SpeedBoard {
+    constructor(manager, data) {
+        super(manager, data); // calls this.initBoard below
+        this.solution = data["solution"].map(word => word.toUpperCase());
+        this.lockedPositions = [];   // [w, l] of every tile that is given or was revealed
+        this.revealedPositions = []; // [w, l] of every tile filled by REVEAL
+        this.blackReveals = 0;   // black tiles revealed
+        this.colorReveals = 0;   // colors revealed
+        this.revealedTiles = 0;  // tiles revealed in all (a color counts once per tile)
+        this.revealButton = document.getElementById("reveal-button");
+        this.revealButton.addEventListener('click', () => this.reveal());
+        this.prefix = `playtest${this.manager.gameId}`;
+        this.stateKey = `${this.prefix}State`;
+
+        const state = this.loadSavedLetters();
+        data["givens"].forEach(([w, l]) => this.lock(w, l, false));
+        state.revealed.forEach(([w, l]) => this.lock(w, l, true));
+        this.revealedPositions = state.revealed;
+        this.restoreLockedLetters();
+        this.restoreState(state);
+        this.saveState(); // so the saved letters always have an answer to be checked against
+    }
+
+    // puts the saved letters back on the board, and returns the rest of the saved state
+    loadSavedLetters() {
+        const fresh = {
+            elapsedSeconds: 0, blackReveals: 0, colorReveals: 0, revealedTiles: 0, revealed: [], solved: false
+        };
+        let state = JSON.parse(localStorage.getItem(this.stateKey));
+        // if the puzzle behind this number was regenerated, the saved progress belongs to another
+        // puzzle: throw it away
+        if (state === null || state.answer !== this.solution.join('')) {
+            localStorage.removeItem(this.stateKey);
+            for (let w = 0; w < NUM_WORDS; w++) {
+                localStorage.removeItem(`${this.prefix}Word${w}`);
+            }
+            state = fresh;
+        }
+        if (localStorage.getItem(`${this.prefix}Word0`) !== null) {
+            this.initDataStructures(); // Board.loadSavedGame adds to these, so start from empty
+            Board.prototype.loadSavedGame.call(this, this.prefix);
+        }
+        return state;
+    }
+
+    restoreState(state) {
+        this.elapsedSeconds = state.elapsedSeconds;
+        this.blackReveals = state.blackReveals;
+        this.colorReveals = state.colorReveals;
+        this.revealedTiles = state.revealedTiles;
+        this.updateTimerDisplay();
+        if (state.solved) {
+            this.isSolutionFound = true;
+            this.playPauseButton.style.display = 'none';
+            this.revealButton.style.display = 'none';
+            this.isPaused = false;
+            this.resumeLetters();
+            this.manager.showCopyButton();
+        } else if (this.elapsedSeconds > 0) {
+            this.playPauseButton.textContent = "RESUME";
+        }
+    }
+
+    saveState() {
+        localStorage.setItem(this.stateKey, JSON.stringify({
+            answer: this.solution.join(''), // to notice if this puzzle number gets a new puzzle
+            elapsedSeconds: this.elapsedSeconds,
+            blackReveals: this.blackReveals,
+            colorReveals: this.colorReveals,
+            revealedTiles: this.revealedTiles,
+            revealed: this.revealedPositions,
+            solved: this.isSolutionFound,
+        }));
+    }
+
+    // the button says how many tiles a reveal would fill: "REVEAL 3" on a color with 3 tiles
+    updateRevealButton() {
+        const target = this.selectedLetter;
+        let numTiles = 1;
+        if (target !== null && target.isConstrained() && !target.isGiven) {
+            numTiles = this.constraints[target.constraint].length;
+        }
+        this.revealButton.textContent = numTiles > 1 ? `REVEAL ${numTiles}` : "REVEAL";
+    }
+
+    // like SpeedBoard.initBoard, but with PlaytestWords and without loading or resetting the speed
+    // game's saved progress
+    initBoard(manager) {
+        for (let w = 0; w < NUM_WORDS; w++) {
+            const word = new PlaytestWord(w, this.grid[w], this.handleLetterClicked.bind(this), manager);
+            this.words.push(word);
+            word.appendWordElement(this.element);
+        }
+        this.timerElement.style.display = 'inline-block';
+        this.playPauseButton.textContent = "START GAME";
+        this.playPauseButton.style.display = 'inline-block';
+        this.playPauseButton.addEventListener('click', () => {
+            this.handlePlayPauseClicked();
+        });
+        Board.prototype.initBoard.call(this); // colors the tiles
+    }
+
+    lock(w, l, wasRevealed) {
+        this.lockedPositions.push([w, l]);
+        this.words[w].letters[l].setGiven(wasRevealed);
+    }
+
+    // puts the correct letter back on every locked tile (at the start, and after CLEAR)
+    restoreLockedLetters() {
+        this.lockedPositions.forEach(([w, l]) => {
+            const letter = this.words[w].letters[l];
+            const value = this.solution[w][l];
+            if (letter.value === value) {
+                return;
+            }
+            this.words[w].updateLetter(l, value);
+            if (letter.isConstrained()) {
+                this.constraintAssignments[letter.constraint - 1] = value;
+            } else {
+                this.blackLetters[value] = (this.blackLetters[value] || 0) + 1;
+            }
+        });
+    }
+
+    // the speed timer saves elapsedSeconds under the speed game's key; this one saves it with
+    // the rest of this puzzle's state, so the daily speed game's timer is left alone
+    startTimer() {
+        this.intervalId = setInterval(() => {
+            this.elapsedSeconds++;
+            this.updateTimerDisplay();
+            this.saveState();
+        }, 1000);
+    }
+
+    pause() {
+        super.pause();
+        this.saveState();
+    }
+
+    handleLetterKeyPressed(letter) {
+        if (this.selectedLetter.isGiven) {
+            this.selectedLetter.shake();
+            return false;
+        }
+        return super.handleLetterKeyPressed(letter);
+    }
+
+    handleBackspacePressed() {
+        // a given letter can't be deleted, so delete just moves back one tile, like the left arrow
+        if (this.selectedLetter.isGiven) {
+            this.moveLeft();
+            return;
+        }
+        super.handleBackspacePressed();
+    }
+
+    clearBoard() {
+        super.clearBoard();
+        this.restoreLockedLetters();
+        this.manager.updateKeyboard();
+    }
+
+    // empties every tile holding letter, except locked ones and the tile at skip
+    // (used before a reveal, so the revealed letter can't clash with anything)
+    clearLetterElsewhere(letter, skip) {
+        this.constraintAssignments.forEach((assigned, i) => {
+            if (assigned === letter && i + 1 !== skip.constraint) {
+                this.constraints[i + 1].forEach(([w, l]) => this.words[w].updateLetter(l, ''));
+                this.constraintAssignments[i] = '';
+            }
+        });
+        if (skip.isConstrained()) {
+            // a color's letter can't be on any black tile either (black tiles may share letters
+            // with each other, so revealing a black tile never needs this)
+            this.constraints[0].forEach(([w, l]) => {
+                const tile = this.words[w].letters[l];
+                if (tile.value === letter && !tile.isGiven) {
+                    this.blackLetters[letter]--;
+                    this.words[w].updateLetter(l, '');
+                }
+            });
+        }
+    }
+
+    reveal() {
+        const target = this.selectedLetter;
+        if (this.isPaused || this.isSolutionFound || target === null || target.isGiven) {
+            this.revealButton.classList.add('shake');
+            setTimeout(() => this.revealButton.classList.remove('shake'), 400);
+            return;
+        }
+        const value = this.solution[target.w][target.l];
+        this.clearLetterElsewhere(value, target);
+        if (target.isConstrained()) {
+            this.constraints[target.constraint].forEach(([w, l]) => {
+                this.words[w].updateLetter(l, value);
+                this.lock(w, l, true);
+                this.revealedPositions.push([w, l]);
+            });
+            this.constraintAssignments[target.constraint - 1] = value;
+            this.popConstraint(target);
+            this.colorReveals++;
+            this.revealedTiles += this.constraints[target.constraint].length;
+        } else {
+            if (target.value !== '') {
+                this.blackLetters[target.value]--;
+            }
+            this.blackLetters[value] = (this.blackLetters[value] || 0) + 1;
+            this.words[target.w].updateLetter(target.l, value);
+            this.lock(target.w, target.l, true);
+            this.revealedPositions.push([target.w, target.l]);
+            target.pop();
+            this.blackReveals++;
+            this.revealedTiles++;
+        }
+        this.saveState();
+        this.check();
+        if (!this.isSolutionFound) {
+            this.selectFirstBlank();
+            this.manager.updateKeyboard();
+        }
+    }
+
+    // like SpeedBoard's, without writing speedIsSolutionFound
+    handleSolutionFound() {
+        this.playPauseButton.style.display = 'none';
+        this.revealButton.style.display = 'none';
+        this.pauseTimer();
+        Board.prototype.handleSolutionFound.call(this);
+        this.saveState();
+    }
+
+    // what the manager sends to /log-playtest
+    getPlaytestResult() {
+        const key = `playtestSolved${this.manager.gameId}`;
+        const replay = localStorage.getItem(key) !== null;
+        localStorage.setItem(key, JSON.stringify(this.elapsedSeconds));
+        return {
+            'puzzle': this.manager.gameId,
+            'seconds': this.elapsedSeconds,
+            'black_reveals': this.blackReveals,
+            'color_reveals': this.colorReveals,
+            'revealed_tiles': this.revealedTiles,
+            'replay': replay ? 1 : 0,
+            'words': this.getWordsList(),
+        };
+    }
+
+    copyResults() {
+        if (this.copyResultsTimeout) {
+            clearTimeout(this.copyResultsTimeout);
+        }
+        const reveals = this.revealedTiles;
+        let message = `constrainbow.com play-test ${parseInt(this.manager.gameId, 10)}\n`;
+        message += `⏱️ ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
+        message += this.getEmojiBoard();
+        navigator.clipboard.writeText(message.trim()).then(() => {
+            this.copyButton.textContent = "COPIED!";
+            this.copyResultsTimeout = setTimeout(() => {
+                this.copyButton.textContent = "COPY RESULTS!";
+            }, 2000);
+        });
+    }
+}

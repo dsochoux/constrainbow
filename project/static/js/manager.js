@@ -1,5 +1,6 @@
 import { SpeedBoard } from "./speedBoard.js";
 import { ScoreBoard } from "./scoreBoard.js";
+import { PlaytestBoard } from "./playtestBoard.js";
 import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
@@ -38,11 +39,17 @@ export class Manager {
                 element.style.display = 'block';
             });
         }
-        document.getElementById('num-possible-solutions').textContent = this.num_possible_solutions.toLocaleString();
+        // the play-test page describes its puzzle in the template instead
+        const solutionsElement = document.getElementById('num-possible-solutions');
+        if (solutionsElement) {
+            solutionsElement.textContent = this.num_possible_solutions.toLocaleString();
+        }
         this.loadingText.style.display = 'none';
         
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
+        } else if (this.gameMode === 'playtest') {
+            this.board = new PlaytestBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
             // score mode has no start button, so start with the first empty tile selected
@@ -184,6 +191,10 @@ export class Manager {
 
     updateKeyboard() {
         this.resetKeyboard();
+        // the play-test REVEAL button shows how many tiles it would fill for the selected tile
+        if (this.board.updateRevealButton) {
+            this.board.updateRevealButton();
+        }
         
         if (this.board.selectedLetter === null) {
             return;
@@ -227,6 +238,10 @@ export class Manager {
     }
 
     logBoard() {
+        if (this.gameMode === 'playtest') {
+            this.logPlaytest();
+            return;
+        }
         fetch('/log-solution', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -236,6 +251,21 @@ export class Manager {
                 'metric': this.board.getMetric(false),
                 'words': this.board.getWordsList(),
             })
+        });
+    }
+
+    // play-test results are logged with a random id per browser, so one tester's solves can be
+    // grouped without knowing who they are
+    logPlaytest() {
+        let tester = localStorage.getItem('playtestTester');
+        if (!tester) {
+            tester = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
+            localStorage.setItem('playtestTester', tester);
+        }
+        fetch('/log-playtest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 'tester': tester, ...this.board.getPlaytestResult() })
         });
     }
 

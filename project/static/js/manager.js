@@ -1,6 +1,8 @@
 import { SpeedBoard } from "./speedBoard.js";
 import { ScoreBoard } from "./scoreBoard.js";
 import { SolveBoard } from "./solveBoard.js";
+import { Stats } from "./stats.js";
+import { StatsPopup } from "./statsPopup.js";
 import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
@@ -8,6 +10,9 @@ export class Manager {
         this.board = null;
         this.pauseKeyboard();
         this.setUpHowToPlay(); // set up before the game loads, so the popup always works
+        this.stats = new Stats();
+        // the daily puzzles have a 📊 button and keep stats (the SOLVE test batch and /solve/day don't)
+        this.statsPopup = document.getElementById('stats-button') ? new StatsPopup(this) : null;
         this.showHowToPlayIfFirstTime();
         this.fetchGame().then(() => {
             this.addEventListeners();
@@ -149,6 +154,29 @@ export class Manager {
             this.showHowToPlay(); // Show instructions
             localStorage.setItem('visited', 'true'); // Mark as visited
         }
+    }
+
+    // called when a puzzle is finished: saves today's result to the stats, and shows the stats the
+    // first time today's puzzle is finished (after the celebration)
+    recordResult() {
+        if (!this.statsPopup) {
+            return;
+        }
+        // finishing again only replaces the saved result if it's a better score (score mode)
+        const isBetter = (old, result) => result.points > old.points;
+        const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
+        if (isFirst) {
+            setTimeout(() => this.statsPopup.show(), 1800);
+        }
+    }
+
+    // " | 🔥 5" for the share text, once a streak is at least 2 days
+    getStreakText() {
+        if (!this.statsPopup) {
+            return "";
+        }
+        const { current } = this.stats.getStreaks(this.gameMode, this.gameId);
+        return current >= 2 ? ` | 🔥 ${current}` : "";
     }
 
     showCopyButton() {

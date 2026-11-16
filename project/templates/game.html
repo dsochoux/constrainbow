@@ -86,6 +86,14 @@
             </div>
         </div>
     </div>
+    {% if game_mode in ["solve", "speed", "score"] %}
+    <div class="overlay" id="stats-overlay">
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+            <button id="stats-close-button" aria-label="Close">&times;</button>
+            <div id="stats-content"></div>{# filled in by statsPopup.js #}
+        </div>
+    </div>
+    {% endif %}
     <div id="container">
         <div id="header-div">
             <h1 class="wordmark" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</h1>
@@ -110,6 +118,9 @@
                     <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>{{ speed_emoji }} SPEED</a>
                     <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
                 </nav>
+                {% endif %}
+                {% if game_mode in ["solve", "speed", "score"] %}
+                <button id="stats-button" aria-label="Your stats">📊</button>
                 {% endif %}
                 <button id="how-to-play-button" aria-label="How to play">?</button>
             </div>

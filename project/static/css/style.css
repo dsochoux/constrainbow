@@ -189,7 +189,7 @@ button:focus-visible, a:focus-visible {
     pointer-events: none;
 }
 
-#how-to-play-button {
+#how-to-play-button, #stats-button {
     flex: none;
     width: 30px;
     height: 30px;
@@ -670,12 +670,77 @@ body.row-links .word-row .letter {
     line-height: 1.45;
 }
 
-#close-button {
+#close-button, #stats-close-button {
     position: absolute;
     top: 12px;
     right: 16px;
     font-size: 28px;
     line-height: 1;
+}
+
+/* ---------- stats popup ---------- */
+
+#stats-button {
+    font-family: var(--ui-font);
+    font-size: 15px;
+    padding: 0;
+}
+
+.stats-numbers {
+    display: grid;
+    grid-template-columns: repeat(var(--columns, 4), 1fr);
+    gap: 6px;
+    text-align: center;
+}
+.stats-numbers div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 4px;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    background: var(--card);
+}
+.stats-numbers strong {
+    font-family: var(--display-font);
+    font-weight: normal;
+    font-size: 22px;
+    white-space: nowrap;
+}
+.stats-numbers strong small {
+    font-size: 0.65em;
+    margin-left: 2px;
+}
+.stats-numbers span {
+    font-size: 11px;
+    line-height: 1.2;
+    color: var(--muted);
+}
+
+.popup h3 {
+    margin: 18px 0 8px;
+    font-size: 15px;
+}
+
+/* one row per bar: its label, then a bar as long as its share of the biggest bar */
+.stats-chart {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 10px;
+    align-items: center;
+    font-size: 13px;
+}
+.stats-bar {
+    width: calc(var(--fill) * 100%);
+    min-width: 26px;
+    padding: 2px 7px;
+    text-align: right;
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    background: var(--key-off);
+}
+.stats-bar.today {
+    background: var(--c3);
 }
 
 .step {

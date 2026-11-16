@@ -253,6 +253,11 @@ export class SolveBoard extends SpeedBoard {
         this.saveState();
     }
 
+    // what the stats keep for a finished day
+    getStatsResult() {
+        return { seconds: this.elapsedSeconds, reveals: this.revealedTiles };
+    }
+
     // what the manager sends to /log-solve
     getSolveResult() {
         // remembers the answers this browser has solved, to flag a second solve of the same puzzle
@@ -301,7 +306,7 @@ export class SolveBoard extends SpeedBoard {
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
         const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : 'constrainbow.com/solve';
         let message = `${link}\n`;
-        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
+        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.manager.getStreakText()}\n`;
         message += this.getEmojiBoard();
         navigator.clipboard.writeText(message.trim()).then(() => {
             this.copyButton.textContent = "COPIED!";

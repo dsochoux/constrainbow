@@ -374,6 +374,7 @@ export class Board {
             this.manager.logBoard();
         }
         this.isSolutionFound = true;
+        this.manager.recordResult();
         this.celebrate();
         this.manager.showCopyButton();
         this.selectedLetter.setIsSelected(false);
@@ -458,7 +459,7 @@ export class Board {
             clearTimeout(this.copyResultsTimeout);
         }
         let message = `constrainbow.com/${this.manager.gameMode}\n`;
-        message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}\n`;
+        message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}${this.manager.getStreakText()}\n`;
         message += this.getEmojiBoard();
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;
         const doIncludeSolution = this.copyButton.textContent !== 'COPY RESULTS!';

@@ -100,6 +100,11 @@ export class ScoreBoard extends Board {
         super.handleSolutionFound();
     }
 
+    // what the stats keep for a finished day (a better score later the same day replaces it)
+    getStatsResult() {
+        return { points: this.score, max: this.numPossiblePoints };
+    }
+
     getMetric(doIncludeEmoji) {
         if (doIncludeEmoji) {
             return `🎯 ${this.getPointsFraction()}`;

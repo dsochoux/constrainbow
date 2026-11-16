@@ -162,6 +162,11 @@ export class SpeedBoard extends Board {
     }
 
 
+    // what the stats keep for a finished day
+    getStatsResult() {
+        return { seconds: this.elapsedSeconds };
+    }
+
     getMetric(doIncludeEmoji) {
         if (doIncludeEmoji) {
             if (this.manager.gameId.substring(0, 4) === "0408") {

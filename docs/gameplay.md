@@ -53,11 +53,21 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 - Colored tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for color-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.
 
+## Stats and streaks (since 2026-11-16)
+- Each daily mode keeps its own stats in this browser (localStorage `stats`; no accounts): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
+  - SOLVE: no-reveal solves and average tiles revealed per day; solve times (under 2m, 2–5m, 5–10m, 10m+).
+  - SPEED: best time; times (under 1m, 1–2m, 2–3m, 3–5m, 5m+).
+  - SCORE: perfect scores; share of the max score (100%, 90–99%, 75–89%, under 75%). A better score later the same day replaces the day's result.
+- A day counts once its puzzle is finished. In SOLVE, reveals don't matter. The current streak stays alive until a whole day is missed (finishing yesterday but not yet today still shows the streak).
+- The 📊 button next to `?` opens the stats (and pauses the game, like `?`). They also open by themselves about 2 s after today's puzzle is finished for the first time. Today's bar is highlighted.
+- Only the daily puzzles count: the SOLVE test batch and `/solve/day` have no 📊 button and record nothing.
+- Nothing was recorded before this, so everyone's streak started on 2026-11-16.
+
 ## Sharing
-The first click on COPY RESULTS copies the following:
+The first click on COPY RESULTS copies the following (the `| 🔥 5` streak appears once that mode's streak is at least 2 days):
 ```
 constrainbow.com/score
-11/15 | 🎯 64/64
+11/15 | 🎯 64/64 | 🔥 5
 ⬛️🟥⬛️🟧⬛️
 ⬛️⬛️🟦⬛️🟥
 🟨⬛️🟦⬛️⬛️

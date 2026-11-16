@@ -15,6 +15,7 @@ constrainbow/
 │   ├── generate_unique.py     SOLVE puzzles (single solution, answer first): `generate_solve_day` for dailies, `--day`, `--test-batch`, `--words a b c d`
 │   ├── build_common_words.py  builds common_words.txt from words.txt minus a hand-reviewed exclude list
 │   ├── db.py                  rebuilds `words` table in database.db (no longer needed)
+│   ├── recount_games.py       recounts speed/score puzzles from today on (solutions, max score, best solution) after words.txt changes
 │   ├── check_solve_unique.py  checks every SOLVE puzzle is still unique against words.txt; --fix remakes upcoming days
 │   ├── filter_reported_words.py  reported_missing − words − rejected → filtered_reported_missing_words.txt (superseded by /review-words)
 │   └── sort_words.py          sorts words.txt in place

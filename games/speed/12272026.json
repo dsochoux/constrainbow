@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 110943,
-    "num_possible_points": 57,
+    "num_possible_solutions": 126156,
+    "num_possible_points": 60,
     "best_solution": {
-        "points": 57,
-        "word_1": "march",
-        "word_2": "scrub",
-        "word_3": "abuzz",
-        "word_4": "climb"
+        "points": 60,
+        "word_1": "whack",
+        "word_2": "icily",
+        "word_3": "xylem",
+        "word_4": "chewy"
     }
 }

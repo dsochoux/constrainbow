@@ -121,12 +121,12 @@
             ]
         ]
     ],
-    "num_possible_solutions": 439328,
+    "num_possible_solutions": 512088,
     "num_possible_points": 67,
     "best_solution": {
         "points": 67,
         "word_1": "abuzz",
-        "word_2": "shrub",
+        "word_2": "rheum",
         "word_3": "howdy",
         "word_4": "whack"
     }

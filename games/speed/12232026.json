@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 15978,
-    "num_possible_points": 61,
+    "num_possible_solutions": 26200,
+    "num_possible_points": 64,
     "best_solution": {
-        "points": 61,
-        "word_1": "lanky",
-        "word_2": "zilch",
-        "word_3": "chimp",
-        "word_4": "plaza"
+        "points": 64,
+        "word_1": "abuzz",
+        "word_2": "quack",
+        "word_3": "churn",
+        "word_4": "nabob"
     }
 }

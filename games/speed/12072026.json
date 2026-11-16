@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 32717,
-    "num_possible_points": 54,
+    "num_possible_solutions": 38692,
+    "num_possible_points": 55,
     "best_solution": {
-        "points": 54,
-        "word_1": "quell",
-        "word_2": "zonal",
-        "word_3": "toxin",
-        "word_4": "seize"
+        "points": 55,
+        "word_1": "quaff",
+        "word_2": "shelf",
+        "word_3": "judge",
+        "word_4": "magma"
     }
 }

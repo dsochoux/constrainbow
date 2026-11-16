@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 56333,
-    "num_possible_points": 56,
+    "num_possible_solutions": 116632,
+    "num_possible_points": 59,
     "best_solution": {
-        "points": 56,
-        "word_1": "blaze",
-        "word_2": "idyll",
-        "word_3": "hydro",
-        "word_4": "crazy"
+        "points": 59,
+        "word_1": "polyp",
+        "word_2": "wahoo",
+        "word_3": "whack",
+        "word_4": "zilch"
     }
 }

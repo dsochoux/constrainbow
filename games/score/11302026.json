@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 1641258,
-    "num_possible_points": 80,
+    "num_possible_solutions": 1865503,
+    "num_possible_points": 82,
     "best_solution": {
-        "points": 80,
-        "word_1": "jerky",
-        "word_2": "equal",
-        "word_3": "quota",
-        "word_4": "jazzy"
+        "points": 82,
+        "word_1": "jazzy",
+        "word_2": "aegis",
+        "word_3": "emoji",
+        "word_4": "fizzy"
     }
 }

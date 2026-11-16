@@ -48,7 +48,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 - **Small list:** Danny's picks took it from 1,529 to 1,711 words. His bar: words most American adults know, including vocabulary-test words (adage, aloof, askew) and mildly rude or grim ones (idiot, vomit, tumor), but nothing profane or sexual, and not formal or old-world words (abase, abate, abbey, abbot, saber). Claude suggested candidates in three groups; group 1 (everyday words) is decided, group 2 (more bookish words) and group 3 (adjectives that look like past tenses, e.g. tired, mixed) are still open.
 - Removed the duplicate "minty" from words.txt.
 - The new words gave 3 SOLVE puzzles a second answer: 11/20 and 12/16 were remade (now STAFF/PROMO/VILLA/FRYER and WEIRD/STRAW/PIECE/PHONY), and test puzzle 12 (already played) was left as it is.
-- Speed and score puzzles made before a word was added under-count their solutions a little ("has N solutions"). Harmless.
+- The new words raised every upcoming speed/score puzzle's solution count by 10–107% and the max score of score 11/30 (80 → 82), 12/07 (70 → 81) and 12/24 (64 → 66), plus five speed puzzles (max score isn't shown in speed). `scripts/recount_games.py` recounted all 92 puzzles from 11/16 to 12/31 in place (layouts unchanged), and the updated files were copied to the server.
 
 ## Features to work on (agreed 2026-11-15)
 In priority order. The aim: give players a reason to come back, something to compare, and more to play for people who arrive from a video.

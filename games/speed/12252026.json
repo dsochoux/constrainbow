@@ -121,12 +121,12 @@
             ]
         ]
     ],
-    "num_possible_solutions": 29012,
-    "num_possible_points": 59,
+    "num_possible_solutions": 32934,
+    "num_possible_points": 62,
     "best_solution": {
-        "points": 59,
+        "points": 62,
         "word_1": "leech",
-        "word_2": "gulag",
+        "word_2": "pilaf",
         "word_3": "jazzy",
         "word_4": "yodel"
     }

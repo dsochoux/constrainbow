@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 531853,
+    "num_possible_solutions": 633391,
     "num_possible_points": 71,
     "best_solution": {
         "points": 71,
-        "word_1": "theft",
-        "word_2": "fizzy",
-        "word_3": "crazy",
-        "word_4": "extra"
+        "word_1": "exude",
+        "word_2": "dizzy",
+        "word_3": "proxy",
+        "word_4": "queso"
     }
 }

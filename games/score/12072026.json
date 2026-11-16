@@ -121,13 +121,13 @@
             ]
         ]
     ],
-    "num_possible_solutions": 530180,
-    "num_possible_points": 70,
+    "num_possible_solutions": 615275,
+    "num_possible_points": 81,
     "best_solution": {
-        "points": 70,
-        "word_1": "fuzzy",
-        "word_2": "uncap",
-        "word_3": "quack",
-        "word_4": "knife"
+        "points": 81,
+        "word_1": "jazzy",
+        "word_2": "abuzz",
+        "word_3": "vague",
+        "word_4": "emoji"
     }
 }

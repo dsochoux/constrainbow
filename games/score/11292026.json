@@ -121,12 +121,12 @@
             ]
         ]
     ],
-    "num_possible_solutions": 517303,
+    "num_possible_solutions": 599404,
     "num_possible_points": 71,
     "best_solution": {
         "points": 71,
-        "word_1": "omega",
-        "word_2": "banjo",
+        "word_1": "image",
+        "word_2": "emoji",
         "word_3": "jazzy",
         "word_4": "pygmy"
     }

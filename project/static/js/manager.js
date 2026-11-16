@@ -1,6 +1,6 @@
 import { SpeedBoard } from "./speedBoard.js";
 import { ScoreBoard } from "./scoreBoard.js";
-import { PlaytestBoard } from "./playtestBoard.js";
+import { SolveBoard } from "./solveBoard.js";
 import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
@@ -39,7 +39,7 @@ export class Manager {
                 element.style.display = 'block';
             });
         }
-        // the play-test page describes its puzzle in the template instead
+        // the SOLVE page describes its puzzle in the template instead
         const solutionsElement = document.getElementById('num-possible-solutions');
         if (solutionsElement) {
             solutionsElement.textContent = this.num_possible_solutions.toLocaleString();
@@ -48,8 +48,8 @@ export class Manager {
         
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
-        } else if (this.gameMode === 'playtest') {
-            this.board = new PlaytestBoard(this, data);
+        } else if (this.gameMode === 'solve') {
+            this.board = new SolveBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
             // score mode has no start button, so start with the first empty tile selected
@@ -191,7 +191,7 @@ export class Manager {
 
     updateKeyboard() {
         this.resetKeyboard();
-        // the play-test REVEAL button shows how many tiles it would fill for the selected tile
+        // the SOLVE REVEAL button shows how many tiles it would fill for the selected tile
         if (this.board.updateRevealButton) {
             this.board.updateRevealButton();
         }
@@ -238,8 +238,8 @@ export class Manager {
     }
 
     logBoard() {
-        if (this.gameMode === 'playtest') {
-            this.logPlaytest();
+        if (this.gameMode === 'solve') {
+            this.logSolve();
             return;
         }
         fetch('/log-solution', {
@@ -254,18 +254,20 @@ export class Manager {
         });
     }
 
-    // play-test results are logged with a random id per browser, so one tester's solves can be
+    // SOLVE results are logged with a random id per browser, so one tester's solves can be
     // grouped without knowing who they are
-    logPlaytest() {
-        let tester = localStorage.getItem('playtestTester');
+    logSolve() {
+        // (before the mode was named SOLVE, the id was saved as "playtestTester")
+        let tester = localStorage.getItem('solveTester') || localStorage.getItem('playtestTester');
         if (!tester) {
             tester = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
-            localStorage.setItem('playtestTester', tester);
         }
-        fetch('/log-playtest', {
+        localStorage.setItem('solveTester', tester);
+        localStorage.removeItem('playtestTester');
+        fetch('/log-solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 'tester': tester, ...this.board.getPlaytestResult() })
+            body: JSON.stringify({ 'tester': tester, ...this.board.getSolveResult() })
         });
     }
 

@@ -2,7 +2,7 @@
 
 Run from the repo root:
     env/bin/python scripts/generate_unique.py --words ghost crypt witch skull     (one puzzle from your words)
-    env/bin/python scripts/generate_unique.py --playtest                        (the play-test batch)
+    env/bin/python scripts/generate_unique.py --test-batch                      (the SOLVE test batch)
 
 How a puzzle is made (see docs/findings.md, "Single-solution mode"):
 1. Start from the 4 answer words.
@@ -354,9 +354,9 @@ def show(puzzle):
           f"({puzzle['difficulty']['passes']} passes)")
 
 
-# The play-test batch: four puzzles each at 3, 5 and 7 given letters, answers from the common word
+# The SOLVE test batch: four puzzles each at 3, 5 and 7 given letters, answers from the common word
 # list, numbered from easiest to hardest by the difficulty estimate.
-PLAYTEST_TARGETS = [3, 5, 7] * 4
+TEST_BATCH_TARGETS = [3, 5, 7] * 4
 
 
 def difficulty_key(puzzle):
@@ -364,12 +364,12 @@ def difficulty_key(puzzle):
     return (puzzle["difficulty"]["remaining"], -puzzle["num_givens"], puzzle["difficulty"]["passes"])
 
 
-def make_playtest(seed=2026):
+def make_test_batch(seed=2026):
     Game.build_index()
     common = load_common_words()
     puzzles = []
     used = set()
-    for number, target in enumerate(PLAYTEST_TARGETS, start=1):
+    for number, target in enumerate(TEST_BATCH_TARGETS, start=1):
         rng = random.Random(seed * 100 + number)
         while True:
             answer = rng.sample(common, 4)
@@ -383,7 +383,7 @@ def make_playtest(seed=2026):
         puzzles.append(puzzle)
 
     puzzles.sort(key=difficulty_key)
-    folder = "games/playtest"
+    folder = "games/solve"
     os.makedirs(folder, exist_ok=True)
     for name in os.listdir(folder):
         if name.endswith(".json"):
@@ -401,13 +401,13 @@ if __name__ == "__main__":
     parser.add_argument("--words", nargs=4, help="the four answer words")
     parser.add_argument("--target", type=int, default=TARGET_GIVENS, help="top up to this many given letters")
     parser.add_argument("--out", help="write the puzzle JSON here")
-    parser.add_argument("--playtest", action="store_true", help="write the play-test batch to games/playtest/")
+    parser.add_argument("--test-batch", action="store_true", help="write the SOLVE test batch to games/solve/")
     parser.add_argument("--allow-uncommon", action="store_true",
                         help="let --words use words that aren't in common_words.txt")
     args = parser.parse_args()
 
-    if args.playtest:
-        make_playtest()
+    if args.test_batch:
+        make_test_batch()
     elif args.words:
         Game.build_index()
         missing = [w for w in args.words if w.lower() not in Game.words]

@@ -1,8 +1,8 @@
 import { SpeedLetter } from "./speedLetter.js";
 
-// a play-test tile: a SpeedLetter that can also be "given", meaning it starts filled in
+// a SOLVE tile: a SpeedLetter that can also be "given", meaning it starts filled in
 // (or was filled by REVEAL) and can't be changed
-export class PlaytestLetter extends SpeedLetter {
+export class SolveLetter extends SpeedLetter {
     constructor(w, l, constraint, clickHandler) {
         super(w, l, constraint, clickHandler);
         this.isGiven = false;

@@ -177,7 +177,7 @@ button:focus-visible, a:focus-visible {
     color: var(--paper);
 }
 
-/* play-test: the ‹ › arrows either side of "TEST 3 / 12" */
+/* SOLVE: the ‹ › arrows either side of "SOLVE 3 / 12" */
 #mode-switch a.step-link {
     flex: none;
     width: 36px;
@@ -419,7 +419,7 @@ body.row-links .word-row .letter {
     transform: none;
 }
 
-/* play-test: letters the puzzle gives you sit pressed into the board (no shadow) and can't be
+/* SOLVE: letters the puzzle gives you sit pressed into the board (no shadow) and can't be
    changed; tiles filled by REVEAL look the same, with a muted letter so you can tell them apart */
 .letter.given:not(.paused) {
     transform: translate(3px, 3px);

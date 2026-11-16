@@ -27,9 +27,9 @@ WORD_PATTERN = re.compile(r"[a-z]{5}")         # a full word
 BOARD_WORD_PATTERN = re.compile(r"[a-z-]{5}")  # a word on the board, '-' for blanks
 METRIC_PATTERN = re.compile(r"[0-9:/]{1,20}")  # "0:41", "1:02:03", "64/64"
 GAME_MODES = ("speed", "score")
-PLAYTEST_ID_PATTERN = re.compile(r"[0-9]{2}")    # play-test puzzle "01", "02", ...
-TESTER_PATTERN = re.compile(r"[0-9a-f]{8}")      # a random id each play-tester's browser makes up
-PLAYTEST_FOLDER = "./games/playtest/"
+SOLVE_ID_PATTERN = re.compile(r"[0-9]{2}")       # SOLVE test puzzle "01", "02", ...
+TESTER_PATTERN = re.compile(r"[0-9a-f]{8}")      # a random id each SOLVE player's browser makes up
+SOLVE_FOLDER = "./games/solve/"
 
 def is_valid_game(game_id, game_mode):
     return (isinstance(game_id, str) and GAME_ID_PATTERN.fullmatch(game_id) is not None
@@ -39,10 +39,10 @@ def is_list_of(value, pattern, max_length):
     return (isinstance(value, list) and len(value) <= max_length
             and all(isinstance(item, str) and pattern.fullmatch(item) for item in value))
 
-def get_playtest_count():
-    if not os.path.isdir(PLAYTEST_FOLDER):
+def get_solve_count():
+    if not os.path.isdir(SOLVE_FOLDER):
         return 0
-    return len([name for name in os.listdir(PLAYTEST_FOLDER) if name.endswith('.json')])
+    return len([name for name in os.listdir(SOLVE_FOLDER) if name.endswith('.json')])
 
 def is_small_int(value):
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100000
@@ -96,25 +96,25 @@ def score():
     response.set_cookie('game_mode', 'score', max_age=60*60*24*365)
     return response
 
-# single-solution puzzles for play-testing (see scripts/generate_unique.py)
-# not linked from the game; share /playtest with testers directly
-@app.route('/playtest')
-def playtest():
-    count = get_playtest_count()
+# SOLVE: single-solution puzzles (see scripts/generate_unique.py), for now a numbered batch of
+# test puzzles; not linked from the game, share /solve with testers directly
+@app.route('/solve')
+def solve():
+    count = get_solve_count()
     try:
         number = int(request.args.get('p', '1'))
     except ValueError:
         number = 1
     if count == 0:
-        return "No play-test puzzles yet.", 404
+        return "No SOLVE puzzles yet.", 404
     number = max(1, min(number, count))
     game_id = f"{number:02d}"
-    with open(os.path.join(PLAYTEST_FOLDER, game_id + '.json'), 'r') as f:
+    with open(os.path.join(SOLVE_FOLDER, game_id + '.json'), 'r') as f:
         num_givens = json.load(f)["num_givens"]
     return render_template(
         'game.html',
         game_id=game_id,
-        game_mode="playtest",
+        game_mode="solve",
         mode_emoji="⏱️",
         other_mode_emoji="🎯",
         puzzle_number=number,
@@ -132,8 +132,8 @@ def game():
         # game id in hidden input supplied by /
         game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
         game_mode = request.args.get("game-mode", "speed")
-        is_playtest = game_mode == "playtest" and PLAYTEST_ID_PATTERN.fullmatch(game_id) is not None
-        if not is_valid_game(game_id, game_mode) and not is_playtest:
+        is_solve = game_mode == "solve" and SOLVE_ID_PATTERN.fullmatch(game_id) is not None
+        if not is_valid_game(game_id, game_mode) and not is_solve:
             return '', 404
         selected_game_file = game_id + '.json'
         
@@ -143,8 +143,8 @@ def game():
         with open(file_path, 'r') as f:
             game_object = json.load(f)
 
-        if is_playtest:
-            # play-test puzzles have one answer; the client needs it for the REVEAL button
+        if is_solve:
+            # SOLVE puzzles have one answer; the client needs it for the REVEAL button
             return jsonify({
                 "game_id": game_id,
                 "constraints": game_object["constraints"],
@@ -218,27 +218,27 @@ def log_solution():
 
     return '', 200
 
-# one line per play-test solve, all in logs/playtest.csv
-@app.route('/log-playtest', methods=['POST'])
-def log_playtest():
+# one line per SOLVE solve, all in logs/solve.csv
+@app.route('/log-solve', methods=['POST'])
+def log_solve():
     data = request.get_json(silent=True) or {}
     puzzle = data.get('puzzle')
     tester = data.get('tester')
     words = data.get('words')
     numbers = [data.get(key) for key in ('seconds', 'black_reveals', 'color_reveals', 'revealed_tiles', 'replay')]
-    if (not isinstance(puzzle, str) or PLAYTEST_ID_PATTERN.fullmatch(puzzle) is None
+    if (not isinstance(puzzle, str) or SOLVE_ID_PATTERN.fullmatch(puzzle) is None
             or not isinstance(tester, str) or TESTER_PATTERN.fullmatch(tester) is None
             or not all(is_small_int(n) for n in numbers)
             or not is_list_of(words, WORD_PATTERN, 4)):
         return '', 400
-    puzzle_path = os.path.join(PLAYTEST_FOLDER, puzzle + '.json')
+    puzzle_path = os.path.join(SOLVE_FOLDER, puzzle + '.json')
     if not os.path.exists(puzzle_path):
         return '', 400
     with open(puzzle_path, 'r') as f:
         num_givens = json.load(f)["num_givens"]
 
     os.makedirs('./logs', exist_ok=True)
-    file_name = './logs/playtest.csv'
+    file_name = './logs/solve.csv'
     with open(file_name, 'a') as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         if os.stat(file_name).st_size == 0:
@@ -249,9 +249,18 @@ def log_playtest():
         fcntl.flock(f, fcntl.LOCK_UN)
     return '', 200
 
-@app.route('/playtestlog', methods=['GET'])
-def get_playtest_log():
-    return return_log('./logs/playtest.csv', "playtest")
+@app.route('/solvelog', methods=['GET'])
+def get_solve_log():
+    return return_log('./logs/solve.csv', "SOLVE")
+
+# the mode was called "playtest" before it was named SOLVE; keep old links working
+@app.route('/playtest')
+def old_playtest():
+    try:
+        number = int(request.args.get('p', '1'))
+    except ValueError:
+        number = 1
+    return redirect(f'/solve?p={number}')
 
 # browsers ask for /favicon.ico on their own (e.g. for bookmarks), regardless of the <link> tags
 @app.route('/favicon.ico')

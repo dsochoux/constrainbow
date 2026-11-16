@@ -29,7 +29,7 @@
     <input type="hidden" id="game-id" value="{{ game_id }}" />
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
-    {% set is_solve = game_mode in ["solve", "solve-test"] %}
+    {% set is_solve = game_mode in ["solve", "solve-test", "solve-day"] %}
 
     {# the how-to-play examples: yesterday's SOLVE answer, or a fixed board (see get_tutorial in app.py):
        colors per tile (0 = black) and the words of the solution #}
@@ -97,6 +97,13 @@
                     <a class="active" aria-current="page">🔑 SOLVE {{ puzzle_number }} / {{ puzzle_count }}</a>
                     <a href="/solve/test?p={{ puzzle_number + 1 }}" class="step-link{% if puzzle_number == puzzle_count %} disabled{% endif %}" aria-label="Next puzzle">›</a>
                 </nav>
+                {% elif game_mode == "solve-day" %}
+                {# /solve/day: any day's SOLVE puzzle, with the day before and after #}
+                <nav id="mode-switch" aria-label="SOLVE puzzle by day">
+                    <a href="/solve/day?d={{ previous_day }}" class="step-link" aria-label="Previous day">‹</a>
+                    <a class="active" aria-current="page">🔑 SOLVE {{ date }}</a>
+                    <a href="/solve/day?d={{ next_day }}" class="step-link" aria-label="Next day">›</a>
+                </nav>
                 {% else %}
                 <nav id="mode-switch" aria-label="Game mode">
                     <a href="/solve" {% if game_mode == "solve" %}class="active" aria-current="page"{% endif %}>🔑 SOLVE</a>
@@ -109,6 +116,8 @@
         </div>
         {% if game_mode == "solve" %}
         <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong>one</strong> solution.{% if num_givens %} {{ num_givens }} letters are filled in to start you off.{% endif %}</p>
+        {% elif game_mode == "solve-day" %}
+        <p class="description" id="description">The puzzle for {{ date }} has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Progress here is kept apart from the daily game, and solves aren't logged.</p>
         {% elif game_mode == "solve-test" %}
         <p class="description" id="description">This puzzle has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Stuck? REVEAL fills in the selected tile.</p>
         {% else %}

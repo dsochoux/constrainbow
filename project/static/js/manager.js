@@ -48,7 +48,7 @@ export class Manager {
         
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
-        } else if (this.gameMode === 'solve' || this.gameMode === 'solve-test') {
+        } else if (['solve', 'solve-test', 'solve-day'].includes(this.gameMode)) {
             this.board = new SolveBoard(this, data);
         } else { // game_mode === "score"
             this.board = new ScoreBoard(this, data);
@@ -238,6 +238,9 @@ export class Manager {
     }
 
     logBoard() {
+        if (this.gameMode === 'solve-day') {
+            return; // trying out another day's puzzle: not a real solve
+        }
         if (this.gameMode === 'solve' || this.gameMode === 'solve-test') {
             this.logSolve();
             return;

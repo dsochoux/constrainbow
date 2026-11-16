@@ -37,7 +37,11 @@ export class SolveBoard extends SpeedBoard {
 
     // also used by SolveWord, which saves its letters under the same prefix
     static storagePrefix(manager) {
-        return manager.gameMode === 'solve-test' ? `solveTest${manager.gameId}` : 'solve';
+        if (manager.gameMode === 'solve-test') {
+            return `solveTest${manager.gameId}`;
+        }
+        // another day's puzzle (/solve/day) is saved under its own date, so the daily game is untouched
+        return manager.gameMode === 'solve-day' ? `solveDay${manager.gameId}` : 'solve';
     }
 
     // puts the saved letters back on the board, and returns the rest of the saved state

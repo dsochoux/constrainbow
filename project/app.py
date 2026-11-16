@@ -175,6 +175,30 @@ def solve():
     )
     return response
 
+# any day's SOLVE puzzle, past or future, for Danny to try out themed days before they go live:
+# /solve/day?d=2026-11-26. Not linked; progress is saved apart from the daily game and nothing is logged
+@app.route('/solve/day')
+def solve_day():
+    try:
+        date = datetime.strptime(request.args.get('d', ''), "%Y-%m-%d")
+    except ValueError:
+        date = datetime.now(eastern)
+    game_id = date.strftime("%m%d%Y")
+    puzzle_path = f"./games/solve/{game_id}.json"
+    if not os.path.exists(puzzle_path):
+        return f"No SOLVE puzzle for {date:%Y-%m-%d}.", 404
+    return render_template(
+        'game.html',
+        game_id=game_id,
+        game_mode="solve-day",
+        mode_emoji="🔑",
+        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
+        date=f"{date.month}/{date.day}/{date.year}",
+        previous_day=(date - timedelta(days=1)).strftime("%Y-%m-%d"),
+        next_day=(date + timedelta(days=1)).strftime("%Y-%m-%d"),
+        num_givens=get_num_givens(puzzle_path),
+    )
+
 # the numbered batch of SOLVE puzzles from the first play-test (games/solve-test/); not linked
 @app.route('/solve/test')
 def solve_test():
@@ -209,6 +233,8 @@ def game():
         game_id = request.args.get("game-id", datetime.now(eastern).strftime("%m%d%Y")) # should never fall back to this, but just in case
         game_mode = request.args.get("game-mode", "speed")
         is_solve_test = game_mode == "solve-test" and SOLVE_TEST_ID_PATTERN.fullmatch(game_id) is not None
+        if game_mode == "solve-day": # /solve/day: a daily SOLVE puzzle from another day
+            game_mode = "solve"
         if not is_valid_game(game_id, game_mode) and not is_solve_test:
             return '', 404
         selected_game_file = game_id + '.json'

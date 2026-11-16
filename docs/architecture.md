@@ -48,6 +48,7 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 | `POST /log-solution` `{game_id, mode, metric, words}` | validated (8-digit id, `speed`/`score`, metric `[0-9:/]{1,20}`, words `[a-z-]{5}`), else 400; append `time,metric,w0..w3` to `logs/{game_id}/{mode}.csv` (flock, header on first write) |
 | `GET /words` | send words.txt |
 | `GET /solve` | today's SOLVE puzzle |
+| `GET /solve/day?d=YYYY-MM-DD` | any day's SOLVE puzzle, past or future (unlisted, for trying out themed days), `game_mode="solve-day"`, with ‹ › links to the days around it. 404 if that day has no puzzle; a bad date means today. Progress is saved under `solveDay{MMDDYYYY}`, and solves aren't logged |
 | `GET /solve/test?p=N` | SOLVE test-batch puzzle N (unlisted; out-of-range N is clamped), `game_mode="solve-test"`. The old `/playtest?p=N` redirects here |
 | `POST /log-solve` `{puzzle, mode, tester, seconds, black_reveals, color_reveals, revealed_tiles, replay, words}` | validated; daily (`mode: solve`) solves go to `logs/MMDDYYYY/solve.csv`, test-batch ones to `logs/solve-test.csv`, with the puzzle's given-letter count. `/log-solution` refuses mode `solve` |
 | `GET /solvelog`, `/solvetestlog` | today's SOLVE log / the test-batch log, as text |

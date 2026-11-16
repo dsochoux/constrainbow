@@ -117,12 +117,17 @@ button:focus-visible, a:focus-visible {
 
 /* the 12 letter tiles stretch to exactly the board's width */
 .wordmark {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 3px;
     width: 100%;
     margin: 0;
     font-size: 0; /* spans set their own size */
+}
+
+/* the letters sit in the link (to /), so the gaps between them are clickable too */
+.wordmark a {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    text-decoration: none;
 }
 
 .wordmark span {

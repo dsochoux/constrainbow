@@ -12,7 +12,7 @@
 - A new puzzle for each mode releases at midnight Eastern. Under the board header a sentence gives the date and how many solutions exist: "Today's puzzle (11/15) has 70,654 solutions." Speed puzzles are generated to have at least 15k solutions and score puzzles at least 50k. After the 2026-11-16 recount against the bigger word list, upcoming puzzles (11/16–12/31) range from about 16k to 3.1M.
 
 ## Modes
-All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. `/` always redirects to SOLVE, the default mode.
+All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE switch under the wordmark changes between them. `/` always redirects to SOLVE, the default mode. The CONSTRAINBOW wordmark is a link to `/`.
 
 ### 🔑 Solve (`/solve`, since 2026-11-15)
 - One puzzle a day with exactly **one** solution, so everyone solves the same four words. 5 letters start filled in (on black tiles), always with at least one row starting with two of them, which makes a natural place to begin. They sit pressed into the board and can't be changed.

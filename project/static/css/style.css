@@ -214,6 +214,20 @@ button:focus-visible, a:focus-visible {
     font-size: 15px;
 }
 
+/* a themed SOLVE day's clue, under the description */
+.clue {
+    width: var(--content);
+    margin: 0;
+    padding: 6px 12px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 2px 2px 0 var(--c4);
+}
+
 #loading-text {
     margin: 0;
     font-weight: 700;

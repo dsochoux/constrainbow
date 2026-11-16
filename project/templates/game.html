@@ -135,6 +135,10 @@
         {% else %}
         <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.</p>
         {% endif %}
+        {% if clue %}
+        {# a themed SOLVE day's clue (solve_themes.json) #}
+        <p class="clue" id="clue">{{ clue }}</p>
+        {% endif %}
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
             <p id="timer" class="pill">0:00</p>

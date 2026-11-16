@@ -52,6 +52,14 @@ def get_num_givens(path):
     except (OSError, ValueError, KeyError):
         return None
 
+def get_clue(path):
+    # a themed SOLVE puzzle's clue (from solve_themes.json), shown above the board; "" if none
+    try:
+        with open(path, 'r') as f:
+            return json.load(f).get("clue", "")
+    except (OSError, ValueError, AttributeError):
+        return ""
+
 def is_small_int(value):
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100000
 
@@ -171,6 +179,7 @@ def solve():
             other_mode_emoji=emoji_overrides.get(game_id[:4], "⏱️"),
             date=get_date_string(game_id),
             num_givens=get_num_givens(f"./games/solve/{game_id}.json"),
+            clue=get_clue(f"./games/solve/{game_id}.json"),
         )
     )
     return response
@@ -197,6 +206,7 @@ def solve_day():
         previous_day=(date - timedelta(days=1)).strftime("%Y-%m-%d"),
         next_day=(date + timedelta(days=1)).strftime("%Y-%m-%d"),
         num_givens=get_num_givens(puzzle_path),
+        clue=get_clue(puzzle_path),
     )
 
 # the numbered batch of SOLVE puzzles from the first play-test (games/solve-test/); not linked

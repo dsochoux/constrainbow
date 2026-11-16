@@ -29,6 +29,17 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 - Answers come from `word_files/common_words.txt` and aren't reused within 90 days. Hand-picked answers for a date go in `word_files/solve_themes.json`, optionally with an emoji (or a list) that falls instead of confetti when the puzzle is solved. To try a day before it goes live, open `/solve/day?d=2026-11-26` (unlisted). First themed day: Thanksgiving 2026-11-26, STUFF / CARVE / GRAVY / THANK with 🦃 🥧 🍂.
 - The 12-puzzle play-test batch is still at `/solve/test?p=N` (unlinked).
 
+### Themed SOLVE days
+Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6–8 words. The clue shows in a box above the board ("Birdwatching"); an optional emoji falls instead of confetti. The process:
+1. Pick the date, ideally more than 30 days out (closer dates already have a puzzle, which must be remade and copied to the server).
+2. Try every set of four from the pool for that exact date (same date seed as the real puzzle, so what it lists is what you get; about 2 s per set):
+   `env/bin/python scripts/generate_unique.py --pool robin eagle heron stork crane finch raven --day 2027-01-03`
+   It prints each working set's board and difficulty, and flags words off the small list or already an answer within 90 days. Typically about half the sets work.
+3. Add the chosen set to `word_files/solve_themes.json`: `"2027-01-03": {"words": ["robin", "eagle", "heron", "stork"], "clue": "Birdwatching", "emoji": "🐦"}` (`clue` and `emoji` are optional).
+4. Make it with `generate_unique.py --day 2027-01-03` and play it at `/solve/day?d=2027-01-03`.
+5. Deploy (and for a date within 30 days, copy the remade file to the server).
+
+
 ### ⏱️ Speed (`/speed`)
 - The board is hidden (blank black tiles) until you press **START GAME** or tap a tile. A timer then runs.
 - **PAUSE** hides the letters again. The game also pauses when the tab is hidden or the how-to-play popup opens.

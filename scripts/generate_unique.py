@@ -3,6 +3,8 @@
 Run from the repo root:
     env/bin/python scripts/generate_unique.py --words ghost crypt witch skull     (try a puzzle from your words)
     env/bin/python scripts/generate_unique.py --day 2026-12-25                  (make one day's SOLVE puzzle)
+    env/bin/python scripts/generate_unique.py --pool robin eagle heron stork crane --day 2026-12-06
+                                         (try every set of four themed words for that day)
     env/bin/python scripts/generate_unique.py --test-batch                      (the SOLVE test batch)
 Daily puzzles are normally made by scripts/ensure_games.py (the nightly cron), which calls generate_solve_day.
 
@@ -46,8 +48,9 @@ DAILY_GIVENS = 5        # always exactly 5 given letters
 NO_REPEAT_DAYS = 90     # an answer word isn't used again within this many days (either side)
 SOLVE_FOLDER = "games/solve"
 TEST_BATCH_FOLDER = "games/solve-test"
-# optional hand-picked answers per day: {"2027-10-31": ["ghost", ...]}, or with emojis that fall instead of
-# confetti when the puzzle is solved: {"2026-11-26": {"words": ["stuff", ...], "emoji": "🦃"}}
+# optional hand-picked answers per day: {"2027-10-31": ["ghost", ...]}, or with a clue shown above the board
+# and emojis that fall instead of confetti when the puzzle is solved:
+#   {"2026-11-26": {"words": ["stuff", ...], "clue": "Happy Thanksgiving!", "emoji": "🦃"}}
 # ("emoji" can also be a list, like ["🦃", "🥧"], and the falling emojis cycle through it)
 THEMES_PATH = "word_files/solve_themes.json"
 
@@ -378,6 +381,7 @@ def load_themes():
         emoji = theme.get("emoji", [])
         loaded[datetime.strptime(day, "%Y-%m-%d").strftime("%m%d%Y")] = {
             "words": [w.lower() for w in theme["words"]],
+            "clue": theme.get("clue", ""),
             "emoji": [emoji] if isinstance(emoji, str) else list(emoji),
         }
     return loaded
@@ -420,6 +424,8 @@ def generate_solve_day(date):
         puzzle = game.build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS, rng=rng)
         if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
             puzzle["theme"] = True
+            if theme["clue"]:
+                puzzle["clue"] = theme["clue"]
             if theme["emoji"]:
                 puzzle["emoji"] = theme["emoji"]
             write_puzzle(solve_path(game_id), puzzle)
@@ -436,6 +442,47 @@ def generate_solve_day(date):
         if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
             write_puzzle(solve_path(game_id), puzzle)
             return puzzle
+
+
+def try_pool(words, date):
+    """tries every set of four from a pool of themed words for one day, exactly the way
+    generate_solve_day will make that day's puzzle (same date seed), and prints the sets that work"""
+    if Game.words is None:
+        Game.build_index()
+    words = list(dict.fromkeys(word.lower() for word in words))  # no repeats, in the order given
+    missing = [word for word in words if word not in Game.words]
+    if missing:
+        raise SystemExit(f"not in words.txt (players couldn't type them): {', '.join(missing)}")
+    if len(words) < 4:
+        raise SystemExit("the pool needs at least 4 words")
+    game_id = date.strftime("%m%d%Y")
+    common = set(load_common_words())
+    nearby = nearby_answer_words(date)
+    sets = list(itertools.combinations(words, 4))
+    print(f"trying {len(sets)} sets of four for {date:%Y-%m-%d} (a few seconds each)...\n", flush=True)
+    working = []
+    for i, answer in enumerate(sets, 1):
+        puzzle = UniqueGame(list(answer)).build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS,
+                                                rng=random.Random(int(game_id)))
+        if puzzle is None or puzzle["num_givens"] != DAILY_GIVENS or not has_starter_row(puzzle):
+            continue
+        working.append(puzzle)
+        print(f"{len(working)}. {' '.join(answer).upper()}   (set {i} of {len(sets)})")
+        show(puzzle)
+        uncommon = [word for word in answer if word not in common]
+        if uncommon:
+            print(f"   not on the small list: {', '.join(uncommon)}")
+        repeats = [word for word in answer if word in nearby]
+        if repeats:
+            print(f"   already an answer within {NO_REPEAT_DAYS} days: {', '.join(repeats)} "
+                  f"(that day would need remaking)")
+        print(flush=True)
+    if not working:
+        print("none of these sets work for this day; try more words, or words that share more letters")
+        return
+    print(f"{len(working)} of {len(sets)} sets work. To use one, add it to {THEMES_PATH}, e.g.")
+    print(f'    "{date:%Y-%m-%d}": {{"words": {json.dumps(working[0]["solution"])}, "clue": "...", "emoji": "..."}}')
+    print(f"then make the puzzle with --day {date:%Y-%m-%d} and play it at /solve/day?d={date:%Y-%m-%d}")
 
 
 def show(puzzle):
@@ -499,12 +546,17 @@ if __name__ == "__main__":
     parser.add_argument("--out", help="write the puzzle JSON here")
     parser.add_argument("--test-batch", action="store_true", help="write the SOLVE test batch to games/solve-test/")
     parser.add_argument("--day", help="make the daily SOLVE puzzle for this date (YYYY-MM-DD), replacing any existing one")
+    parser.add_argument("--pool", nargs="+", help="themed words to try in every set of four (with --day)")
     parser.add_argument("--allow-uncommon", action="store_true",
                         help="let --words use words that aren't in common_words.txt")
     args = parser.parse_args()
 
     if args.test_batch:
         make_test_batch()
+    elif args.pool:
+        if not args.day:
+            raise SystemExit("--pool needs --day YYYY-MM-DD: the date decides how the letters are placed")
+        try_pool(args.pool, datetime.strptime(args.day, "%Y-%m-%d"))
     elif args.day:
         date = datetime.strptime(args.day, "%Y-%m-%d")
         puzzle = generate_solve_day(date)

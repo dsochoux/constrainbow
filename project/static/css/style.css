@@ -299,8 +299,17 @@ button.pill:active {
     border-color: var(--bad);
     box-shadow: 2px 2px 0 var(--bad);
 }
-#score.shake, #reveal-button.shake {
+#score.shake, #reveal-button.shake, #check-button.shake {
     animation: shake 380ms ease-in-out;
+}
+
+/* SOLVE with CHECK has four pills in a row (timer, START, REVEAL, CHECK): tighter, so they fit on a phone */
+#actions-container:has(#check-button) {
+    gap: 6px;
+}
+#actions-container:has(#check-button) .pill {
+    padding: 6px 10px;
+    font-size: 13px;
 }
 
 #copy-results-button {
@@ -585,7 +594,7 @@ body.row-links .word-row .letter {
 
 @media (prefers-reduced-motion: reduce) {
     .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, #copy-results-button,
-    .letter.selected::after, #score.shake, #reveal-button.shake {
+    .letter.selected::after, #score.shake, #reveal-button.shake, #check-button.shake {
         animation: none;
     }
     .letter {

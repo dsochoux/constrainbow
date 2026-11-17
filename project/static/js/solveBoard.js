@@ -21,6 +21,11 @@ export class SolveBoard extends SpeedBoard {
         this.revealedTiles = 0;  // tiles revealed in all (a color counts once per tile)
         this.revealButton = document.getElementById("reveal-button");
         this.revealButton.addEventListener('click', () => this.reveal());
+        // CHECK (on the check-row branch, being tried out): says whether the selected row is right
+        this.checks = 0;          // rows checked (checking the same unchanged row again is free)
+        this.lastChecked = {};    // row -> the letters it had when it was last checked
+        this.checkButton = document.getElementById("check-button");
+        this.checkButton.addEventListener('click', () => this.checkRow());
         this.isTestPuzzle = this.manager.gameMode === 'solve-test';
         this.prefix = SolveBoard.storagePrefix(this.manager);
         this.stateKey = `${this.prefix}State`;
@@ -72,11 +77,13 @@ export class SolveBoard extends SpeedBoard {
         this.blackReveals = state.blackReveals;
         this.colorReveals = state.colorReveals;
         this.revealedTiles = state.revealedTiles;
+        this.checks = state.checks || 0; // saves from before CHECK have none
         this.updateTimerDisplay();
         if (state.solved) {
             this.isSolutionFound = true;
             this.playPauseButton.style.display = 'none';
             this.revealButton.style.display = 'none';
+            this.checkButton.style.display = 'none';
             this.isPaused = false;
             this.resumeLetters();
             this.manager.showCopyButton();
@@ -92,6 +99,7 @@ export class SolveBoard extends SpeedBoard {
             blackReveals: this.blackReveals,
             colorReveals: this.colorReveals,
             revealedTiles: this.revealedTiles,
+            checks: this.checks,
             revealed: this.revealedPositions,
             solved: this.isSolutionFound,
         }));
@@ -206,6 +214,29 @@ export class SolveBoard extends SpeedBoard {
         }
     }
 
+    // CHECK: whether the selected tile's row is exactly right, without saying which letters are wrong.
+    // The row has to be full. Right: the row jumps; wrong: it flashes and shakes
+    checkRow() {
+        const target = this.selectedLetter;
+        const word = target === null ? null : this.words[target.w];
+        if (this.isPaused || this.isSolutionFound || word === null || !word.isAllLettersFilled()) {
+            this.checkButton.classList.add('shake');
+            setTimeout(() => this.checkButton.classList.remove('shake'), 400);
+            return;
+        }
+        const letters = word.getWordString().toUpperCase();
+        if (this.lastChecked[target.w] !== letters) {
+            this.lastChecked[target.w] = letters;
+            this.checks++;
+            this.saveState();
+        }
+        if (letters === this.solution[target.w]) {
+            word.letters.forEach((letter, l) => letter.celebrate(l * 70));
+        } else {
+            this.flashLetters(word.letters.map((letter) => [target.w, letter.l]));
+        }
+    }
+
     reveal() {
         const target = this.selectedLetter;
         if (this.isPaused || this.isSolutionFound || target === null || target.isGiven) {
@@ -249,6 +280,7 @@ export class SolveBoard extends SpeedBoard {
     handleSolutionFound() {
         this.playPauseButton.style.display = 'none';
         this.revealButton.style.display = 'none';
+        this.checkButton.style.display = 'none';
         this.pauseTimer();
         Board.prototype.handleSolutionFound.call(this);
         this.saveState();
@@ -256,7 +288,7 @@ export class SolveBoard extends SpeedBoard {
 
     // what the stats keep for a finished day
     getStatsResult() {
-        return { seconds: this.elapsedSeconds, reveals: this.revealedTiles };
+        return { seconds: this.elapsedSeconds, reveals: this.revealedTiles, checks: this.checks };
     }
 
     // what the manager sends to /log-solve
@@ -273,6 +305,7 @@ export class SolveBoard extends SpeedBoard {
             'black_reveals': this.blackReveals,
             'color_reveals': this.colorReveals,
             'revealed_tiles': this.revealedTiles,
+            'checks': this.checks,
             'replay': replay ? 1 : 0,
             'words': this.getWordsList(),
         };
@@ -307,7 +340,7 @@ export class SolveBoard extends SpeedBoard {
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
         const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : this.manager.getShareLink();
         let message = `${link}\n`;
-        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.manager.getStreakText()}\n`;
+        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.checks > 0 ? ` | ${this.checks} check${this.checks === 1 ? '' : 's'}` : ''}${this.manager.getStreakText()}\n`;
         message += this.getEmojiBoard();
         navigator.clipboard.writeText(message.trim()).then(() => {
             this.copyButton.textContent = "COPIED!";

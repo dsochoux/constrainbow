@@ -432,7 +432,7 @@ EVENT_FIELDS = {
     # event: {field: check}, on top of player, mode, game and archive
     "visit": {"new": bool, "ref": "ref", "utm": "utm", "page": "page"},
     "start": {},
-    "finish": {"seconds": int, "reveals": int, "points": int, "max": int, "words": "words"},
+    "finish": {"seconds": int, "reveals": int, "checks": int, "points": int, "max": int, "words": "words"},
     "share": {"solution": bool},
     "show_best": {"points": int, "max": int},
     "report": {"count": int},

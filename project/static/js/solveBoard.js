@@ -38,6 +38,7 @@ export class SolveBoard extends SpeedBoard {
         this.restoreLockedLetters();
         this.restoreState(state);
         this.saveState(); // so the saved letters always have an answer to be checked against
+        this.updateHintButtons();
     }
 
     // also used by SolveWord, which saves its letters under the same prefix
@@ -214,14 +215,31 @@ export class SolveBoard extends SpeedBoard {
         }
     }
 
-    // CHECK: whether the selected tile's row is exactly right, without saying which letters are wrong.
-    // The row has to be full. Right: the row jumps; wrong: it flashes and shakes
+    // REVEAL and CHECK ROW only show once the game has been started (they can't be used before, and
+    // with START GAME there isn't room for all four pills on a phone) and until it's solved
+    updateHintButtons() {
+        const show = !this.isSolutionFound && (this.elapsedSeconds > 0 || !this.isPaused);
+        this.revealButton.style.display = show ? 'inline-block' : 'none';
+        this.checkButton.style.display = show ? 'inline-block' : 'none';
+    }
+
+    resume() {
+        super.resume();
+        this.updateHintButtons();
+    }
+
+    // CHECK ROW: whether the selected tile's row is exactly right, without saying which letters are
+    // wrong. The row has to be full (its empty tiles jiggle if not). Right: the row hops and turns
+    // green; wrong: it flashes and shakes
     checkRow() {
         const target = this.selectedLetter;
         const word = target === null ? null : this.words[target.w];
         if (this.isPaused || this.isSolutionFound || word === null || !word.isAllLettersFilled()) {
             this.checkButton.classList.add('shake');
             setTimeout(() => this.checkButton.classList.remove('shake'), 400);
+            if (word !== null && !this.isPaused && !this.isSolutionFound) {
+                word.letters.filter((letter) => letter.isBlank()).forEach((letter) => letter.playAnimation('nudge'));
+            }
             return;
         }
         const letters = word.getWordString().toUpperCase();
@@ -231,7 +249,7 @@ export class SolveBoard extends SpeedBoard {
             this.saveState();
         }
         if (letters === this.solution[target.w]) {
-            word.letters.forEach((letter, l) => letter.celebrate(l * 70));
+            word.letters.forEach((letter, l) => letter.playAnimation('correct', l * 70));
         } else {
             this.flashLetters(word.letters.map((letter) => [target.w, letter.l]));
         }
@@ -340,7 +358,9 @@ export class SolveBoard extends SpeedBoard {
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
         const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : this.manager.getShareLink();
         let message = `${link}\n`;
-        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.checks > 0 ? ` | ${this.checks} check${this.checks === 1 ? '' : 's'}` : ''}${this.manager.getStreakText()}\n`;
+        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)}${this.manager.getStreakText()}\n`;
+        // the help used, on its own line: "no reveals", "3 reveals | 2 checks"
+        message += `${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.checks > 0 ? ` | ${this.checks} check${this.checks === 1 ? '' : 's'}` : ''}\n`;
         message += this.getEmojiBoard();
         navigator.clipboard.writeText(message.trim()).then(() => {
             this.copyButton.textContent = "COPIED!";

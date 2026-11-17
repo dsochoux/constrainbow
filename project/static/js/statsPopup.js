@@ -62,6 +62,14 @@ export class StatsPopup {
             }
         }).observe(this.pageCopyButton, { childList: true, characterData: true, subtree: true });
         document.getElementById('stats-button').addEventListener('click', () => this.show());
+        // score mode: the "Yesterday's best" link next to the description opens the stats, which show it
+        const yesterdayLink = document.getElementById('yesterday-best-link');
+        if (yesterdayLink) {
+            yesterdayLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                this.show();
+            });
+        }
         document.getElementById('stats-close-button').addEventListener('click', () => this.hide());
         this.overlay.addEventListener('click', (event) => {
             if (event.target === this.overlay) {
@@ -114,12 +122,19 @@ export class StatsPopup {
                     <span class="stats-bar${i === todayBar ? ' today' : ''}" style="--fill: ${Math.max(counts[i] / most, 0.06)}"><b>${counts[i]}</b></span>
                 `).join('')}
             </div>`}
+            ${this.getYesterdayBest()}
             <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. Stats are kept in this browser only.</p>
             ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button></div>` : ''}`;
         const copyButton = document.getElementById('stats-copy-button');
         if (copyButton) {
             copyButton.addEventListener('click', () => this.pageCopyButton.click());
         }
+    }
+
+    // score mode: the line the page shows about yesterday's best solution, repeated here
+    getYesterdayBest() {
+        const line = document.getElementById('yesterday-best');
+        return line ? `<h3>Yesterday's best</h3><p>${line.innerHTML}</p>` : '';
     }
 
     // only once today's puzzle is solved: whenever the page shows its COPY RESULTS button

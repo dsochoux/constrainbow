@@ -88,6 +88,20 @@
             </div>
         </div>
     </div>
+    {% if game_mode == "score" %}
+    {# score mode: asked before SHOW BEST, which makes today's score final #}
+    <div class="overlay" id="best-overlay">
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="best-title">
+            <h2 id="best-title">Show a best solution?</h2>
+            <p>You don't have to stop at your first solution: you can keep changing letters to beat your score of <strong id="best-confirm-score"></strong>. Today's max is <strong id="best-confirm-max"></strong>.</p>
+            <p>Once you look, your score for today is final. You can still switch back to your board and keep playing with it, but your score won't change.</p>
+            <div class="popup-buttons">
+                <button id="best-cancel-button" class="pill primary">KEEP PLAYING</button>
+                <button id="best-confirm-button" class="pill">SHOW BEST</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     {% if game_mode in ["solve", "speed", "score"] %}
     <div class="overlay" id="stats-overlay">
         <div class="popup" role="dialog" aria-modal="true" aria-labelledby="stats-title">
@@ -135,11 +149,16 @@
         {% elif game_mode == "solve-test" %}
         <p class="description" id="description">This puzzle has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Stuck? REVEAL fills in the selected tile.</p>
         {% else %}
-        <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.</p>
+        <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong id="num-possible-solutions"></strong> solutions.{% if yesterday_best %} <a href="#" id="yesterday-best-link">Yesterday's best ›</a>{% endif %}</p>
         {% endif %}
         {% if clue %}
         {# a themed SOLVE day's clue (solve_themes.json) #}
         <p class="clue" id="clue">{{ clue }}</p>
+        {% endif %}
+        {% if yesterday_best %}
+        {# score mode: yesterday's best solution (no secret any more), shown in the stats popup, which the
+           "Yesterday's best" link opens #}
+        <p hidden id="yesterday-best"><strong>{{ yesterday_best.words | join(" · ") | upper }}</strong> ({{ yesterday_best.points }} points)</p>
         {% endif %}
         <p id="loading-text">LOADING GAME...</p>
         <div id="actions-container">
@@ -149,8 +168,17 @@
             <button id="report-missing-word-button" class="pill">REPORT MISSING WORD</button>
             <button id="copy-results-button" class="pill primary">COPY RESULTS!</button>
             {% if is_solve %}<button id="reveal-button" class="pill">REVEAL</button>{% endif %}
+            {% if game_mode == "score" %}
+            {# score mode, once today's puzzle is finished: show a best solution (see scoreBoard.js) #}
+            <button id="show-best-button" class="pill">SHOW BEST</button>
+            <div id="board-toggle" class="pill-toggle" role="group" aria-label="Which board">
+                <button id="your-board-button"></button>
+                <button id="best-board-button"></button>
+            </div>
+            {% endif %}
         </div>
         <div id="board"></div>
+        {% if game_mode == "score" %}<div id="best-board" aria-label="A best solution"></div>{% endif %}
         <div id="keyboard-container">
             <div class="keyboard-row">
                 <button class="key" id="key-Q" data-key="Q">

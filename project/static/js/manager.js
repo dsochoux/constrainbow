@@ -159,7 +159,8 @@ export class Manager {
     // called when a puzzle is finished: saves today's result to the stats, and shows the stats the
     // first time today's puzzle is finished (after the celebration)
     recordResult() {
-        if (!this.statsPopup) {
+        // no stats page, or score mode after SHOW BEST (today's score is final)
+        if (!this.statsPopup || (this.board.isScoreFinal && this.board.isScoreFinal())) {
             return;
         }
         // finishing again only replaces the saved result if it's a better score (score mode)

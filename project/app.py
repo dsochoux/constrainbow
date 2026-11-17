@@ -60,6 +60,15 @@ def get_clue(path):
     except (OSError, ValueError, AttributeError):
         return ""
 
+def get_best_solution(game_id):
+    """a score puzzle's best solution, {"points", "words"}, or None if there's no puzzle for that day"""
+    try:
+        with open(f"./games/score/{game_id}.json", 'r') as f:
+            best = json.load(f)["best_solution"]
+        return {"points": best["points"], "words": [best[f"word_{i}"] for i in range(1, 5)]}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
 def is_small_int(value):
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 100000
 
@@ -153,6 +162,7 @@ def speed():
 @app.route('/score')
 def score():
     game_id = get_game_id()
+    yesterday = (datetime.now(eastern) - timedelta(days=1)).strftime("%m%d%Y")
     response = make_response(
         render_template(
             'game.html',
@@ -161,7 +171,8 @@ def score():
             mode_emoji="🎯",
             other_mode_emoji = emoji_overrides.get(game_id[:4], "⏱️"),
             other_mode_endpoint = "/speed",
-            date=get_date_string(game_id)
+            date=get_date_string(game_id),
+            yesterday_best=get_best_solution(yesterday),  # no secret any more, so it's in the page
         )
     )
     return response
@@ -293,6 +304,22 @@ def report():
             f.write(word + '\n')
         fcntl.flock(f, fcntl.LOCK_UN)  
     return '', 200 # will never actually be used
+
+# a score puzzle's best solution, for SHOW BEST after a player finishes today's puzzle. Never for a
+# day that hasn't started yet (Eastern time), so tomorrow's answer can't be looked up early. This only
+# keeps the answer out of the page; anyone can still ask for today's (scores aren't checked anyway)
+@app.route('/best-solution')
+def best_solution():
+    game_id = request.args.get("game-id", "")
+    if GAME_ID_PATTERN.fullmatch(game_id) is None:
+        return '', 404
+    day = datetime.strptime(game_id, "%m%d%Y").date()
+    if day > datetime.now(eastern).date():
+        return '', 404
+    best = get_best_solution(game_id)
+    if best is None:
+        return '', 404
+    return jsonify(best)
 
 @app.route('/log-solution', methods=['POST'])
 def log_solution():

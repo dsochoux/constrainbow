@@ -269,7 +269,8 @@ button.pill:active {
     box-shadow: 2px 2px 0 var(--c4);
 }
 
-#timer, #score, #play-pause-button, #copy-results-button, #report-missing-word-button {
+#timer, #score, #play-pause-button, #copy-results-button, #report-missing-word-button,
+#show-best-button, #board-toggle, #best-board {
     display: none; /* the board decides which ones to show */
 }
 
@@ -292,6 +293,50 @@ button.pill:active {
 }
 
 /* ---------- the board ---------- */
+
+/* score mode, after SHOW BEST: a read-only copy of the board showing a best solution, in place of #board */
+#best-board {
+    flex-direction: column;
+    gap: var(--rail-gap);
+}
+#best-board .letter {
+    cursor: default;
+}
+
+/* YOURS / BEST switch, after SHOW BEST */
+.pill-toggle {
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: 2px 2px 0 var(--ink);
+    overflow: hidden;
+}
+.pill-toggle button {
+    padding: 6px 12px;
+    font-family: var(--ui-font);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    background: none;
+    border: none;
+}
+.pill-toggle button.active {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+#yesterday-best-link {
+    color: var(--ink);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
 
 #board {
     display: flex;

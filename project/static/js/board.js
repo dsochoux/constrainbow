@@ -465,8 +465,8 @@ export class Board {
         const doIncludeSolution = this.copyButton.textContent !== 'COPY RESULTS!';
         if (doIncludeSolution) {
             message += "\n"
-            this.words.forEach((word) => {
-                message += word.getWordString().toUpperCase() + "\n";
+            this.getShareWords().forEach((word) => {
+                message += word.toUpperCase() + "\n";
             });
             navigator.clipboard.writeText(message.trim()).then(() => {
                 this.copyButton.textContent = "COPIED WITH SOLUTION!";
@@ -501,6 +501,12 @@ export class Board {
             words.push(word.getWordString());
         });
         return words;
+    }
+
+    // the words "include solution" shares: the board as it is (ScoreBoard shares the board that earned
+    // the day's best score instead)
+    getShareWords() {
+        return this.words.map(word => word.getWordString());
     }
 
     // pause is called in the callback for showing the overlay

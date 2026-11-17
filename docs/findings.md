@@ -53,7 +53,7 @@ Ordered roughly by urgency. Items marked *(Fixed …)* or *(Addressed …)* were
 ## Features to work on (agreed 2026-11-15)
 In priority order. The aim: give players a reason to come back, something to compare, and more to play for people who arrive from a video.
 1. *(Built 2026-11-16: one streak per mode, any finish counts (reveals too), a 📊 stats popup that also opens after a day's first finish, and `| 🔥 N` in the share text. See gameplay.md.)* **Streaks and stats.** Kept in localStorage, no accounts: current/best streak, games played, a speed time histogram, score % of max.
-2. **Best-solution reveal after a score-mode solve.** `best_solution` is already in each puzzle JSON. Send it only after the solve (a small endpoint, or include it in the `/log-solution` response) so it can't be read up front.
+2. *(Built 2026-11-16: SHOW BEST after finishing, with a warning that it makes the day's score final and that you can keep improving first; YOURS / BEST switch; shares always use the day's best board; yesterday's best shown to everyone.)* **Best-solution reveal after a score-mode solve.** `best_solution` is already in each puzzle JSON. Send it only after the solve (a small endpoint, or include it in the `/log-solution` response) so it can't be read up front.
 3. **A personal share.** Score mode: tiles shaded by points, or "58/64 · 91%". Later, "better than X% of players today" from the solve logs.
 4. **Archive.** 676 puzzles per mode already exist. Lets new players keep playing straight after a video.
 5. **Single-solution mode: SOLVE.** A puzzle with exactly one answer, so everyone solves the same thing and can talk about it.

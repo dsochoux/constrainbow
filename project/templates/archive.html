@@ -67,7 +67,8 @@
 
             // a visit for the dashboard, like Manager.logVisit on the game pages
             try {
-                const isNew = localStorage.getItem('playerId') === null && localStorage.getItem('solveTester') === null;
+                // new: never opened the game (same test as Manager.isNewPlayer)
+                const isNew = ['playerId', 'solveTester', 'visited'].every((key) => localStorage.getItem(key) === null);
                 let player = localStorage.getItem('playerId') || localStorage.getItem('solveTester');
                 if (!player) {
                     player = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');

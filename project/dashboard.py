@@ -139,22 +139,21 @@ def daily_rows(first_day, last_day, events):
 
 
 def funnels(events):
-    """per mode, today's puzzles only (no archive): players who visited, started, finished, shared"""
+    """per mode, the daily puzzles only (no archive): for visited, started, finished and shared, the
+    plays (one per player per day) and the different players"""
     rows = []
     for mode in MODES:
-        def players(event_name):
-            return {e["player"] for e in events
+        def plays(event_name):
+            return {(e["player"], e["date"]) for e in events
                     if e["event"] == event_name and e["mode"] == mode and not e.get("archive")}
-        visited, started, finished, shared = players("visit"), players("start"), players("finish"), players("share")
-        rows.append({
-            "mode": mode,
-            "visited": len(visited),
-            # score has no START button: its "start" is the first letter typed
-            "started": len(started),
-            "finished": len(finished),
-            "shared": len(shared),
-            "finish_rate": f"{len(finished) / len(visited):.0%}" if visited else "–",
-        })
+        row = {"mode": mode}
+        # score has no START button: its "start" is the first letter typed
+        for column, event_name in (("visited", "visit"), ("started", "start"), ("finished", "finish"), ("shared", "share")):
+            found = plays(event_name)
+            row[column] = (len(found), len({player for player, _ in found}))
+        # of the days someone opened the day's puzzle, how often they finished it
+        row["finish_rate"] = f"{row['finished'][0] / row['visited'][0]:.0%}" if row["visited"][0] else "–"
+        rows.append(row)
     return rows
 
 

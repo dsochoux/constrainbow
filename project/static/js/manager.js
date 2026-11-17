@@ -7,6 +7,8 @@ import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
     constructor() {
+        // checked before the how-to-play popup marks this browser as visited (see logVisit)
+        this.isNewPlayer = Manager.isNewPlayer();
         this.board = null;
         this.pauseKeyboard();
         this.setUpHowToPlay(); // set up before the game loads, so the popup always works
@@ -365,10 +367,16 @@ export class Manager {
         }
     }
 
+    // a browser that has never opened the game: no player id, and no "visited" flag (which the
+    // how-to-play popup has set on everyone's first visit since long before the player id existed)
+    static isNewPlayer() {
+        return ['playerId', 'solveTester', 'visited'].every((key) => localStorage.getItem(key) === null);
+    }
+
     // a page view: whether this browser is new, and where it came from (another site, or a link with
     // ?utm_source=..., e.g. in a video description)
     logVisit() {
-        const isNew = localStorage.getItem('playerId') === null && localStorage.getItem('solveTester') === null;
+        const isNew = this.isNewPlayer;
         let ref = '';
         try {
             const host = new URL(document.referrer).hostname;

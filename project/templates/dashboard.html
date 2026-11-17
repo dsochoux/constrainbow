@@ -47,16 +47,18 @@
         </section>
 
         <section>
-            <h2>Today's puzzles, last {{ days }} days</h2>
+            <h2>Daily puzzles (not the archive), last {{ days }} days</h2>
             <table class="dash-table">
                 <thead><tr><th>Mode</th><th>Visited</th><th>Started</th><th>Finished</th><th>Shared</th><th>Finish rate</th></tr></thead>
                 <tbody>
                 {% for f in funnels %}
-                <tr><td>{{ f.mode | upper }}</td><td>{{ f.visited }}</td><td>{{ f.started }}</td><td>{{ f.finished }}</td><td>{{ f.shared }}</td><td>{{ f.finish_rate }}</td></tr>
+                <tr><td>{{ f.mode | upper }}</td>
+                    {% for column in ["visited", "started", "finished", "shared"] %}<td>{{ f[column][0] }} <small>({{ f[column][1] }} player{{ "s" if f[column][1] != 1 }})</small></td>{% endfor %}
+                    <td>{{ f.finish_rate }}</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
-            <p class="dash-legend">Different players, daily puzzles only (archive plays aren't included). Score's "started" is the first letter typed.</p>
+            <p class="dash-legend">Each number counts plays: one per player per day, so someone who finishes SOLVE every day for a week adds 7 to Finished. In brackets: how many different players that was. Finish rate: finished plays ÷ visited plays, i.e. how often opening a day's puzzle ended in finishing it. Score's "started" is the first letter typed.</p>
         </section>
 
         <section class="dash-columns">

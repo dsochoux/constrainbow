@@ -80,6 +80,7 @@ export class ScoreBoard extends Board {
             return;
         }
         this.revealed = { final: this.dayBest, best: await response.json() };
+        this.manager.logEvent('show_best', { points: this.dayBest.points, max: this.numPossiblePoints });
         localStorage.setItem(`${this.prefix}Revealed`, JSON.stringify(this.revealed));
         this.buildBestBoard();
         this.showView(true);
@@ -217,6 +218,10 @@ export class ScoreBoard extends Board {
     }
 
     handleLetterKeyPressed(letter) {
+        // score mode has no START button: the first letter on an empty board counts as starting
+        if (this.isEmpty() && !this.isSolutionFound) {
+            this.manager.logEvent('start');
+        }
         if (super.handleLetterKeyPressed(letter)) {
             this.calculateScore();
             this.check();

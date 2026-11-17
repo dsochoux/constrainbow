@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file, Response
+from flask import Flask, render_template, jsonify, request, redirect, make_response, send_file
 import os
 import re
 import fcntl
@@ -8,6 +8,13 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
+
+# Danny's analytics dashboard (/dashboard, password-protected by nginx; see dashboard.py). app.py is
+# imported as project.app under gunicorn, so make its own folder importable first
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from dashboard import dashboard
+app.register_blueprint(dashboard)
 
 db_path = "database.db"
 eastern = ZoneInfo("America/New_York")
@@ -415,6 +422,62 @@ def best_solution():
         return '', 404
     return jsonify(best)
 
+# ---- analytics events (read by /dashboard) ----
+# one JSON object per line in logs/events/YYYY-MM-DD.jsonl (Eastern date). Every field is checked, so
+# only what the game sends can end up in the file. No IP addresses are stored
+EVENTS_FOLDER = "./logs/events/"
+REF_PATTERN = re.compile(r"[a-z0-9.-]{1,100}")      # a referring site's host name
+UTM_PATTERN = re.compile(r"[A-Za-z0-9_.-]{1,40}")   # ?utm_source=youtube
+EVENT_FIELDS = {
+    # event: {field: check}, on top of player, mode, game and archive
+    "visit": {"new": bool, "ref": "ref", "utm": "utm", "page": "page"},
+    "start": {},
+    "finish": {"seconds": int, "reveals": int, "points": int, "max": int, "words": "words"},
+    "share": {"solution": bool},
+    "show_best": {"points": int, "max": int},
+    "report": {"count": int},
+}
+
+def check_event_field(value, check):
+    if check is bool:
+        return isinstance(value, bool)
+    if check is int:
+        return is_small_int(value)
+    if check == "words":
+        return is_list_of(value, BOARD_WORD_PATTERN, 4)
+    if check == "page":
+        return value in ("game", "calendar")
+    pattern = REF_PATTERN if check == "ref" else UTM_PATTERN
+    return isinstance(value, str) and (value == "" or pattern.fullmatch(value) is not None)
+
+@app.route('/log-event', methods=['POST'])
+def log_event():
+    data = request.get_json(silent=True) or {}
+    event = data.get('event')
+    if event not in EVENT_FIELDS:
+        return '', 400
+    player, mode, game = data.get('player'), data.get('mode'), data.get('game')
+    if (not isinstance(player, str) or TESTER_PATTERN.fullmatch(player) is None
+            or mode not in GAME_MODES
+            or not (game == "" or (isinstance(game, str) and GAME_ID_PATTERN.fullmatch(game)))
+            or not isinstance(data.get('archive', False), bool)):
+        return '', 400
+    line = {"time": datetime.now(eastern).strftime("%H:%M:%S"), "event": event, "player": player,
+            "mode": mode, "game": game, "archive": data.get('archive', False),
+            "device": "mobile" if "Mobi" in request.headers.get('User-Agent', '') else "desktop"}
+    for field, check in EVENT_FIELDS[event].items():
+        if field in data:
+            if not check_event_field(data[field], check):
+                return '', 400
+            line[field] = data[field]
+    os.makedirs(EVENTS_FOLDER, exist_ok=True)
+    file_name = f"{EVENTS_FOLDER}{datetime.now(eastern).strftime('%Y-%m-%d')}.jsonl"
+    with open(file_name, 'a') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.write(json.dumps(line) + "\n")
+        fcntl.flock(f, fcntl.LOCK_UN)
+    return '', 204
+
 @app.route('/log-solution', methods=['POST'])
 def log_solution():
     data = request.get_json(silent=True) or {}
@@ -496,14 +559,6 @@ def log_solve():
         fcntl.flock(f, fcntl.LOCK_UN)
     return '', 200
 
-@app.route('/solvelog', methods=['GET'])
-def get_solve_log():
-    return return_log(f'./logs/{get_game_id()}/solve.csv', "solve")
-
-@app.route('/solvetestlog', methods=['GET'])
-def get_solve_test_log():
-    return return_log('./logs/solve-test.csv', "SOLVE test")
-
 # the mode was called "playtest" before it was named SOLVE; keep old links working
 @app.route('/playtest')
 def old_playtest():
@@ -521,31 +576,6 @@ def favicon():
 @app.route('/words', methods=['GET'])
 def get_words():
     return send_file('../word_files/words.txt')
-
-@app.route('/speedlog', methods=['GET'])
-def get_speed_log():
-    game_id = get_game_id()
-    file_path = f'./logs/{game_id}/speed.csv'
-    return return_log(file_path, "speed")
-
-@app.route('/scorelog', methods=['GET'])
-def get_score_log():
-    game_id = get_game_id()
-    file_path = f'./logs/{game_id}/score.csv'
-    return return_log(file_path, "score")
-
-def return_log(file_path, mode):
-    if not os.path.exists(file_path):
-        return f"Nobody has solved today's {mode} game yet.", 200
-    # Open the CSV file and read its content
-    with open(file_path, 'r') as file:
-        file_content = file.read()
-
-    # Return the file content as a response with text/plain MIME type
-    return Response(file_content, 
-                    mimetype='text/plain', 
-                    headers={"Content-Disposition": f"inline; filename={mode}log.txt"})
-
 
 if __name__ == '__main__':
     # the word-list review page (/review-words) exists only when running locally like this, never under

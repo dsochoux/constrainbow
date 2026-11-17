@@ -1058,3 +1058,209 @@ body.row-links .example-letter {
 #step-back.hidden {
     visibility: hidden;
 }
+
+/* ---------- the dashboard (dashboard.html, Danny only) ---------- */
+
+body.dashboard-page {
+    --content: 100%;
+}
+.dash {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+}
+.dash-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.dash h1 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-weight: normal;
+    font-size: 24px;
+}
+.dash h1 a {
+    color: var(--ink);
+    text-decoration: none;
+}
+.dash h2 {
+    margin: 26px 0 10px;
+    font-size: 17px;
+}
+.dash h3 {
+    margin: 18px 0 8px;
+    font-size: 15px;
+}
+.dash h3 small {
+    font-weight: 500;
+    color: var(--muted);
+}
+.dash-ranges {
+    display: flex;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--card);
+}
+.dash-ranges a {
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+}
+.dash-ranges a.active {
+    background: var(--ink);
+    color: var(--paper);
+}
+.dash-note, .dash-legend {
+    font-size: 13px;
+    color: var(--muted);
+}
+.dash-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+}
+.dash-cards.small {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+}
+.dash-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+}
+.dash-card strong {
+    font-family: var(--display-font);
+    font-weight: normal;
+    font-size: 24px;
+}
+.dash-cards.small .dash-card strong {
+    font-size: 18px;
+}
+.dash-card span {
+    font-weight: 700;
+    font-size: 13px;
+}
+.dash-card small {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* one line per day: label, two bars (visitors with the new share inside, finishes), numbers */
+.dash-days {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 420px;
+    overflow-y: auto;
+}
+.dash-day {
+    display: grid;
+    grid-template-columns: 82px 1fr 140px;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 6px;
+}
+.dash-day.selected {
+    background: var(--t3);
+}
+.dash-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.dash-bars .bar {
+    display: block;
+    height: 7px;
+    width: calc(var(--fill) * 100%);
+    border-radius: 3px;
+}
+.dash-bars .bar.visitors, .dash-legend .swatch.visitors {
+    background: var(--c4);
+}
+.dash-bars .bar.new, .dash-legend .swatch.new {
+    background: var(--c2);
+}
+.dash-bars .bar.finishes, .dash-legend .swatch.finishes {
+    background: var(--c3);
+}
+.dash-bars .bar.new {
+    height: 100%;
+}
+.dash-legend .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    vertical-align: middle;
+}
+.dash-day-numbers small {
+    color: var(--muted);
+}
+
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+}
+.dash-table th, .dash-table td {
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--key-off);
+}
+.dash-table th {
+    font-size: 12px;
+    color: var(--muted);
+}
+.dash-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+.dash-day-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+}
+.dash-day-nav h2 {
+    margin: 0;
+}
+.dash-day-nav a {
+    width: 32px;
+    height: 30px;
+    line-height: 26px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--card);
+}
+.dash-day-nav a.disabled {
+    opacity: 0.25;
+    pointer-events: none;
+}
+.dash details summary {
+    margin: 10px 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}

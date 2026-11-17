@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% set page_title = "CONSTRAINBOW · Dashboard" %}
+    {% include "head.html" %}
+    <meta name="robots" content="noindex">
+</head>
+<body class="dashboard-page">
+    {# Danny's analytics (see dashboard.py); behind a password on the server #}
+    <main class="dash">
+        <header class="dash-header">
+            <h1><a href="/">CONSTRAINBOW</a> dashboard</h1>
+            <nav class="dash-ranges" aria-label="Range">
+                {% for r in ranges %}
+                <a href="?range={{ r }}&day={{ day }}" {% if r == days %}class="active"{% endif %}>{{ r }} days</a>
+                {% endfor %}
+            </nav>
+        </header>
+        <p class="dash-note">Times are Eastern. Visitor numbers count browsers (an anonymous id each), from the event log, which started {{ events_since.strftime("%-m/%-d/%Y") if events_since else "with this dashboard (no events yet)" }}. Finishes go back further, from the solve logs.</p>
+
+        <section>
+            <h2>Last {{ days }} days</h2>
+            <div class="dash-cards">
+                {% for label, value, hint in overview %}
+                <div class="dash-card"><strong>{{ "{:,}".format(value) }}</strong><span>{{ label }}</span><small>{{ hint }}</small></div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section>
+            <h2>Day by day</h2>
+            <p class="dash-legend"><span class="swatch visitors"></span> visitors (<span class="swatch new"></span> new) &nbsp; <span class="swatch finishes"></span> finishes, all modes</p>
+            <div class="dash-days">
+                {% for row in daily|reverse %}
+                <a class="dash-day{% if row.day == day %} selected{% endif %}" href="?range={{ days }}&day={{ row.day }}">
+                    <span class="dash-day-label">{{ row.day.strftime("%a %-m/%-d") }}</span>
+                    <span class="dash-bars">
+                        <span class="bar visitors" style="--fill: {{ (row.visitors or 0) / most }}"><span class="bar new" style="--fill: {{ (row.new / row.visitors) if row.visitors else 0 }}"></span></span>
+                        <span class="bar finishes" style="--fill: {{ row.total_finishes / most }}"></span>
+                    </span>
+                    <span class="dash-day-numbers">{{ "–" if row.visitors is none else row.visitors }} · {{ row.total_finishes }}
+                        <small>({% for mode in ["solve", "speed", "score"] %}{{ row.finishes[mode] }}{{ " " if not loop.last }}{% endfor %})</small></span>
+                </a>
+                {% endfor %}
+            </div>
+            <p class="dash-legend">Finishes in brackets: SOLVE, SPEED, SCORE. Tap a day for its details below.</p>
+        </section>
+
+        <section>
+            <h2>Today's puzzles, last {{ days }} days</h2>
+            <table class="dash-table">
+                <thead><tr><th>Mode</th><th>Visited</th><th>Started</th><th>Finished</th><th>Shared</th><th>Finish rate</th></tr></thead>
+                <tbody>
+                {% for f in funnels %}
+                <tr><td>{{ f.mode | upper }}</td><td>{{ f.visited }}</td><td>{{ f.started }}</td><td>{{ f.finished }}</td><td>{{ f.shared }}</td><td>{{ f.finish_rate }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <p class="dash-legend">Different players, daily puzzles only (archive plays aren't included). Score's "started" is the first letter typed.</p>
+        </section>
+
+        <section class="dash-columns">
+            <div>
+                <h2>Where new players came from</h2>
+                <table class="dash-table">
+                    {% for name, count in referrers %}<tr><td>{{ name }}</td><td>{{ count }}</td></tr>{% else %}<tr><td>No visits yet</td></tr>{% endfor %}
+                </table>
+            </div>
+            <div>
+                <h2>Links with ?utm_source=</h2>
+                <table class="dash-table">
+                    {% for name, count in utms %}<tr><td>{{ name }}</td><td>{{ count }}</td></tr>{% else %}<tr><td>None yet. Add <code>?utm_source=name</code> to a link to track it.</td></tr>{% endfor %}
+                </table>
+                <h2>Devices</h2>
+                <table class="dash-table">
+                    {% for name, count in devices %}<tr><td>{{ name }}</td><td>{{ count }}</td></tr>{% else %}<tr><td>No visits yet</td></tr>{% endfor %}
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <div class="dash-day-nav">
+                <a href="?range={{ days }}&day={{ previous_day }}" aria-label="Previous day">‹</a>
+                <h2>{{ day.strftime("%A, %B %-d, %Y") }}</h2>
+                <a href="{% if next_day %}?range={{ days }}&day={{ next_day }}{% endif %}" class="{% if not next_day %}disabled{% endif %}" aria-label="Next day">›</a>
+            </div>
+            {% for d in details %}
+            <div class="dash-mode">
+                <h3>{{ d.mode | upper }}{% if d.answer %} <small>{{ d.answer }}{% if d.clue %} · “{{ d.clue }}”{% endif %}</small>{% endif %}</h3>
+                <div class="dash-cards small">
+                    {% for label, value in d.summary %}<div class="dash-card"><strong>{{ value }}</strong><span>{{ label }}</span></div>{% endfor %}
+                </div>
+                {% if d.rows %}
+                <details>
+                    <summary>{{ d.rows | length }} submission{{ "s" if d.rows | length != 1 }}</summary>
+                    <table class="dash-table">
+                        {% for time, player, result, extra, words in d.rows %}
+                        <tr><td>{{ time }}</td>{% if d.mode == "solve" %}<td><code>{{ player }}</code></td>{% endif %}<td>{{ result }}</td>{% if d.mode == "solve" %}<td>{{ extra }}</td>{% endif %}<td>{{ words }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </details>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+
+        <section>
+            <h2>SOLVE: estimated difficulty vs. how players did</h2>
+            <table class="dash-table">
+                <thead><tr><th>Day</th><th>Answer</th><th>Estimate</th><th>Solves</th><th>Median</th><th>Avg reveals</th></tr></thead>
+                <tbody>
+                {% for r in solve_rows %}
+                <tr><td>{{ r.day.strftime("%-m/%-d") }}</td><td>{{ r.answer }}{% if r.theme %} <small>({{ r.theme }})</small>{% endif %}</td><td>{{ "{:,}".format(r.estimate) if r.estimate is not none else "–" }}</td><td>{{ r.solves }}</td><td>{{ r.median }}</td><td>{{ r.reveals }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <p class="dash-legend">Estimate: boards left after easy deductions (higher should mean harder). Today and the last 13 days.</p>
+        </section>
+
+        <section>
+            <h2>Missing-word reports</h2>
+            <p>{{ pending_reports }} reported word{{ "s" if pending_reports != 1 }} not decided yet{% if pending_reports %} (counted from this server's report file; decide them on your computer's /review-words page after downloading it){% endif %}.</p>
+        </section>
+    </main>
+</body>
+</html>

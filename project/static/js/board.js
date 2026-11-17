@@ -372,6 +372,7 @@ export class Board {
         if (!this.isSolutionFound) {
             // sent a post request to the server to log the solution
             this.manager.logBoard();
+            this.manager.logEvent('finish', { ...this.getStatsResult(), words: this.getShareWords() });
         }
         this.isSolutionFound = true;
         this.manager.recordResult();

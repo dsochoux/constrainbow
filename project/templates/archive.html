@@ -64,6 +64,33 @@
                     day.setAttribute('aria-label', `${day.textContent}, finished`);
                 }
             });
+
+            // a visit for the dashboard, like Manager.logVisit on the game pages
+            try {
+                const isNew = localStorage.getItem('playerId') === null && localStorage.getItem('solveTester') === null;
+                let player = localStorage.getItem('playerId') || localStorage.getItem('solveTester');
+                if (!player) {
+                    player = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
+                }
+                localStorage.setItem('playerId', player);
+                let ref = '';
+                try {
+                    const host = new URL(document.referrer).hostname;
+                    ref = host === location.hostname ? '' : host;
+                } catch (e) {
+                    ref = '';
+                }
+                fetch('/log-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true,
+                    body: JSON.stringify({ event: 'visit', player, mode, game: '', archive: true, new: isNew,
+                                           ref, utm: new URLSearchParams(location.search).get('utm_source') || '',
+                                           page: 'calendar' }),
+                }).catch(() => {});
+            } catch (e) {
+                // analytics are optional
+            }
         })();
     </script>
 </body>

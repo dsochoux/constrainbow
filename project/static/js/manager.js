@@ -17,6 +17,7 @@ export class Manager {
         this.fetchGame().then(() => {
             this.addEventListeners();
         });
+        this.logVisit();
         this.dateElement = document.getElementById('date');
         this.reportMissingWordButton = document.getElementById('report-missing-word-button');
         this.copyButton = document.getElementById('copy-results-button');
@@ -96,9 +97,11 @@ export class Manager {
             this.reportMissingWords();
         });
 
-        // copy results button
+        // copy results button (a click while it offers to include the solution copies that too)
         document.getElementById('copy-results-button').addEventListener('click', () => {
+            const withSolution = this.copyButton.textContent !== 'COPY RESULTS!' && this.gameMode !== 'solve';
             this.board.copyResults();
+            this.logEvent('share', { solution: withSolution });
         });
 
         document.addEventListener("visibilitychange", () => {
@@ -325,18 +328,64 @@ export class Manager {
         });
     }
 
-    // SOLVE results are logged with a random id per browser, so one tester's solves can be
-    // grouped without knowing who they are
-    logSolve() {
-        let tester = localStorage.getItem('solveTester');
-        if (!tester) {
-            tester = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
-            localStorage.setItem('solveTester', tester);
+    // a random id for this browser, so one player's visits and solves can be grouped without knowing
+    // who they are. It began as SOLVE's "solveTester" id, which is reused so old solves still match
+    getPlayerId() {
+        let player = localStorage.getItem('playerId') || localStorage.getItem('solveTester');
+        if (!player) {
+            player = Math.floor(Math.random() * 0x100000000).toString(16).padStart(8, '0');
         }
+        localStorage.setItem('playerId', player);
+        return player;
+    }
+
+    // ---- analytics: small events for the dashboard (/dashboard), one line each in logs/events/ ----
+    // event: visit, start, finish, share, show_best, report; extra: that event's numbers (see
+    // EVENT_FIELDS in app.py). Never blocks or breaks the game if it fails
+    logEvent(event, extra = {}) {
+        if (this.gameMode === 'solve-test' || this.gameMode === 'solve-day') {
+            return; // play-tests and previews of other days aren't real play
+        }
+        try {
+            fetch('/log-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true,
+                body: JSON.stringify({
+                    event,
+                    player: this.getPlayerId(),
+                    mode: this.gameMode,
+                    game: this.gameId,
+                    archive: this.isArchive,
+                    ...extra,
+                }),
+            }).catch(() => {});
+        } catch (e) {
+            // analytics are optional
+        }
+    }
+
+    // a page view: whether this browser is new, and where it came from (another site, or a link with
+    // ?utm_source=..., e.g. in a video description)
+    logVisit() {
+        const isNew = localStorage.getItem('playerId') === null && localStorage.getItem('solveTester') === null;
+        let ref = '';
+        try {
+            const host = new URL(document.referrer).hostname;
+            ref = host === location.hostname ? '' : host;
+        } catch (e) {
+            ref = '';
+        }
+        const utm = new URLSearchParams(location.search).get('utm_source') || '';
+        this.logEvent('visit', { new: isNew, ref, utm });
+    }
+
+    // SOLVE results are logged with the player id, so one player's solves can be grouped
+    logSolve() {
         fetch('/log-solve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 'tester': tester, ...this.board.getSolveResult() })
+            body: JSON.stringify({ 'tester': this.getPlayerId(), ...this.board.getSolveResult() })
         });
     }
 
@@ -349,6 +398,7 @@ export class Manager {
             }
         });
         this.reportMissingWordButton.textContent = "REPORTING...";
+        this.logEvent('report', { count: incorrectWords.length });
         fetch('/report-missing-word', {
             method: 'POST',
             headers: {

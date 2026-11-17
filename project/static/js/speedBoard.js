@@ -127,6 +127,9 @@ export class SpeedBoard extends Board {
         if (!this.isPaused || this.isSolutionFound) {
             return;
         }
+        if (this.elapsedSeconds === 0) {
+            this.manager.logEvent('start'); // the first START (SOLVE too, which inherits this)
+        }
         this.startTimer();
         this.playPauseButton.textContent = "PAUSE";
         this.isPaused = false;

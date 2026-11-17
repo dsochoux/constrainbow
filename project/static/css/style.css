@@ -524,6 +524,24 @@ body.row-links .word-row .letter {
 .letter.given.selected::after {
     display: none;
 }
+/* locked by CHECK: the player's own letter, proven right */
+.letter-check {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    font-family: var(--ui-font);
+    font-size: calc(var(--tile) * 0.22);
+    font-weight: 700;
+    color: var(--ink);
+    pointer-events: none;
+}
+.letter.checked {
+    cursor: default;
+}
+.letter.paused .letter-check {
+    visibility: hidden; /* paused letters are hidden, and so is what's been checked */
+}
+
 .letter.revealed .letter-text {
     color: #8a8290;
 }

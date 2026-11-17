@@ -21,11 +21,13 @@ export class SolveBoard extends SpeedBoard {
         this.revealedTiles = 0;  // tiles revealed in all (a color counts once per tile)
         this.revealButton = document.getElementById("reveal-button");
         this.revealButton.addEventListener('click', () => this.reveal());
-        // CHECK (on the check-row branch, being tried out): says whether the selected row is right
-        this.checks = 0;          // rows checked (checking the same unchanged row again is free)
+        // CHECK (on the check-row branch, being tried out): checks every full row at once, and locks
+        // what it proves right
+        this.checks = 0;          // times CHECK was used (free if no full row changed since the last one)
         this.lastChecked = {};    // row -> the letters it had when it was last checked
+        this.checkedPositions = []; // [w, l] of every tile locked by CHECK
         this.checkButton = document.getElementById("check-button");
-        this.checkButton.addEventListener('click', () => this.checkRow());
+        this.checkButton.addEventListener('click', () => this.checkRows());
         this.isTestPuzzle = this.manager.gameMode === 'solve-test';
         this.prefix = SolveBoard.storagePrefix(this.manager);
         this.stateKey = `${this.prefix}State`;
@@ -35,6 +37,8 @@ export class SolveBoard extends SpeedBoard {
         data["givens"].forEach(([w, l]) => this.lock(w, l, false));
         state.revealed.forEach(([w, l]) => this.lock(w, l, true));
         this.revealedPositions = state.revealed;
+        (state.checked || []).forEach(([w, l]) => this.lockChecked(w, l));
+        this.lastChecked = state.lastChecked || {};
         this.restoreLockedLetters();
         this.restoreState(state);
         this.saveState(); // so the saved letters always have an answer to be checked against
@@ -101,6 +105,8 @@ export class SolveBoard extends SpeedBoard {
             colorReveals: this.colorReveals,
             revealedTiles: this.revealedTiles,
             checks: this.checks,
+            checked: this.checkedPositions,
+            lastChecked: this.lastChecked,
             revealed: this.revealedPositions,
             solved: this.isSolutionFound,
         }));
@@ -228,27 +234,63 @@ export class SolveBoard extends SpeedBoard {
         this.updateHintButtons();
     }
 
-    // CHECK ROW: whether the selected tile's row is exactly right, without saying which letters are
-    // wrong. The row has to be full (its empty tiles jiggle if not). Right: a green outline around the
-    // row while its tiles hop; wrong: a red outline while the row shakes (see Word.showCheck)
-    checkRow() {
-        const target = this.selectedLetter;
-        const word = target === null ? null : this.words[target.w];
-        if (this.isPaused || this.isSolutionFound || word === null || !word.isAllLettersFilled()) {
+    // CHECK: checks every full row at once (half-filled rows are skipped), so every check is worth the
+    // same and it pays to fill in as much as possible. Right rows get a green outline and are locked,
+    // along with every tile of each color they contain (that color's letter is now proven everywhere);
+    // wrong rows get a red outline. It never says which letters are wrong
+    checkRows() {
+        // full rows that aren't already locked all the way
+        const rows = this.words.filter((word) => word.isAllLettersFilled() && !word.letters.every((letter) => letter.isGiven));
+        if (this.isPaused || this.isSolutionFound || rows.length === 0) {
             this.checkButton.classList.add('shake');
             setTimeout(() => this.checkButton.classList.remove('shake'), 400);
-            if (word !== null && !this.isPaused && !this.isSolutionFound) {
-                word.letters.filter((letter) => letter.isBlank()).forEach((letter) => letter.playAnimation('nudge'));
+            if (!this.isPaused && !this.isSolutionFound) {
+                // nothing to check yet: the empty tiles ask for letters
+                this.words.forEach((word) => word.letters.filter((letter) => letter.isBlank()).forEach((letter) => letter.playAnimation('nudge')));
             }
             return;
         }
-        const letters = word.getWordString().toUpperCase();
-        if (this.lastChecked[target.w] !== letters) {
-            this.lastChecked[target.w] = letters;
+        // one check per press, but only if some full row changed since it was last checked
+        let changed = false;
+        rows.forEach((word) => {
+            const letters = word.getWordString().toUpperCase();
+            if (this.lastChecked[word.index] !== letters) {
+                this.lastChecked[word.index] = letters;
+                changed = true;
+            }
+        });
+        if (changed) {
             this.checks++;
-            this.saveState();
         }
-        word.showCheck(letters === this.solution[target.w]);
+        rows.forEach((word) => {
+            const isRight = word.getWordString().toUpperCase() === this.solution[word.index];
+            word.showCheck(isRight);
+            if (isRight) {
+                this.lockRightRow(word.index);
+            }
+        });
+        this.saveState();
+        this.manager.updateKeyboard();
+    }
+
+    // a right row: lock its tiles, and every tile of each of its colors anywhere on the board
+    lockRightRow(w) {
+        this.words[w].letters.forEach((letter) => {
+            this.lockChecked(w, letter.l);
+            if (letter.isConstrained()) {
+                this.constraints[letter.constraint].forEach(([cw, cl]) => this.lockChecked(cw, cl));
+            }
+        });
+    }
+
+    lockChecked(w, l) {
+        const letter = this.words[w].letters[l];
+        if (letter.isGiven) {
+            return; // already given, revealed or checked
+        }
+        this.lockedPositions.push([w, l]);
+        this.checkedPositions.push([w, l]);
+        letter.setChecked();
     }
 
     reveal() {

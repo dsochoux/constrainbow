@@ -8,6 +8,17 @@ export class SolveLetter extends SpeedLetter {
         this.isGiven = false;
     }
 
+    // locked by CHECK: the player's own letter, proven right (a right row, or a color one proved).
+    // It can't be changed either, but keeps its normal look with a small ✓ in the corner
+    setChecked() {
+        this.isGiven = true;
+        this.tileElement.classList.add('checked');
+        const mark = document.createElement('span');
+        mark.classList.add('letter-check');
+        mark.textContent = '✓';
+        this.tileElement.appendChild(mark);
+    }
+
     // wasRevealed is true when the player used REVEAL, false for the puzzle's own letters
     setGiven(wasRevealed) {
         this.isGiven = true;

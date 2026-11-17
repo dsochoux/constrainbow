@@ -109,7 +109,7 @@ export class ScoreBoard extends Board {
         this.isShowingBest = isBest;
         this.element.style.display = isBest ? 'none' : 'flex';
         this.bestBoardElement.style.display = isBest ? 'flex' : 'none';
-        this.scoreElement.style.display = isBest ? 'none' : 'inline-block';
+        this.updateScoreDisplay();
         if (isBest) {
             if (this.selectedLetter !== null) {
                 this.selectedLetter.setIsSelected(false);
@@ -140,6 +140,12 @@ export class ScoreBoard extends Board {
     }
 
     updateScoreDisplay() {
+        if (this.isShowingBest) {
+            // the best board's points, in the same pill, so the switch doesn't move anything
+            this.scoreElement.textContent = `${this.revealed.best.points.toLocaleString()}/${this.numPossiblePoints.toLocaleString()} POSSIBLE POINTS`;
+            this.scoreElement.classList.remove('over');
+            return;
+        }
         this.scoreElement.textContent = `${this.getPointsFraction()} POSSIBLE POINTS`;
         // every letter on the board counts, even in unfinished rows, so the score can go past
         // the maximum; when it does, the pill turns red as a hint that something is off
@@ -281,7 +287,7 @@ export class ScoreBoard extends Board {
 
     showItems() {
         // timer, play/pause button, copy results button, report missing words button
-        this.scoreElement.style.display = this.isShowingBest ? 'none' : 'inline-block';
+        this.scoreElement.style.display = 'inline-block';
         if (this.isInSolvedState()) {
             this.copyButton.style.display = 'inline-block';
         }

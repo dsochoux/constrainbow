@@ -22,6 +22,20 @@ export class Word {
         container.appendChild(this.rowElement);
     }
 
+    // CHECK ROW's answer, drawn around the whole row (so it reads as "this word", not "these letters"):
+    // a green outline while the tiles hop, or a red outline while the row shakes
+    showCheck(isRight) {
+        const row = this.rowElement;
+        clearTimeout(this.checkTimeout);
+        row.classList.remove('check-right', 'check-wrong');
+        void row.offsetWidth; // restarts the animation when the same row is checked again
+        row.classList.add(isRight ? 'check-right' : 'check-wrong');
+        if (isRight) {
+            this.letters.forEach((letter, l) => letter.playAnimation('hop', l * 70));
+        }
+        this.checkTimeout = setTimeout(() => row.classList.remove('check-right', 'check-wrong'), 1200);
+    }
+
     setRowState(state) {
         // state is 'valid', 'invalid', or '' for neither
         if (!this.rowElement) {

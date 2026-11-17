@@ -11,7 +11,7 @@
     --muted: #8a8478;
     --key-off: #ddd6c8;
     --bad: #e0352b;
-    --good: #2f9e4f; /* CHECK ROW: a correct row */
+    --good: #2f9e4f; /* CHECK ROW: the outline around a correct row */
     --bad-tint: #ffb4ab;
 
     /* constraint colors (1 red, 2 orange, 3 yellow, 4 blue) and their tile tints */
@@ -371,6 +371,7 @@ button.pill:active {
 
 /* a rail: the strip each word sits on, so it's clear only the rows (across) are words */
 .word-row {
+    position: relative; /* for the CHECK ROW outline (::after) */
     display: flex;
     gap: var(--row-gap);
     padding: var(--rail-pad-start) var(--rail-pad-end) var(--rail-pad-end) var(--rail-pad-start);
@@ -561,17 +562,41 @@ body.row-links .word-row .letter {
     40%, 80% { transform: translateX(5px); }
 }
 
-/* CHECK ROW, right: each tile hops and turns green. Uses translate (not transform), so a selected
-   tile keeps its lifted position instead of snapping back to it at the end */
-.letter.correct {
-    animation: correct 900ms ease-out var(--delay, 0ms) both;
+/* CHECK ROW's answer goes around the whole row, never on the tiles (a red tile would read as "this
+   letter is wrong"): a green outline while the tiles hop when it's right, a red outline while the row
+   shakes when it isn't */
+.word-row::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 3px solid transparent;
+    border-radius: calc(var(--radius) + 6px);
+    pointer-events: none;
 }
-@keyframes correct {
-    0% { translate: 0 0; }
-    25% { translate: 0 -10px; background-color: var(--good); color: var(--card); }
-    50% { translate: 0 0; background-color: var(--good); color: var(--card); }
-    80% { background-color: var(--good); color: var(--card); }
-    100% { translate: 0 0; }
+.word-row.check-right {
+    --check: var(--good);
+}
+.word-row.check-wrong {
+    --check: var(--bad);
+    animation: shake 380ms ease-in-out;
+}
+.word-row.check-right::after, .word-row.check-wrong::after {
+    animation: check-outline 1100ms ease-out both;
+}
+@keyframes check-outline {
+    0% { border-color: transparent; }
+    12%, 70% { border-color: var(--check); }
+    100% { border-color: transparent; }
+}
+
+/* the tiles of a right row hop one after another. Uses translate (not transform), so a selected tile
+   keeps its lifted position instead of snapping back to it at the end */
+.letter.hop {
+    animation: hop 500ms ease-out var(--delay, 0ms) both;
+}
+@keyframes hop {
+    0%, 100% { translate: 0 0; }
+    40% { translate: 0 -10px; }
 }
 
 /* CHECK ROW on a row that isn't full: its empty tiles wiggle for attention (rotate composes with
@@ -619,7 +644,8 @@ body.row-links .word-row .letter {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, .letter.nudge, #copy-results-button,
+    .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, .letter.nudge, .letter.hop,
+    .word-row.check-wrong, #copy-results-button,
     .letter.selected::after, #score.shake, #reveal-button.shake, #check-button.shake {
         animation: none;
     }

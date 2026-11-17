@@ -40,8 +40,9 @@ export class SolveBoard extends SpeedBoard {
         if (manager.gameMode === 'solve-test') {
             return `solveTest${manager.gameId}`;
         }
-        // another day's puzzle (/solve/day) is saved under its own date, so the daily game is untouched
-        return manager.gameMode === 'solve-day' ? `solveDay${manager.gameId}` : 'solve';
+        // another day's puzzle (/solve/day, or the archive) is saved under its own date, so the daily
+        // game is untouched
+        return (manager.gameMode === 'solve-day' || manager.isArchive) ? `solveDay${manager.gameId}` : 'solve';
     }
 
     // puts the saved letters back on the board, and returns the rest of the saved state
@@ -304,7 +305,7 @@ export class SolveBoard extends SpeedBoard {
         }
         const reveals = this.revealedTiles;
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
-        const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : 'constrainbow.com/solve';
+        const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : this.manager.getShareLink();
         let message = `${link}\n`;
         message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.manager.getStreakText()}\n`;
         message += this.getEmojiBoard();

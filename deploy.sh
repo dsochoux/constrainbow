@@ -27,8 +27,8 @@ fi
 echo "Syncing files..."
 # app.py
 scp ./project/app.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
-# game.html
-scp ./project/templates/game.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
+# the page templates (not word_review.html, which is only for running locally)
+scp ./project/templates/game.html ./project/templates/head.html ./project/templates/archive.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
 # style.css
 scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
 # favicons and the web app manifest

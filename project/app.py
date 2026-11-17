@@ -3,6 +3,7 @@ import os
 import re
 import fcntl
 import json
+import calendar
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -218,6 +219,99 @@ def solve_day():
         next_day=(date + timedelta(days=1)).strftime("%Y-%m-%d"),
         num_givens=get_num_givens(puzzle_path),
         clue=get_clue(puzzle_path),
+    )
+
+# ---- the archive: every past puzzle, by mode ----
+
+MODE_EMOJI = {"solve": "🔑", "speed": "⏱️", "score": "🎯"}
+# the archive starts on the same day for every mode, so each has the same number of puzzles (SOLVE was
+# backfilled from here; older speed and score puzzles still exist but aren't listed)
+ARCHIVE_START = datetime(2026, 11, 1).date()
+
+def get_today():
+    return datetime.now(eastern).date()
+
+def archive_days(mode):
+    """every day from ARCHIVE_START up to (not including) today that has a puzzle in this mode, as dates"""
+    folder = f"./games/{mode}/"
+    days = []
+    for name in os.listdir(folder):
+        if not name.endswith(".json") or GAME_ID_PATTERN.fullmatch(name[:-len(".json")]) is None:
+            continue
+        day = datetime.strptime(name[:-len(".json")], "%m%d%Y").date()
+        if ARCHIVE_START <= day < get_today():
+            days.append(day)
+    return sorted(days)
+
+@app.route('/archive')
+def archive_index():
+    return redirect('/archive/solve')
+
+# a month of past puzzles as a calendar; ?m=YYYY-MM picks the month (default: this month)
+@app.route('/archive/<mode>')
+def archive_calendar(mode):
+    if mode not in GAME_MODES:
+        return '', 404
+    days = archive_days(mode)
+    today = get_today()
+    try:
+        month = datetime.strptime(request.args.get('m', ''), "%Y-%m").date()
+    except ValueError:
+        month = today.replace(day=1)
+    month = min(max(month, ARCHIVE_START.replace(day=1)), today.replace(day=1))
+    available = {day for day in days if (day.year, day.month) == (month.year, month.month)}
+    # Sunday-first weeks, each day None (padding) or (date, state): "puzzle", "today", or "none"
+    weeks = []
+    for week in calendar.Calendar(firstweekday=6).monthdatescalendar(month.year, month.month):
+        weeks.append([None if day.month != month.month else
+                      (day, "puzzle" if day in available else "today" if day == today else "none")
+                      for day in week])
+    previous_month = (month.replace(day=1) - timedelta(days=1)).replace(day=1)
+    next_month = (month.replace(day=28) + timedelta(days=4)).replace(day=1)
+    return render_template(
+        'archive.html',
+        mode=mode,
+        mode_emoji=MODE_EMOJI[mode],
+        month_name=month.strftime("%B %Y"),
+        weeks=weeks,
+        # only months with puzzles before them / up to this month can be visited
+        previous_month=previous_month.strftime("%Y-%m") if days and previous_month >= days[0].replace(day=1) else None,
+        next_month=next_month.strftime("%Y-%m") if next_month <= today.replace(day=1) else None,
+        count=len(days),
+    )
+
+# one past puzzle: the normal game page for that mode, saved apart from today's and not logged
+@app.route('/archive/<mode>/<day>')
+def archive_puzzle(mode, day):
+    if mode not in GAME_MODES:
+        return '', 404
+    try:
+        date = datetime.strptime(day, "%Y-%m-%d").date()
+    except ValueError:
+        return '', 404
+    if date >= get_today():
+        return redirect(f'/{mode}')  # today's (or a future) puzzle isn't in the archive
+    if date < ARCHIVE_START:
+        return redirect(f'/archive/{mode}')
+    game_id = date.strftime("%m%d%Y")
+    puzzle_path = f"./games/{mode}/{game_id}.json"
+    if not os.path.exists(puzzle_path):
+        return '', 404
+    days = archive_days(mode)
+    earlier = [d for d in days if d < date]
+    later = [d for d in days if d > date]
+    return render_template(
+        'game.html',
+        game_id=game_id,
+        game_mode=mode,
+        is_archive=True,
+        mode_emoji=MODE_EMOJI[mode],
+        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
+        date=f"{date.month}/{date.day}/{date.year}",
+        previous_day=earlier[-1].strftime("%Y-%m-%d") if earlier else None,
+        next_day=later[0].strftime("%Y-%m-%d") if later else None,
+        num_givens=get_num_givens(puzzle_path) if mode == "solve" else None,
+        clue=get_clue(puzzle_path) if mode == "solve" else "",
     )
 
 # the numbered batch of SOLVE puzzles from the first play-test (games/solve-test/); not linked

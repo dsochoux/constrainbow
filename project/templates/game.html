@@ -1,35 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#fbf4e6">
-    <meta name="description" content="A daily word puzzle: fill four five-letter words that fit the color constraints.">
-    <title>CONSTRAINBOW</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    {# bump icon_version when the icons change, so browsers and home screens fetch the new ones #}
-    {% set icon_version = 2 %}
-    <!-- Standard favicon: the SVG is sharp at any size; the PNGs are fallbacks for older browsers -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon.svg', v=icon_version) }}" type="image/svg+xml">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png', v=icon_version) }}" sizes="32x32" type="image/png">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png', v=icon_version) }}" sizes="16x16" type="image/png">
-
-    <!-- Apple Touch Icon (for iOS devices) -->
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png', v=icon_version) }}">
-
-    <!-- Android Chrome Icons -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-192x192.png', v=icon_version) }}" sizes="192x192" type="image/png">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-512x512.png', v=icon_version) }}" sizes="512x512" type="image/png">
-
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest', v=icon_version) }}">
+    {% include "head.html" %}
 </head>
 <body class="row-links">
     <input type="hidden" id="game-id" value="{{ game_id }}" />
     <input type="hidden" id="game-mode" value="{{ game_mode }}" />
+    {# a past puzzle from the archive (/archive/<mode>/<date>): saved apart from today's, not logged or in the stats #}
+    <input type="hidden" id="is-archive" value="{{ 'true' if is_archive else 'false' }}" />
+    {% set is_daily = game_mode in ["solve", "speed", "score"] and not is_archive %}
+    {% set archive_mode = "solve" if game_mode in ["solve-test", "solve-day"] else game_mode %}
     {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
     {% set is_solve = game_mode in ["solve", "solve-test", "solve-day"] %}
 
@@ -102,7 +82,7 @@
         </div>
     </div>
     {% endif %}
-    {% if game_mode in ["solve", "speed", "score"] %}
+    {% if is_daily %}
     <div class="overlay" id="stats-overlay">
         <div class="popup" role="dialog" aria-modal="true" aria-labelledby="stats-title">
             <button id="stats-close-button" aria-label="Close">&times;</button>
@@ -115,7 +95,14 @@
             {# the wordmark links to / (which goes to the default mode, SOLVE) #}
             <h1 class="wordmark"><a href="/" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</a></h1>
             <div id="sub-header">
-                {% if game_mode == "solve-test" %}
+                {% if is_archive %}
+                {# an archive puzzle: the past puzzles before and after it (› goes to today's after the last one) #}
+                <nav id="mode-switch" aria-label="Past {{ game_mode }} puzzles">
+                    <a href="{% if previous_day %}/archive/{{ game_mode }}/{{ previous_day }}{% endif %}" class="step-link{% if not previous_day %} disabled{% endif %}" aria-label="Previous puzzle">‹</a>
+                    <a class="active" aria-current="page">{{ mode_emoji }} {{ game_mode | upper }} {{ date }}</a>
+                    <a href="{% if next_day %}/archive/{{ game_mode }}/{{ next_day }}{% else %}/{{ game_mode }}{% endif %}" class="step-link" aria-label="Next puzzle">›</a>
+                </nav>
+                {% elif game_mode == "solve-test" %}
                 {# SOLVE test puzzles: previous / this one / next, in the same pill as the mode switch #}
                 <nav id="mode-switch" aria-label="SOLVE test puzzle">
                     <a href="/solve/test?p={{ puzzle_number - 1 }}" class="step-link{% if puzzle_number == 1 %} disabled{% endif %}" aria-label="Previous puzzle">‹</a>
@@ -136,13 +123,18 @@
                     <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
                 </nav>
                 {% endif %}
-                {% if game_mode in ["solve", "speed", "score"] %}
+                <a id="archive-button" href="/archive/{{ archive_mode }}" aria-label="Past puzzles">📅</a>
+                {% if is_daily %}
                 <button id="stats-button" aria-label="Your stats">📊</button>
                 {% endif %}
                 <button id="how-to-play-button" aria-label="How to play">?</button>
             </div>
         </div>
-        {% if game_mode == "solve" %}
+        {% if is_archive and game_mode == "solve" %}
+        <p class="description" id="description">From the archive: the puzzle for {{ date }} has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off.</p>
+        {% elif is_archive %}
+        <p class="description" id="description">From the archive: the puzzle for {{ date }} has <strong id="num-possible-solutions"></strong> solutions.</p>
+        {% elif game_mode == "solve" %}
         <p class="description" id="description">Today's puzzle (<span id="date">{{ date }}</span>) has <strong>one</strong> solution.{% if num_givens %} {{ num_givens }} letters are filled in to start you off.{% endif %}</p>
         {% elif game_mode == "solve-day" %}
         <p class="description" id="description">The puzzle for {{ date }} has <strong>one</strong> solution. {{ num_givens }} letters are filled in to start you off. Progress here is kept apart from the daily game, and solves aren't logged.</p>

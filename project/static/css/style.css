@@ -177,6 +177,21 @@ button:focus-visible, a:focus-visible {
     text-decoration: none;
 }
 
+/* with three buttons beside it (📅 📊 ?), the switch is narrow on phones: keep each label on one line */
+#mode-switch a {
+    white-space: nowrap;
+}
+@media (max-width: 420px) {
+    #mode-switch a {
+        padding: 5px 3px;
+        font-size: 12px;
+        letter-spacing: 0;
+    }
+    #sub-header {
+        gap: 6px;
+    }
+}
+
 #mode-switch a.active {
     background: var(--ink);
     color: var(--paper);
@@ -194,7 +209,7 @@ button:focus-visible, a:focus-visible {
     pointer-events: none;
 }
 
-#how-to-play-button, #stats-button {
+#how-to-play-button, #stats-button, #archive-button {
     flex: none;
     width: 30px;
     height: 30px;
@@ -742,9 +757,109 @@ body.row-links .word-row .letter {
     line-height: 1;
 }
 
+/* ---------- archive calendar (archive.html) ---------- */
+
+/* the calendar page stacks from the top, instead of spreading out like the game page */
+#container.archive-page {
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+.archive-month {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: var(--content);
+}
+.archive-month h2 {
+    margin: 0;
+    font-family: var(--display-font);
+    font-weight: normal;
+    font-size: 20px;
+}
+.archive-month a {
+    width: 36px;
+    height: 32px;
+    line-height: 28px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--card);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+.archive-month a.disabled {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    width: var(--content);
+}
+.calendar .weekday {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+}
+.calendar .day {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    font-family: var(--display-font);
+    font-size: 15px;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 8px;
+}
+/* a day with a puzzle: a tile you can tap */
+.calendar a.day {
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+.calendar a.day.today {
+    background: var(--ink);
+    color: var(--paper);
+}
+/* finished in this browser */
+.calendar a.day.done {
+    background: var(--t3);
+}
+.calendar a.day.done::after {
+    content: "✓";
+    position: absolute;
+    top: 1px;
+    right: 4px;
+    font-family: var(--ui-font);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.archive-note {
+    width: var(--content);
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+}
+
 /* ---------- stats popup ---------- */
 
-#stats-button {
+#archive-button {
+    text-decoration: none;
+    color: var(--ink);
+}
+
+#stats-button, #archive-button {
     font-family: var(--ui-font);
     font-size: 15px;
     padding: 0;

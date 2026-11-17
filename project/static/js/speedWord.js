@@ -16,7 +16,7 @@ export class SpeedWord extends Word {
     }
 
     updateLetter(l, letter) {
-        super.updateLetter(l, letter, 'speed');
+        super.updateLetter(l, letter, this.manager.storagePrefix);
     }
 
     pause() {

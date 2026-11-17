@@ -458,7 +458,7 @@ export class Board {
         if (this.copyResultsTimeout) {
             clearTimeout(this.copyResultsTimeout);
         }
-        let message = `constrainbow.com/${this.manager.gameMode}\n`;
+        let message = `${this.manager.getShareLink()}\n`;
         message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}${this.manager.getStreakText()}\n`;
         message += this.getEmojiBoard();
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;

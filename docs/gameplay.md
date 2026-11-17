@@ -67,6 +67,12 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - Colored tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for color-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.
 
+## Archive (since 2026-11-16)
+- The 📅 button in the header (next to 📊 and ?) opens `/archive/<mode>`: a month calendar of past puzzles, with SOLVE / SPEED / SCORE tabs, ‹ › between months, and ✕ back to today's puzzle. Days with a puzzle are tiles; today's tile is dark and goes to today's puzzle; future days are plain numbers. Every mode starts on 2026-11-01 (`ARCHIVE_START` in app.py), so all three have the same number of puzzles. SOLVE was backfilled for 11/1–11/14 to make that possible; older speed and score puzzles (back to 2025-02-10) still exist but aren't listed, and their dates redirect to the calendar.
+- A ✓ marks days finished in this browser, whether as the daily puzzle (from the stats) or in the archive (localStorage `archive`).
+- A past puzzle opens at `/archive/<mode>/YYYY-MM-DD`, the normal game page with `‹ ⏱️ SPEED 11/10/2026 ›` in place of the mode tabs (› after the last past day goes to today's). Today's or a future date redirects to today's puzzle.
+- Archive puzzles keep their own progress (`archiveSpeed11102026Word0`…; SOLVE shares `solveDay…` with `/solve/day`), aren't logged, don't count toward stats or streaks, and have no 📊 button. Score's SHOW BEST works there too. The share text links to the archive page and includes the year: `constrainbow.com/archive/speed/2026-11-10` / `11/10/2026 | ⏱️ 0:41`.
+
 ## Stats and streaks (since 2026-11-16)
 - Each daily mode keeps its own stats in this browser (localStorage `stats`; no accounts): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
   - SOLVE: no-reveal solves and average tiles revealed per day; solve times (under 2m, 2–5m, 5–10m, 10m+).

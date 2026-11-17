@@ -11,6 +11,10 @@ export class SpeedBoard extends Board {
         this.intervalId = null;
         this.timerElement = document.getElementById("timer");
         this.playPauseButton = document.getElementById("play-pause-button");
+        // where progress is saved: 'speed' for today's puzzle, its own prefix for an archive puzzle
+        // (today's timer key has always been plain 'elapsedSeconds')
+        this.prefix = manager.storagePrefix;
+        this.elapsedKey = this.prefix === 'speed' ? 'elapsedSeconds' : `${this.prefix}ElapsedSeconds`;
         this.initBoard(manager);
     }
 
@@ -28,20 +32,20 @@ export class SpeedBoard extends Board {
         });
         super.initBoard();
         // look into local storage for a saved game
-        if (JSON.parse(localStorage.getItem('speedGameId')) == this.manager.gameId) {
+        if (JSON.parse(localStorage.getItem(`${this.prefix}GameId`)) == this.manager.gameId) {
             this.loadSavedGame();
         } else {
             this.resetLocalStorage();
-            localStorage.setItem('speedGameId', JSON.stringify(this.manager.gameId));
+            localStorage.setItem(`${this.prefix}GameId`, JSON.stringify(this.manager.gameId));
         }
     }
 
     loadSavedGame() {
-        super.loadSavedGame('speed');
+        super.loadSavedGame(this.prefix);
         // load timer and other things
-        this.elapsedSeconds = JSON.parse(localStorage.getItem('elapsedSeconds')) || 0;
+        this.elapsedSeconds = JSON.parse(localStorage.getItem(this.elapsedKey)) || 0;
         this.updateTimerDisplay();
-        this.isSolutionFound = JSON.parse(localStorage.getItem('speedIsSolutionFound')) || false;
+        this.isSolutionFound = JSON.parse(localStorage.getItem(`${this.prefix}IsSolutionFound`)) || false;
         if (this.isSolutionFound) {
             this.playPauseButton.style.display = 'none';
             this.isPaused = false;
@@ -60,9 +64,9 @@ export class SpeedBoard extends Board {
     }
 
     resetLocalStorage() {
-        super.resetLocalStorage('speed');
-        localStorage.removeItem('elapsedSeconds');
-        localStorage.removeItem('speedIsSolutionFound');
+        super.resetLocalStorage(this.prefix);
+        localStorage.removeItem(this.elapsedKey);
+        localStorage.removeItem(`${this.prefix}IsSolutionFound`);
     }
 
     handleLetterClicked(w, l) {
@@ -88,7 +92,7 @@ export class SpeedBoard extends Board {
         this.intervalId = setInterval(() => {
             this.elapsedSeconds++;
             // total_seconds cookie
-            localStorage.setItem(`elapsedSeconds`, JSON.stringify(this.elapsedSeconds));
+            localStorage.setItem(this.elapsedKey, JSON.stringify(this.elapsedSeconds));
             this.updateTimerDisplay();
         }, 1000);
     }
@@ -155,7 +159,7 @@ export class SpeedBoard extends Board {
     }
 
     handleSolutionFound() {
-        localStorage.setItem("speedIsSolutionFound", JSON.stringify(true));
+        localStorage.setItem(`${this.prefix}IsSolutionFound`, JSON.stringify(true));
         this.playPauseButton.style.display = 'none';
         this.pauseTimer();
         super.handleSolutionFound();

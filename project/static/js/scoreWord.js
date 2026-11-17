@@ -16,7 +16,7 @@ export class ScoreWord extends Word {
     }
 
     updateLetter(l, letter) {
-        super.updateLetter(l, letter, 'score');
+        super.updateLetter(l, letter, this.manager.storagePrefix);
     }
 
     getPointValue() {

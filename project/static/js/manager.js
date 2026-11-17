@@ -26,6 +26,11 @@ export class Manager {
     async fetchGame() {
         this.gameId = document.getElementById('game-id').value;
         this.gameMode = document.getElementById('game-mode').value;
+        // a past puzzle from the archive: its progress is saved under its own keys, and it isn't logged
+        // or counted in the stats. The daily puzzles keep their original keys ('speed', 'score')
+        this.isArchive = document.getElementById('is-archive').value === 'true';
+        const modeName = this.gameMode.charAt(0).toUpperCase() + this.gameMode.slice(1);
+        this.storagePrefix = this.isArchive ? `archive${modeName}${this.gameId}` : this.gameMode;
         const response = await fetch(`/game?game-id=${this.gameId}&game-mode=${this.gameMode}`);
         if (response.status === 404) {
             console.log("forgot to make game");
@@ -159,6 +164,10 @@ export class Manager {
     // called when a puzzle is finished: saves today's result to the stats, and shows the stats the
     // first time today's puzzle is finished (after the celebration)
     recordResult() {
+        if (this.isArchive) {
+            this.markArchiveFinished();
+            return;
+        }
         // no stats page, or score mode after SHOW BEST (today's score is final)
         if (!this.statsPopup || (this.board.isScoreFinal && this.board.isScoreFinal())) {
             return;
@@ -169,6 +178,29 @@ export class Manager {
         if (isFirst) {
             setTimeout(() => this.statsPopup.show(), 1800);
         }
+    }
+
+    // the archive calendar marks the past puzzles finished in this browser with ✓
+    // localStorage "archive" = {"speed": {"02102025": true}, ...}; the daily stats count as finished too
+    markArchiveFinished() {
+        let finished = {};
+        try {
+            finished = JSON.parse(localStorage.getItem('archive')) || {};
+        } catch (e) {
+            finished = {};
+        }
+        finished[this.gameMode] = finished[this.gameMode] || {};
+        finished[this.gameMode][this.gameId] = true;
+        localStorage.setItem('archive', JSON.stringify(finished));
+    }
+
+    // the first line of the share text: today's mode page, or this past puzzle's archive page
+    getShareLink() {
+        if (this.isArchive) {
+            const id = this.gameId;
+            return `constrainbow.com/archive/${this.gameMode}/${id.substring(4)}-${id.substring(0, 2)}-${id.substring(2, 4)}`;
+        }
+        return `constrainbow.com/${this.gameMode}`;
     }
 
     // " | 🔥 5" for the share text, once a streak is at least 2 days
@@ -262,11 +294,18 @@ export class Manager {
         return this.accepted_words.has(word);
     }
 
+    // MM/DD, with the year for an archive puzzle (the archive goes back to 2025)
     getFormatedDate() {
+        if (this.isArchive) {
+            return `${this.gameId.substring(0, 2)}/${this.gameId.substring(2, 4)}/${this.gameId.substring(4)}`;
+        }
         return `${this.gameId[0]}${this.gameId[1]}/${this.gameId[2]}${this.gameId[3]}`;
     }
 
     logBoard() {
+        if (this.isArchive) {
+            return; // only today's puzzles are logged
+        }
         if (this.gameMode === 'solve-day') {
             return; // trying out another day's puzzle: not a real solve
         }

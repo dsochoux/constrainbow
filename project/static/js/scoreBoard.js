@@ -7,6 +7,8 @@ export class ScoreBoard extends Board {
         this.score = 0;
         this.scoreElement = document.getElementById("score");
         this.numPossiblePoints = data['num_possible_points'];
+        // where progress is saved: 'score' for today's puzzle, its own prefix for an archive puzzle
+        this.prefix = manager.storagePrefix;
 
         // the best board finished today, {points, words}: what COPY RESULTS shares
         this.dayBest = null;
@@ -46,7 +48,7 @@ export class ScoreBoard extends Board {
 
     saveDayBest() {
         this.dayBest = { points: this.score, words: this.words.map(word => word.getWordString()) };
-        localStorage.setItem('scoreDayBest', JSON.stringify(this.dayBest));
+        localStorage.setItem(`${this.prefix}DayBest`, JSON.stringify(this.dayBest));
     }
 
     // after SHOW BEST, today's score can't change (the manager checks this before saving stats)
@@ -78,7 +80,7 @@ export class ScoreBoard extends Board {
             return;
         }
         this.revealed = { final: this.dayBest, best: await response.json() };
-        localStorage.setItem('scoreRevealed', JSON.stringify(this.revealed));
+        localStorage.setItem(`${this.prefix}Revealed`, JSON.stringify(this.revealed));
         this.buildBestBoard();
         this.showView(true);
     }
@@ -160,11 +162,11 @@ export class ScoreBoard extends Board {
         this.updateScoreDisplay();
         this.manager.resumeKeyboard();
         super.initBoard();
-        if (JSON.parse(localStorage.getItem('scoreGameId')) == this.manager.gameId) {
+        if (JSON.parse(localStorage.getItem(`${this.prefix}GameId`)) == this.manager.gameId) {
             this.loadSavedGame();
         } else {
             this.resetLocalStorage();
-            localStorage.setItem('scoreGameId', JSON.stringify(this.manager.gameId));
+            localStorage.setItem(`${this.prefix}GameId`, JSON.stringify(this.manager.gameId));
         }
     }
 
@@ -187,11 +189,11 @@ export class ScoreBoard extends Board {
     }
 
     loadSavedGame() {
-        this.isSolutionFound = JSON.parse(localStorage.getItem('scoreIsSolutionFound')) || false;
-        super.loadSavedGame('score');
+        this.isSolutionFound = JSON.parse(localStorage.getItem(`${this.prefix}IsSolutionFound`)) || false;
+        super.loadSavedGame(this.prefix);
         this.calculateScore();
-        this.dayBest = JSON.parse(localStorage.getItem('scoreDayBest'));
-        this.revealed = JSON.parse(localStorage.getItem('scoreRevealed'));
+        this.dayBest = JSON.parse(localStorage.getItem(`${this.prefix}DayBest`));
+        this.revealed = JSON.parse(localStorage.getItem(`${this.prefix}Revealed`));
         // finished before the day's best board was saved (before 2026-11-16): the board on screen is
         // the best one known
         if (!this.dayBest && this.isSolutionFound && this.isInSolvedState()) {
@@ -202,10 +204,10 @@ export class ScoreBoard extends Board {
     }
 
     resetLocalStorage() {
-        super.resetLocalStorage('score');
-        localStorage.removeItem('scoreIsSolutionFound');
-        localStorage.removeItem('scoreDayBest');
-        localStorage.removeItem('scoreRevealed');
+        super.resetLocalStorage(this.prefix);
+        localStorage.removeItem(`${this.prefix}IsSolutionFound`);
+        localStorage.removeItem(`${this.prefix}DayBest`);
+        localStorage.removeItem(`${this.prefix}Revealed`);
     }
 
     handleLetterKeyPressed(letter) {
@@ -231,7 +233,7 @@ export class ScoreBoard extends Board {
     }
     
     handleSolutionFound() {
-        localStorage.setItem("scoreIsSolutionFound", JSON.stringify(true));
+        localStorage.setItem(`${this.prefix}IsSolutionFound`, JSON.stringify(true));
         // a better board than any before it today becomes the one to share, until SHOW BEST
         if (!this.revealed && (!this.dayBest || this.score > this.dayBest.points)) {
             this.saveDayBest();

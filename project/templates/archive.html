@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% set page_title = "CONSTRAINBOW · Past puzzles" %}
+    {% include "head.html" %}
+</head>
+<body class="row-links">
+    {# the archive: a month of past puzzles for one mode (see archive_calendar in app.py) #}
+    <div id="container" class="archive-page">
+        <div id="header-div">
+            {# the wordmark links to / (which goes to the default mode, SOLVE) #}
+            <h1 class="wordmark"><a href="/" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</a></h1>
+            <div id="sub-header">
+                <nav id="mode-switch" aria-label="Past puzzles by mode">
+                    <a href="/archive/solve" {% if mode == "solve" %}class="active" aria-current="page"{% endif %}>🔑 SOLVE</a>
+                    <a href="/archive/speed" {% if mode == "speed" %}class="active" aria-current="page"{% endif %}>⏱️ SPEED</a>
+                    <a href="/archive/score" {% if mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
+                </nav>
+                <a id="archive-button" href="/{{ mode }}" aria-label="Back to today's puzzle">✕</a>
+            </div>
+        </div>
+
+        <p class="description">Past {{ mode | upper }} puzzles: {{ "{:,}".format(count) }} so far. Tap a day to play it. They don't count toward your streak.</p>
+
+        <div class="archive-month">
+            <a href="{% if previous_month %}/archive/{{ mode }}?m={{ previous_month }}{% endif %}" class="{% if not previous_month %}disabled{% endif %}" aria-label="Previous month">‹</a>
+            <h2>{{ month_name }}</h2>
+            <a href="{% if next_month %}/archive/{{ mode }}?m={{ next_month }}{% endif %}" class="{% if not next_month %}disabled{% endif %}" aria-label="Next month">›</a>
+        </div>
+
+        <div class="calendar">
+            {% for weekday in ["S", "M", "T", "W", "T", "F", "S"] %}<span class="weekday">{{ weekday }}</span>{% endfor %}
+            {% for week in weeks %}{% for cell in week %}
+                {% if cell is none %}
+                <span class="day"></span>
+                {% elif cell[1] == "puzzle" %}
+                <a class="day" href="/archive/{{ mode }}/{{ cell[0].strftime('%Y-%m-%d') }}" data-game-id="{{ cell[0].strftime('%m%d%Y') }}">{{ cell[0].day }}</a>
+                {% elif cell[1] == "today" %}
+                <a class="day today" href="/{{ mode }}" aria-label="Today's puzzle">{{ cell[0].day }}</a>
+                {% else %}
+                <span class="day">{{ cell[0].day }}</span>
+                {% endif %}
+            {% endfor %}{% endfor %}
+        </div>
+
+        <p class="archive-note">✓ marks the days you've finished in this browser.</p>
+    </div>
+    <script>
+        // ✓ every day finished here: past puzzles played in the archive, and days played as the daily
+        // puzzle (from the stats). Both are only in this browser's localStorage
+        (function () {
+            const mode = "{{ mode }}";
+            let finished = {};
+            try {
+                const archive = JSON.parse(localStorage.getItem('archive')) || {};
+                const stats = JSON.parse(localStorage.getItem('stats')) || {};
+                finished = Object.assign({}, archive[mode] || {}, stats[mode] || {});
+            } catch (e) {
+                finished = {};
+            }
+            document.querySelectorAll('.calendar a.day[data-game-id]').forEach((day) => {
+                if (day.dataset.gameId in finished) {
+                    day.classList.add('done');
+                    day.setAttribute('aria-label', `${day.textContent}, finished`);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

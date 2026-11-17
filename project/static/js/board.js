@@ -248,7 +248,8 @@ export class Board {
     // is the typed letter used by any constrained letters? (asked by wildcard tile)
     // if the typed letter used anywhere?
 
-    flashLetters(positions) {
+    // turns tiles pink and shakes them; duration is how long the pink stays (CHECK ROW keeps it longer)
+    flashLetters(positions, duration = 400) {
         positions.forEach(conflicting_letter => {
             let w = conflicting_letter[0];
             let l = conflicting_letter[1];
@@ -261,7 +262,7 @@ export class Board {
                 let l = conflicting_letter[1];
                 this.words[w].letters[l].tileElement.classList.remove('conflict');
             });
-        }, 400);
+        }, duration);
     }
 
     flashConflictingConstrainedLetters(pressedLetter) {

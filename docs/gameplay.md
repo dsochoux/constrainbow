@@ -101,7 +101,7 @@ A 4-step popup with BACK / NEXT and progress dots, each step with a small exampl
 1. Fill each row with a five-letter word; only the horizontal rows need to be words, not the vertical columns.
 2. Same color, same letter (different colors, different letters).
 3. Black tiles are free: "Use any letter the colored tiles haven't claimed", and black tiles can share letters (the two Hs). Four real words across: solved!
-4. The two modes, with the contact email and "Made by Daniel Sochoux. All rights reserved." in fine print.
+4. The modes, a "Send feedback" link and "Made by Daniel Sochoux. All rights reserved." in fine print. Since 2026-11-16 the link opens a small form on the popup (and becomes "Nevermind, it's perfect", which closes it) (a message, and an email only if the player wants a reply) that goes to Danny's dashboard; it replaced the old constrainbowgame gmail address. Typing in it never reaches the board.
 
 It opens automatically on the first visit (`localStorage.visited`) and from the `?` button. Players who visited before the redesign already have the flag, so they won't see the new intro unless they tap `?`.
 

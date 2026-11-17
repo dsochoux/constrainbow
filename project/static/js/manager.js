@@ -3,6 +3,7 @@ import { ScoreBoard } from "./scoreBoard.js";
 import { SolveBoard } from "./solveBoard.js";
 import { Stats } from "./stats.js";
 import { StatsPopup } from "./statsPopup.js";
+import { Feedback } from "./feedback.js";
 import { deleteAllCookies } from "./helpers.js";
 
 export class Manager {
@@ -12,6 +13,7 @@ export class Manager {
         this.board = null;
         this.pauseKeyboard();
         this.setUpHowToPlay(); // set up before the game loads, so the popup always works
+        this.feedback = new Feedback(this);
         this.stats = new Stats();
         // the daily puzzles have a 📊 button and keep stats (the SOLVE test batch and /solve/day don't)
         this.statsPopup = document.getElementById('stats-button') ? new StatsPopup(this) : null;
@@ -78,7 +80,9 @@ export class Manager {
         document.addEventListener('keydown', (e) => {
             // ignore keystrokes if the user is holding down the meta key, control key, 
             // or if the board is not listening for input
-            if (e.metaKey || e.ctrlKey || !this.board.isListeningForInput(e.key)) {
+            // or if the user is typing in a text box (the feedback form)
+            if (e.metaKey || e.ctrlKey || (e.target instanceof Element && e.target.closest('input, textarea'))
+                || !this.board.isListeningForInput(e.key)) {
                 return;
             }
             this.board.handleKeyPressed(e.key);

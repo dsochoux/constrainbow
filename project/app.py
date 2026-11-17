@@ -478,6 +478,47 @@ def log_event():
         fcntl.flock(f, fcntl.LOCK_UN)
     return '', 204
 
+# ---- feedback from the how-to-play popup (read on /dashboard) ----
+# one JSON object per line in logs/feedback.jsonl. The email is optional, only there so Danny can
+# reply. Limits keep a bot from filling the disk: a few messages per browser per day, and a cap per day
+FEEDBACK_FILE = "./logs/feedback.jsonl"
+FEEDBACK_MAX_LENGTH = 2000
+FEEDBACK_PER_PLAYER_PER_DAY = 5
+FEEDBACK_PER_DAY = 200
+EMAIL_PATTERN = re.compile(r"[^@\s]{1,100}@[^@\s]{1,100}\.[^@\s]{1,30}")
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json(silent=True) or {}
+    message, email, player = data.get('message'), data.get('email', ''), data.get('player')
+    mode, game = data.get('mode'), data.get('game', '')
+    if data.get('website'):
+        return '', 204  # the hidden field only bots fill in: pretend it worked
+    if (not isinstance(message, str) or not message.strip() or len(message) > FEEDBACK_MAX_LENGTH
+            or not isinstance(email, str) or (email.strip() and EMAIL_PATTERN.fullmatch(email.strip()) is None)
+            or not isinstance(player, str) or TESTER_PATTERN.fullmatch(player) is None
+            or mode not in GAME_MODES
+            or not (game == "" or (isinstance(game, str) and GAME_ID_PATTERN.fullmatch(game)))):
+        return '', 400
+    today = datetime.now(eastern).strftime("%Y-%m-%d")
+    os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
+    with open(FEEDBACK_FILE, 'a+') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        todays = [entry for entry in (json.loads(line) for line in f if line.strip())
+                  if entry.get("date") == today]
+        if (len(todays) >= FEEDBACK_PER_DAY
+                or sum(1 for entry in todays if entry.get("player") == player) >= FEEDBACK_PER_PLAYER_PER_DAY):
+            fcntl.flock(f, fcntl.LOCK_UN)
+            return '', 429
+        f.write(json.dumps({
+            "date": today, "time": datetime.now(eastern).strftime("%H:%M:%S"), "player": player,
+            "mode": mode, "game": game, "email": email.strip(), "message": message.strip(),
+            "device": "mobile" if "Mobi" in request.headers.get('User-Agent', '') else "desktop",
+        }) + "\n")
+        fcntl.flock(f, fcntl.LOCK_UN)
+    return '', 204
+
 @app.route('/log-solution', methods=['POST'])
 def log_solution():
     data = request.get_json(silent=True) or {}

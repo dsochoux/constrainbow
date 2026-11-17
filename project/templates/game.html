@@ -57,7 +57,20 @@
                         <li><span class="mode-icon">🎯</span><span><strong>Score:</strong> letters are worth points. Find the highest-scoring solution.</span></li>
                     </ul>
                     <p>New puzzles come out every day at midnight ET. Solve has one answer everyone shares; Speed and Score have thousands, so compare yours with friends!</p>
-                    <p class="fine-print">Feedback? <a href="mailto:constrainbowgame@gmail.com">constrainbowgame@gmail.com</a></p>
+                    {# feedback goes to /feedback and shows up on Danny's dashboard (see feedback.js) #}
+                    <p class="fine-print">Ideas, bugs, a word that should count? <button type="button" id="feedback-toggle" class="link-button" aria-controls="feedback-form" aria-expanded="false">Send feedback</button></p>
+                    <form id="feedback-form" class="feedback-form" hidden>
+                        <label for="feedback-message" class="visually-hidden">Your feedback</label>
+                        <textarea id="feedback-message" maxlength="2000" rows="4" placeholder="What's on your mind?" required></textarea>
+                        <label for="feedback-email" class="visually-hidden">Your email (optional)</label>
+                        <input id="feedback-email" type="email" maxlength="200" placeholder="Your email, if you'd like a reply" autocomplete="email">
+                        {# only bots fill this in #}
+                        <input id="feedback-website" type="text" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+                        <div class="feedback-actions">
+                            <span id="feedback-status" class="fine-print" role="status"></span>
+                            <button type="submit" id="feedback-send" class="pill primary">SEND</button>
+                        </div>
+                    </form>
                     <p class="fine-print">Made by Daniel Sochoux. All rights reserved.</p>
                 </section>
             </div>

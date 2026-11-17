@@ -47,6 +47,23 @@
         </section>
 
         <section>
+            <h2>Feedback{% if feedback %} <small>({{ recent_feedback }} in the last {{ days }} days, {{ feedback | length }} in all)</small>{% endif %}</h2>
+            {% if feedback %}
+            <div class="dash-feedback">
+                {% for m in feedback[:50] %}
+                <article>
+                    <p class="dash-feedback-meta">{{ m.date }} {{ m.time }} · {{ m.mode | upper }} · {{ m.device }} · <code>{{ m.player }}</code>{% if m.email %} · <a href="mailto:{{ m.email }}">{{ m.email }}</a>{% endif %}</p>
+                    <p class="dash-feedback-message">{{ m.message }}</p>
+                </article>
+                {% endfor %}
+            </div>
+            {% if feedback | length > 50 %}<p class="dash-legend">The newest 50. The rest are in logs/feedback.jsonl.</p>{% endif %}
+            {% else %}
+            <p>No feedback yet. It comes from "Send feedback" on the last step of the how-to-play popup.</p>
+            {% endif %}
+        </section>
+
+        <section>
             <h2>Daily puzzles (not the archive), last {{ days }} days</h2>
             <table class="dash-table">
                 <thead><tr><th>Mode</th><th>Visited</th><th>Started</th><th>Finished</th><th>Shared</th><th>Finish rate</th></tr></thead>

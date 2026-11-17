@@ -1264,3 +1264,95 @@ body.dashboard-page {
     font-weight: 700;
     cursor: pointer;
 }
+
+/* ---------- feedback form (how-to-play popup, last step; see feedback.js) ---------- */
+.link-button {
+    padding: 0;
+    white-space: nowrap; /* "Nevermind, it's perfect" wraps as a whole */
+    font: inherit;
+    color: var(--ink);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+.feedback-form[hidden] {
+    display: none;
+}
+
+.feedback-form textarea, .feedback-form input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font-family: var(--ui-font);
+    font-size: 16px; /* 16px keeps iPhones from zooming in on focus */
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+}
+.feedback-form textarea {
+    resize: vertical;
+}
+.feedback-form textarea:focus, .feedback-form input:focus {
+    outline: none;
+    box-shadow: 2px 2px 0 var(--c4);
+}
+
+.feedback-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.feedback-actions .fine-print {
+    margin: 0;
+}
+.feedback-actions .pill:disabled {
+    opacity: 0.5;
+}
+
+/* hidden from sight but still read by screen readers (!important beats the form's input style) */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* dashboard: feedback messages, newest first */
+.dash-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.dash-feedback article {
+    padding: 10px 14px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+}
+.dash-feedback-meta {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+.dash-feedback-meta a {
+    color: var(--ink);
+}
+.dash-feedback-message {
+    margin: 6px 0 0;
+    white-space: pre-wrap; /* keep the player's line breaks */
+    overflow-wrap: anywhere;
+}

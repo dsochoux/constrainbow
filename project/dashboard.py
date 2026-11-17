@@ -10,6 +10,7 @@ It reads two kinds of logs:
   - logs/events/YYYY-MM-DD.jsonl: visits, starts, finishes, shares, SHOW BEST and reports, each with an
     anonymous player id (since 2026-11-16; see /log-event in app.py)
   - logs/MMDDYYYY/{solve,speed,score}.csv: every first solve, back to Feb 2025
+and the messages from the how-to-play popup's feedback form, logs/feedback.jsonl (see /feedback in app.py)
 """
 import csv
 import json
@@ -23,6 +24,7 @@ from flask import Blueprint, abort, render_template, request
 
 eastern = ZoneInfo("America/New_York")
 EVENTS_FOLDER = "./logs/events/"
+FEEDBACK_FILE = "./logs/feedback.jsonl"
 MODES = ("solve", "speed", "score")
 RANGES = (7, 30, 90)
 
@@ -229,6 +231,20 @@ def solve_puzzles(last_day, count=14):
     return rows
 
 
+def load_feedback():
+    """every feedback message, newest first"""
+    if not os.path.exists(FEEDBACK_FILE):
+        return []
+    messages = []
+    with open(FEEDBACK_FILE, "r") as f:
+        for line in f:
+            try:
+                messages.append(json.loads(line))
+            except ValueError:
+                continue
+    return messages[::-1]
+
+
 def pending_reports():
     def words_in(path):
         if not os.path.exists(path):
@@ -257,6 +273,8 @@ def dashboard_page():
     rows = daily_rows(first_day, today, events)
     most = max([1] + [max(r["visitors"] or 0, r["total_finishes"]) for r in rows])
     referrers, utms, devices = sources(events)
+    feedback = load_feedback()
+    recent_feedback = sum(1 for m in feedback if m.get("date", "") >= f"{first_day:%Y-%m-%d}")
     return render_template(
         "dashboard.html",
         today=today, days=days, ranges=RANGES, day=day,
@@ -264,5 +282,6 @@ def dashboard_page():
         overview=overview(events), daily=rows, most=most,
         funnels=funnels(events), referrers=referrers, utms=utms, devices=devices,
         details=day_details(day), solve_rows=solve_puzzles(today), pending_reports=pending_reports(),
+        feedback=feedback, recent_feedback=recent_feedback,
         events_since=min((e["date"] for e in events), default=None),
     )

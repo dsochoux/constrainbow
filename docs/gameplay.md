@@ -17,7 +17,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 ### 🔑 Solve (`/solve`, since 2026-11-15)
 - One puzzle a day with exactly **one** solution, so everyone solves the same four words. 5 letters start filled in (on black tiles), always with at least one row starting with two of them, which makes a natural place to begin. They sit pressed into the board and can't be changed.
 - Plays like speed: START GAME, a timer, PAUSE, letters hidden while paused.
-- **REVEAL** fills in the selected tile from the answer: one black tile, or a whole color (the button reads "REVEAL 3" for a 3-tile color). Revealed tiles show a gray letter and are locked. Reveals count per tile.
+- **REVEAL** fills in the selected tile from the answer: one black tile, or a whole color (the button reads "REVEAL LETTER" on a black tile and "REVEAL 3 LETTERS" on a 3-tile color, so it never looks like it gives away the whole board; plain "REVEAL" while paused, when a click just shakes it. Changed 2026-11-17 after a player avoided REVEAL for fear it would show the whole answer). Revealed tiles show a gray letter and are locked. Reveals count per tile.
 - Progress is saved, so a reload or a trip to another mode resumes where you left off.
 - The share text starts with the mode's link (`constrainbow.com/solve`, `/speed` or `/score`), then shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
   ```

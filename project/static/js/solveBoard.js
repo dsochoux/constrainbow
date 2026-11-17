@@ -97,14 +97,17 @@ export class SolveBoard extends SpeedBoard {
         }));
     }
 
-    // the button says how many tiles a reveal would fill: "REVEAL 3" on a color with 3 tiles
+    // the button says how much a reveal would fill in, so nobody thinks it gives away the whole
+    // board: "REVEAL LETTER" on a black tile, "REVEAL 3 LETTERS" on a color with 3 tiles, and plain
+    // "REVEAL" while paused or when there's nothing to reveal (a click then just shakes it)
     updateRevealButton() {
         const target = this.selectedLetter;
-        let numTiles = 1;
-        if (target !== null && target.isConstrained() && !target.isGiven) {
-            numTiles = this.constraints[target.constraint].length;
+        if (this.isPaused || target === null || target.isGiven) {
+            this.revealButton.textContent = "REVEAL";
+            return;
         }
-        this.revealButton.textContent = numTiles > 1 ? `REVEAL ${numTiles}` : "REVEAL";
+        const numTiles = target.isConstrained() ? this.constraints[target.constraint].length : 1;
+        this.revealButton.textContent = numTiles > 1 ? `REVEAL ${numTiles} LETTERS` : "REVEAL LETTER";
     }
 
     // like SpeedBoard.initBoard, but with SolveWords and without loading or resetting the speed
@@ -159,6 +162,12 @@ export class SolveBoard extends SpeedBoard {
     pause() {
         super.pause();
         this.saveState();
+        this.updateRevealButton();
+    }
+
+    resume() {
+        super.resume();
+        this.updateRevealButton();
     }
 
     handleLetterKeyPressed(letter) {

@@ -230,7 +230,7 @@ export class SolveBoard extends SpeedBoard {
 
     // CHECK ROW: whether the selected tile's row is exactly right, without saying which letters are
     // wrong. The row has to be full (its empty tiles jiggle if not). Right: the row hops and turns
-    // green; wrong: it shakes and stays pink for 2 seconds
+    // green; wrong: it flashes and shakes
     checkRow() {
         const target = this.selectedLetter;
         const word = target === null ? null : this.words[target.w];
@@ -251,8 +251,7 @@ export class SolveBoard extends SpeedBoard {
         if (letters === this.solution[target.w]) {
             word.letters.forEach((letter, l) => letter.playAnimation('correct', l * 70));
         } else {
-            // the pink stays for 2 seconds, long enough to remember which row was wrong
-            this.flashLetters(word.letters.map((letter) => [target.w, letter.l]), 2000);
+            this.flashLetters(word.letters.map((letter) => [target.w, letter.l]));
         }
     }
 

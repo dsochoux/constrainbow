@@ -96,7 +96,7 @@ In priority order. The aim: give players a reason to come back, something to com
    - **A 5th color doesn't help**: 1% unique at 14 tiles, and about 10× slower to search.
    - **Uniqueness depends on the word list.** It has to be checked against every word the game *accepts*, or players will find a second valid answer. This conflicts with feature 6 unless uniqueness is checked against the bigger list and the answer itself uses only common words.
 6. **Bigger accepted-word list.** Keep the curated `words.txt` for generating puzzles, but accept a larger list (still no regular plurals or past tenses) when checking answers, so real words aren't rejected. *(2026-11-16: the reports were reviewed and the good words added; see Word lists above. A local review page now handles new reports.)*
-7. *(Built 2026-11-16: anonymous event log + password-protected `/dashboard`; the public log pages were removed. See architecture.md.)* **Visitor and solve counts** from the nginx logs and solve logs, to see which videos bring players.
+7. *(Built 2026-11-16: anonymous event log + password-protected `/dashboard`; the public log pages were removed. The daily-puzzle table counts plays (player-days) with different players in brackets. Deploy note: the code went out a minute before nginx stripped `X-Dashboard-Auth`, so the dashboard was briefly reachable with a faked header; only Claude's own checks hit it. See architecture.md and server/nginx-dashboard.conf.)* **Visitor and solve counts** from the nginx logs and solve logs, to see which videos bring players.
 8. Lower priority: hints, dark mode, an installable PWA.
 
 ## Feature ideas to discuss

@@ -173,6 +173,7 @@ export class Manager {
     // called when a puzzle is finished: saves today's result to the stats, and shows the stats the
     // first time today's puzzle is finished (after the celebration)
     recordResult() {
+        Manager.keepStorage();
         if (this.isArchive) {
             this.markArchiveFinished();
             return;
@@ -186,6 +187,25 @@ export class Manager {
         const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
         if (isFirst) {
             setTimeout(() => this.statsPopup.show(), 1800);
+        }
+    }
+
+    // asks the browser not to clear this site's storage (stats, streaks, archive ✓s) when the device
+    // runs low on space. Chrome and Safari decide on their own without asking anyone; Firefox would
+    // show the player a permission popup, so it's skipped there. Called when a puzzle is finished.
+    // It doesn't stop Safari clearing everything after 7 days of using Safari without visiting the site
+    static keepStorage() {
+        try {
+            if (!navigator.storage || !navigator.storage.persist || /Firefox\//.test(navigator.userAgent)) {
+                return;
+            }
+            navigator.storage.persisted().then((isKept) => {
+                if (!isKept) {
+                    return navigator.storage.persist();
+                }
+            }).catch(() => {});
+        } catch (e) {
+            // optional
         }
     }
 

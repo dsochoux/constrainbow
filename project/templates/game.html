@@ -10,20 +10,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {# bump icon_version when the icons change, so browsers and home screens fetch the new ones #}
+    {% set icon_version = 2 %}
     <!-- Standard favicon: the SVG is sharp at any size; the PNGs are fallbacks for older browsers -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon.svg') }}" type="image/svg+xml">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png') }}" sizes="32x32" type="image/png">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png') }}" sizes="16x16" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon.svg', v=icon_version) }}" type="image/svg+xml">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-32x32.png', v=icon_version) }}" sizes="32x32" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/favicon-16x16.png', v=icon_version) }}" sizes="16x16" type="image/png">
 
     <!-- Apple Touch Icon (for iOS devices) -->
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon_io/apple-touch-icon.png', v=icon_version) }}">
 
     <!-- Android Chrome Icons -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-192x192.png') }}" sizes="192x192" type="image/png">
-    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-512x512.png') }}" sizes="512x512" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-192x192.png', v=icon_version) }}" sizes="192x192" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon_io/android-chrome-512x512.png', v=icon_version) }}" sizes="512x512" type="image/png">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='favicon_io/site.webmanifest', v=icon_version) }}">
 </head>
 <body class="row-links">
     <input type="hidden" id="game-id" value="{{ game_id }}" />

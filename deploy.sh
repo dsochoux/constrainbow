@@ -28,11 +28,14 @@ echo "Syncing files..."
 # app.py
 scp ./project/app.py ./project/dashboard.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
 # the page templates (not word_review.html, which is only for running locally)
-scp ./project/templates/game.html ./project/templates/head.html ./project/templates/archive.html ./project/templates/dashboard.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
+scp ./project/templates/game.html ./project/templates/head.html ./project/templates/archive.html ./project/templates/dashboard.html ./project/templates/preview_test.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
 # style.css
 scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
 # favicons and the web app manifest
 scp ./project/static/favicon_io/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/favicon_io
+# link-preview test images (see /preview-test in app.py)
+ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_DIR/project/static/preview"
+scp ./project/static/preview/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/preview
 # bundle.js
 scp ./project/static/js/bundle.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
 # words.txt (accepted words), common_words.txt (SOLVE answers), and SOLVE themes if there are any

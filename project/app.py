@@ -228,6 +228,26 @@ def solve_day():
         clue=get_clue(puzzle_path),
     )
 
+# an unlisted page for trying out the link-preview image (og:image) in Messages, Discord and so on,
+# without touching the real pages. Each design is static/preview/test-N.png; send
+# constrainbow.com/preview-test?v=N, since apps remember a link's card and a new link makes a new one.
+# Remove this once the real pages have their preview tags
+PREVIEW_TEST_FOLDER = "./project/static/preview/"
+
+@app.route('/preview-test')
+def preview_test():
+    versions = sorted(int(name[5:-4]) for name in os.listdir(PREVIEW_TEST_FOLDER)
+                      if re.fullmatch(r"test-[0-9]{1,3}\.png", name))
+    if not versions:
+        return "No preview images.", 404
+    try:
+        version = int(request.args.get('v', ''))
+    except ValueError:
+        version = versions[-1]
+    if version not in versions:
+        version = versions[-1]
+    return render_template('preview_test.html', version=version)
+
 # ---- the archive: every past puzzle, by mode ----
 
 MODE_EMOJI = {"solve": "🔑", "speed": "⏱️", "score": "🎯"}

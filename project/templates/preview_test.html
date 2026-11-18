@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% set page_title = "CONSTRAINBOW" %}
+    {% include "head.html" %}
+    <meta name="robots" content="noindex">
+    {# the link-preview tags being tested (see preview_test in app.py). Apps need full https:// links #}
+    {% set image = "https://constrainbow.com/static/preview/test-" ~ version ~ ".png" %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Constrainbow">
+    <meta property="og:title" content="Constrainbow">
+    <meta property="og:description" content="Same color, same letter. Three ways to play, every day.">
+    <meta property="og:url" content="https://constrainbow.com/preview-test?v={{ version }}">
+    <meta property="og:image" content="{{ image }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="The Constrainbow wordmark above a partly filled board: S_LVE, SPEE_, SC_RE, SH_RE">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ image }}">
+</head>
+<body>
+    <main style="max-width: 640px; margin: 24px auto; padding: 0 16px; font-family: var(--ui-font);">
+        <p>Link-preview test, version {{ version }}.</p>
+        <img src="{{ url_for('static', filename='preview/test-' ~ version ~ '.png') }}" alt="" style="width: 100%; height: auto; border: 2px solid var(--ink); border-radius: 12px;">
+        <p><a href="/solve">Play Constrainbow</a></p>
+    </main>
+</body>
+</html>

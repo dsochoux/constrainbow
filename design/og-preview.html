@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Link preview mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* the link-preview image (og:image), 1200x630. Two layouts to compare; ?only=side or ?only=stacked
+   shows just one card at full size with no margins, for capturing it as a PNG.
+   Colors, fonts and tile styles copy project/static/css/style.css */
+:root {
+    --ink: #1d1b20;
+    --paper: #fbf4e6;
+    --card: #ffffff;
+    --muted: #8a8478;
+    --c1: #e0352b; --c2: #ff8a1f; --c3: #e6c200; --c4: #3a3fd9;
+    --t1: #fde0dc; --t2: #ffe7cc; --t3: #fff6c2; --t4: #dfe1ff;
+    --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
+    --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: 32px;
+    background: #d8d2c4;
+    font-family: var(--ui-font);
+    color: var(--ink);
+}
+body.only { padding: 0; background: var(--paper); }
+h2 { margin: 28px 0 10px; font-size: 18px; }
+body.only h2 { display: none; }
+
+.card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---- the wordmark: letter tiles with colored shadows, cycling red, orange, yellow, blue ---- */
+.wordmark { display: grid; gap: var(--wm-gap); }
+.wordmark span {
+    --c: var(--c1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--wm);
+    height: calc(var(--wm) / 0.82);
+    font-family: var(--display-font);
+    font-size: calc(var(--wm) * 0.6);
+    background: var(--card);
+    border: 3px solid var(--ink);
+    border-radius: calc(var(--wm) * 0.14);
+    box-shadow: 4px 4px 0 var(--c);
+}
+.wordmark span:nth-child(4n + 2) { --c: var(--c2); }
+.wordmark span:nth-child(4n + 3) { --c: var(--c3); }
+.wordmark span:nth-child(4n + 4) { --c: var(--c4); }
+
+/* ---- the board: rows joined by an ink link, like <body class="row-links"> ---- */
+.board { display: flex; flex-direction: column; gap: var(--rail-gap); }
+.row { position: relative; display: flex; gap: var(--gap); }
+.row::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--tile) / 2);
+    right: calc(var(--tile) / 2);
+    top: 50%;
+    height: calc(var(--tile) * 0.09);
+    transform: translateY(-50%);
+    background: var(--ink);
+    border-radius: 4px;
+}
+.tile {
+    --c: var(--ink);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tile);
+    height: var(--tile);
+    font-family: var(--display-font);
+    font-size: calc(var(--tile) * 0.5);
+    background: var(--card);
+    border: calc(var(--tile) * 0.04) solid var(--ink);
+    border-radius: calc(var(--tile) * 0.17);
+    box-shadow: calc(var(--tile) * 0.05) calc(var(--tile) * 0.05) 0 var(--c);
+}
+.c1 { --c: var(--c1); --t: var(--t1); }
+.c2 { --c: var(--c2); --t: var(--t2); }
+.c3 { --c: var(--c3); --t: var(--t3); }
+.c4 { --c: var(--c4); --t: var(--t4); }
+.tile.c1, .tile.c2, .tile.c3, .tile.c4 { background: var(--t); }
+/* the small shape in each colored tile's corner, so color isn't the only cue */
+.tile.c1::before, .tile.c2::before, .tile.c3::before, .tile.c4::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--tile) * 0.08);
+    left: calc(var(--tile) * 0.08);
+    width: calc(var(--tile) * 0.14);
+    height: calc(var(--tile) * 0.14);
+    background: var(--c);
+}
+.c1::before { border-radius: 50%; }
+.c2::before { border-radius: 2px; }
+.c3::before { transform: rotate(45deg) scale(0.85); border-radius: 1px; }
+.c4::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+
+.tagline {
+    font-family: var(--ui-font);
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* ---- layout 1: side by side ---- */
+.side { gap: 72px; }
+.side .left { display: flex; flex-direction: column; align-items: flex-start; gap: 34px; }
+.side .wordmark { --wm: 64px; --wm-gap: 8px; grid-template-columns: repeat(6, var(--wm)); }
+.side .tagline { font-size: 34px; }
+.side .board { --tile: 92px; --gap: 14px; --rail-gap: 14px; }
+
+/* ---- layout 2: stacked ---- */
+.stacked { flex-direction: column; gap: 40px; }
+.stacked .wordmark { --wm: 74px; --wm-gap: 8px; grid-template-columns: repeat(12, var(--wm)); }
+.stacked .board { --tile: 78px; --gap: 13px; --rail-gap: 12px; }
+
+/* ---- layouts 3-5: the wordmark on one line across the top, the board and some text side by side below ---- */
+.top { flex-direction: column; gap: 44px; }
+.top .wordmark { --wm: 70px; --wm-gap: 8px; grid-template-columns: repeat(12, var(--wm)); }
+.top .board { --tile: 76px; --gap: 12px; --rail-gap: 11px; }
+.top .below { display: flex; align-items: center; justify-content: center; gap: 64px; }
+.headline {
+    font-family: var(--ui-font);
+    font-weight: 700;
+    font-size: 46px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+.subline {
+    margin-top: 18px;
+    font-family: var(--ui-font);
+    font-weight: 500;
+    font-size: 26px;
+    color: var(--muted);
+}
+/* the color words, tinted like the tiles */
+.word-c1 { color: var(--c1); }
+.word-c2 { color: var(--c2); }
+.word-c3 { color: #c9a800; } /* yellow darkened a little, so it reads on paper */
+.word-c4 { color: var(--c4); }
+.right-text { text-align: left; width: 420px; }
+.left-text { text-align: right; width: 420px; }
+/* layout 5: a short phrase on each side of the board */
+.flank { font-family: var(--ui-font); font-weight: 700; font-size: 40px; line-height: 1.15; width: 300px; }
+.flank.left { text-align: right; }
+.flank.right { text-align: left; }
+.top.centered .below { gap: 48px; }
+
+/* ---- text variants of layout 3: "Same color, same letter." / "Three ways to play, every day." ---- */
+.text-b { width: 470px; }
+.text-b .l1 { font-family: var(--ui-font); font-weight: 700; font-size: 58px; line-height: 1.08; letter-spacing: -0.015em; }
+.text-b .l2 { margin-top: 22px; font-family: var(--ui-font); font-weight: 500; font-size: 30px; color: var(--ink); }
+.yellow-ink { color: #c9a800; }
+/* each letter cycles red, orange, yellow, blue, like the wordmark's shadows (spans added by the script) */
+.rainbow-letters .rl:nth-of-type(4n + 1) { color: var(--c1); }
+.rainbow-letters .rl:nth-of-type(4n + 2) { color: var(--c2); }
+.rainbow-letters .rl:nth-of-type(4n + 3) { color: #c9a800; }
+.rainbow-letters .rl:nth-of-type(4n + 4) { color: var(--c4); }
+.gradient {
+    background: linear-gradient(90deg, var(--c1), var(--c2) 35%, #d4ad00 65%, var(--c4));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.emoji-row { margin-top: 14px; font-size: 40px; letter-spacing: 12px; }
+/* aligned: the row below is exactly as wide as the wordmark (12 tiles and 11 gaps), so the board's
+   left edge sits under the C */
+.aligned .below { width: calc(12 * var(--wm) + 11 * var(--wm-gap)); --wm: 70px; --wm-gap: 8px; justify-content: flex-start; }
+.aligned .below { gap: 56px; }
+.aligned .text-b { flex: 1; width: auto; }
+.aligned .l2 { font-size: 28px; white-space: nowrap; } /* "Three ways to play, every day." stays on one line */
+.aligned .emoji-row { margin-top: 18px; font-size: 52px; letter-spacing: 14px; }
+.chips { display: flex; gap: 10px; margin-top: 16px; }
+.chip {
+    padding: 6px 14px;
+    font-family: var(--ui-font);
+    font-weight: 700;
+    font-size: 22px;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 var(--ink);
+}
+</style>
+</head>
+<body>
+
+<h2>1. Side by side</h2>
+<div class="card side" id="side">
+    <div class="left">
+        <div class="wordmark"></div>
+        <div class="tagline">A daily word puzzle</div>
+    </div>
+    <div class="board"></div>
+</div>
+
+<h2>2. Stacked</h2>
+<div class="card stacked" id="stacked">
+    <div class="wordmark"></div>
+    <div class="board"></div>
+</div>
+
+<h2>3. Name on top, board left, text right</h2>
+<div class="card top" id="board-left">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="right-text">
+            <div class="headline">Four words.<br>Four colors.<br>One answer.</div>
+            <div class="subline">A new puzzle every day</div>
+        </div>
+    </div>
+</div>
+
+<h2>4. Name on top, text left, board right</h2>
+<div class="card top" id="board-right">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="left-text">
+            <div class="headline">A daily word puzzle where <span class="word-c1">same</span> <span class="word-c2">color</span> means <span class="word-c4">same</span> <span class="word-c3">letter</span></div>
+        </div>
+        <div class="board"></div>
+    </div>
+</div>
+
+<h2>5. Name on top, a phrase on each side of the board</h2>
+<div class="card top centered" id="flanked">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="flank left">Same color,</div>
+        <div class="board"></div>
+        <div class="flank right">same letter.</div>
+    </div>
+</div>
+
+<h2>B1. Black</h2>
+<div class="card top" id="b1">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B2. Colored words (both &ldquo;same&rdquo;s match, like the rule)</h2>
+<div class="card top" id="b2">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1"><span class="word-c1">Same</span> <span class="word-c2">color</span>,<br><span class="word-c1">same</span> <span class="word-c4">letter</span>.</div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B3. Rainbow letters on &ldquo;color&rdquo; only</h2>
+<div class="card top" id="b3">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same <span class="rainbow-letters">color</span>,<br>same letter.</div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B4. Rainbow letters on the whole line</h2>
+<div class="card top" id="b4">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1"><span class="rainbow-letters">Same color,</span><br><span class="rainbow-letters">same letter.</span></div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B5. Gradient</h2>
+<div class="card top" id="b5">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1"><span class="gradient">Same color,<br>same letter.</span></div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B6. One color per line</h2>
+<div class="card top" id="b6">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1"><span class="word-c1">Same color,</span><br><span class="word-c4">same letter.</span></div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B7. Black, mode emojis on their own row</h2>
+<div class="card top" id="b7">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div><div class="emoji-row">🔑⏱️🎯</div></div>
+    </div>
+</div>
+
+<h2>B8. Black, mode chips</h2>
+<div class="card top" id="b8">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div><div class="chips"><span class="chip">🔑 Solve</span><span class="chip">⏱️ Speed</span><span class="chip">🎯 Score</span></div></div>
+    </div>
+</div>
+
+<h2>B1, aligned: black, no emoji</h2>
+<div class="card top aligned" id="b1a">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div></div>
+    </div>
+</div>
+
+<h2>B7, aligned: black, bigger mode emojis</h2>
+<div class="card top aligned" id="b7a">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div><div class="emoji-row">🔑⏱️🎯</div></div>
+    </div>
+</div>
+
+<h2>B8, aligned: black, mode chips</h2>
+<div class="card top aligned" id="b8a">
+    <div class="wordmark"></div>
+    <div class="below">
+        <div class="board"></div>
+        <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div><div class="chips"><span class="chip">🔑 Solve</span><span class="chip">⏱️ Speed</span><span class="chip">🎯 Score</span></div></div>
+    </div>
+</div>
+
+<script>
+// the board: SOLVE / SPEED / SCORE / SHARE, part-way through, as the game would show it. S is red,
+// R orange, O yellow, E blue (every other letter appears once, so it's a black tile). Typing a color's
+// letter fills every tile of that color, so S, R and E are filled everywhere and the yellow O is empty
+// everywhere. One black tile is empty in each of the other rows, so every row is missing one letter
+const WORDS = ['SOLVE', 'SPEED', 'SCORE', 'SHARE'];
+const COLORS = { S: 'c1', R: 'c2', O: 'c3', E: 'c4' };
+const FILLED_COLORS = ['c1', 'c2', 'c4'];
+const EMPTY_BLACK_TILES = ['1,4', '3,2']; // row,position: the D in SPEED and the A in SHARE
+
+document.querySelectorAll('.wordmark').forEach((wordmark) => {
+    for (const ch of 'CONSTRAINBOW') {
+        const span = document.createElement('span');
+        span.textContent = ch;
+        wordmark.appendChild(span);
+    }
+});
+document.querySelectorAll('.board').forEach((board) => {
+    WORDS.forEach((word, r) => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        [...word].forEach((ch, i) => {
+            const tile = document.createElement('div');
+            const color = COLORS[ch];
+            tile.className = 'tile' + (color ? ' ' + color : '');
+            const isFilled = color ? FILLED_COLORS.includes(color) : !EMPTY_BLACK_TILES.includes(`${r},${i}`);
+            tile.textContent = isFilled ? ch : '';
+            row.appendChild(tile);
+        });
+        board.appendChild(row);
+    });
+});
+
+// split .rainbow-letters into one span per letter (spaces and punctuation stay plain)
+document.querySelectorAll('.rainbow-letters').forEach((el) => {
+    el.innerHTML = [...el.textContent].map((ch) => /[A-Za-z]/.test(ch) ? `<span class="rl">${ch}</span>` : ch).join('');
+});
+
+// ?only=side or ?only=stacked: just that card, for capturing the PNG
+const only = new URLSearchParams(location.search).get('only');
+if (only) {
+    document.body.classList.add('only');
+    document.querySelectorAll('.card').forEach((card) => {
+        if (card.id !== only) card.remove();
+    });
+}
+</script>
+</body>
+</html>

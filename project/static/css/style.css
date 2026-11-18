@@ -23,10 +23,9 @@
     --t3: #fff6c2;
     --t4: #dfe1ff;
 
-    /* green and purple aren't constraint colors: they're kept for winning. In the win wave, black tiles
-       you typed flash green and given (or revealed) black tiles flash purple; both join the wordmark */
+    /* green isn't a constraint color: it's kept for winning. In the win wave, black tiles you typed
+       flash green, and it joins the wordmark */
     --win: #1f9d55;
-    --win-given: #9a3cc9;
 
     --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
     --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
@@ -153,14 +152,13 @@ button:focus-visible, a:focus-visible {
 .wordmark span:nth-child(4n + 3) { --c: var(--c3); }
 .wordmark span:nth-child(4n + 4) { --c: var(--c4); }
 
-/* after a win the wordmark becomes a full rainbow: green and purple join the four colors
-   (red, orange, yellow, green, blue, purple, twice), and it stays for the rest of the day (Manager.showRainbow) */
-.wordmark span:nth-child(6n + 1) { --r: var(--c1); }
-.wordmark span:nth-child(6n + 2) { --r: var(--c2); }
-.wordmark span:nth-child(6n + 3) { --r: var(--c3); }
-.wordmark span:nth-child(6n + 4) { --r: var(--win); }
-.wordmark span:nth-child(6n + 5) { --r: var(--c4); }
-.wordmark span:nth-child(6n + 6) { --r: var(--win-given); }
+/* after a win the wordmark becomes a full rainbow: green joins the four colors
+   (red, orange, yellow, green, blue), and it stays for the rest of the day (Manager.showRainbow) */
+.wordmark span:nth-child(5n + 1) { --r: var(--c1); }
+.wordmark span:nth-child(5n + 2) { --r: var(--c2); }
+.wordmark span:nth-child(5n + 3) { --r: var(--c3); }
+.wordmark span:nth-child(5n + 4) { --r: var(--win); }
+.wordmark span:nth-child(5n + 5) { --r: var(--c4); }
 .wordmark.rainbow span {
     box-shadow: 2px 2px 0 var(--r);
 }
@@ -548,9 +546,9 @@ body.row-links .word-row .letter {
 .letter.given.selected::after {
     display: none;
 }
-/* in the win wave, given (and revealed) black tiles flash purple; the ones you typed flash green */
+/* in the win wave, given (and revealed) black tiles flash black; only the ones you typed flash green */
 .letter.given:not(.c1, .c2, .c3, .c4) {
-    --flash: var(--win-given);
+    --flash: var(--ink);
 }
 .letter.revealed .letter-text {
     color: #8a8290;

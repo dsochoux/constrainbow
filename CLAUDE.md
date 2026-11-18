@@ -25,7 +25,7 @@ Detailed notes (read these before making changes):
 - The repo is public (for Danny's resume), so never commit secrets. SOLVE answers in `games/solve/` are public too; Danny accepted that for now (2026-11-16). If the game grows, stop tracking `games/solve/` so only the server has them.
 
 ## Look
-"Paper pop" (chosen 2026-11-15 from the three directions in `design/mockups.html`): a cream paper background (`--paper`), ink borders with hard offset shadows, Archivo Black for the wordmark and tiles, Space Grotesk for the UI. Colored tiles get a tint plus a colored shadow plus a shape. Green and purple are kept for winning (black tiles flash them, and the title becomes a six-color rainbow that dispenses the confetti). All colors are CSS variables at the top of `style.css`. Rows use ink "links" (`<body class="row-links">`). Favicon sources are in `design/favicon/`. Write American English (color, gray) everywhere.
+"Paper pop" (chosen 2026-11-15 from the three directions in `design/mockups.html`): a cream paper background (`--paper`), ink borders with hard offset shadows, Archivo Black for the wordmark and tiles, Space Grotesk for the UI. Colored tiles get a tint plus a colored shadow plus a shape. Green is kept for winning (typed black tiles flash it, and the title becomes a five-color rainbow that dispenses the confetti). All colors are CSS variables at the top of `style.css`. Rows use ink "links" (`<body class="row-links">`). Favicon sources are in `design/favicon/`. Write American English (color, gray) everywhere.
 
 ## Conventions
 - No framework, no package.json, no tests. Keep it that way unless Danny agrees otherwise.

@@ -174,7 +174,7 @@ export class Manager {
         }
     }
 
-    // the wordmark turns into a full rainbow (green and purple join the four colors) when the puzzle
+    // the wordmark turns into a full rainbow (green joins the four colors) when the puzzle
     // is finished; animate plays the hop-and-fill wave, which replays (from the rainbow colors) on every
     // win, like the board's wave. Returns where and when each letter hops, for the confetti it drops
     // (empty when not animating)

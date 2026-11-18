@@ -56,13 +56,8 @@ export class ScoreBoard extends Board {
         return this.revealed !== null;
     }
 
-    // SHOW BEST asks first, so nobody thinks finding one solution ends the game; a perfect score has
-    // nothing left to find, so it doesn't ask
+    // SHOW BEST asks first, so nobody thinks finding one solution ends the game
     askToShowBest() {
-        if (this.dayBest.points >= this.numPossiblePoints) {
-            this.showBest();
-            return;
-        }
         document.getElementById('best-confirm-score').textContent = this.dayBest.points.toLocaleString();
         document.getElementById('best-confirm-max').textContent = this.numPossiblePoints.toLocaleString();
         this.bestOverlay.style.visibility = 'visible';
@@ -124,9 +119,11 @@ export class ScoreBoard extends Board {
         this.updateBestControls();
     }
 
-    // SHOW BEST once today's puzzle has been finished; the YOURS / BEST switch after that
+    // SHOW BEST once today's puzzle has been finished, unless the player already found every point
+    // (there's nothing better to show); the YOURS / BEST switch after SHOW BEST
     updateBestControls() {
-        this.showBestButton.style.display = (this.dayBest && !this.revealed) ? 'inline-block' : 'none';
+        const canShowBest = this.dayBest && !this.revealed && this.dayBest.points < this.numPossiblePoints;
+        this.showBestButton.style.display = canShowBest ? 'inline-block' : 'none';
         this.boardToggle.style.display = this.revealed ? 'flex' : 'none';
         if (this.revealed) {
             this.yourBoardButton.textContent = `YOURS: ${this.revealed.final.points}`;
@@ -267,6 +264,11 @@ export class ScoreBoard extends Board {
             return this.revealed.final.words;
         }
         return this.dayBest ? this.dayBest.words : super.getShareWords();
+    }
+
+    // every point found, before SHOW BEST
+    getTitleMessage() {
+        return !this.revealed && this.score >= this.numPossiblePoints ? "BESTSOLUTION" : null;
     }
 
     // what the stats keep for a finished day (a better score later the same day replaces it)

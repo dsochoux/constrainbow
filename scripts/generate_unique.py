@@ -52,7 +52,10 @@ TEST_BATCH_FOLDER = "games/solve-test"
 # and emojis that fall instead of confetti when the puzzle is solved:
 #   {"2026-11-26": {"words": ["stuff", ...], "clue": "Happy Thanksgiving!", "emoji": "🦃"}}
 # ("emoji" can also be a list, like ["🦃", "🥧"], and the falling emojis cycle through it)
+# and "title": a message of exactly 12 characters (a space leaves a tile empty) that the CONSTRAINBOW title
+# turns into when the puzzle is solved, like "HAPPYNEWYEAR"
 THEMES_PATH = "word_files/solve_themes.json"
+TITLE_LENGTH = 12  # a theme's "title" replaces the 12 letters of CONSTRAINBOW
 
 
 def solve_path(game_id):
@@ -379,10 +382,17 @@ def load_themes():
         if isinstance(theme, list):
             theme = {"words": theme}
         emoji = theme.get("emoji", [])
+        title = theme.get("title", "").upper()
+        if title and len(title) != TITLE_LENGTH:
+            # a typo shouldn't stop the puzzle being made: warn, and leave the title out
+            print(f"WARNING: the title for {day} ({title!r}) has {len(title)} characters, not {TITLE_LENGTH}; "
+                  f"leaving it out", flush=True)
+            title = ""
         loaded[datetime.strptime(day, "%Y-%m-%d").strftime("%m%d%Y")] = {
             "words": [w.lower() for w in theme["words"]],
             "clue": theme.get("clue", ""),
             "emoji": [emoji] if isinstance(emoji, str) else list(emoji),
+            "title": title,
         }
     return loaded
 
@@ -428,6 +438,8 @@ def generate_solve_day(date):
                 puzzle["clue"] = theme["clue"]
             if theme["emoji"]:
                 puzzle["emoji"] = theme["emoji"]
+            if theme["title"]:
+                puzzle["title"] = theme["title"]
             write_puzzle(solve_path(game_id), puzzle)
             return puzzle
         # never leave a day without a puzzle: say so loudly, then make a normal one

@@ -6,6 +6,8 @@ import { StatsPopup } from "./statsPopup.js";
 import { Feedback } from "./feedback.js";
 import { deleteAllCookies, launchConfetti } from "./helpers.js";
 
+const TITLE = "CONSTRAINBOW"; // the wordmark's letters, one per span in game.html
+
 export class Manager {
     constructor() {
         // checked before the how-to-play popup marks this browser as visited (see logVisit)
@@ -182,14 +184,27 @@ export class Manager {
     // is finished; animate plays the hop-and-fill wave, which replays (from the rainbow colors) on every
     // win, like the board's wave. Returns where and when each letter hops, for the confetti it drops
     // (empty when not animating)
-    showRainbow(animate) {
+    // message (optional, 12 letters): the letters turn into it as the wave passes, hold it for a few
+    // seconds, then a second wave turns them back into CONSTRAINBOW
+    showRainbow(animate, message = null) {
         const wordmark = document.querySelector('.wordmark');
         if (!wordmark) {
             return [];
         }
         wordmark.classList.toggle('rainbow-again', wordmark.classList.contains('rainbow'));
         wordmark.classList.add('rainbow');
-        return animate ? this.playTitleWave(wordmark) : [];
+        if (!animate) {
+            return [];
+        }
+        const letters = this.playTitleWave(wordmark, message || TITLE);
+        if (message) {
+            const holdUntil = letters[letters.length - 1].delay + 650 + 3000; // the wave's end, then 3 s
+            this.titleRevertTimeout = setTimeout(() => {
+                wordmark.classList.add('rainbow-again');
+                this.playTitleWave(wordmark, TITLE);
+            }, holdUntil);
+        }
+        return letters;
     }
 
     // easter egg: typing R-A-I-N-B-O-W while the board isn't taking keys (no tile selected, or paused)
@@ -215,8 +230,11 @@ export class Manager {
     }
 
     // plays the title's hop-and-fill wave (left to right) and returns where and when each letter hops,
-    // for the confetti it drops
-    playTitleWave(wordmark) {
+    // for the confetti it drops. Each letter becomes text's letter at the top of its hop (text is
+    // CONSTRAINBOW, or a 12-letter win message; a space leaves the tile empty)
+    playTitleWave(wordmark, text = TITLE) {
+        clearTimeout(this.titleRevertTimeout);
+        (this.titleLetterTimeouts || []).forEach(clearTimeout);
         wordmark.classList.remove('rainbow-in');
         void wordmark.offsetWidth; // forces the browser to notice the removal, so the wave restarts
         wordmark.classList.add('rainbow-in');
@@ -226,7 +244,12 @@ export class Manager {
         }, 1600);
         const stagger = 55; // ms between letters; the CSS reads it from --rainbow-stagger
         wordmark.style.setProperty('--rainbow-stagger', `${stagger}ms`);
-        return [...wordmark.querySelectorAll('span')].map((span, i) => {
+        const spans = [...wordmark.querySelectorAll('span')];
+        // 260 ms in is the top of a letter's hop (40% of the 650 ms rainbow-in animation)
+        this.titleLetterTimeouts = spans.map((span, i) => setTimeout(() => {
+            span.textContent = text[i] || '';
+        }, i * stagger + 260));
+        return spans.map((span, i) => {
             const rect = span.getBoundingClientRect();
             return {
                 left: rect.left,
@@ -254,7 +277,8 @@ export class Manager {
         const isBetter = (old, result) => result.points > old.points;
         const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
         if (isFirst) {
-            setTimeout(() => this.statsPopup.show(), 2600); // after the title's and the board's waves
+            // after the title's and the board's waves (and after a title message has changed back)
+            setTimeout(() => this.statsPopup.show(), this.board.titleMessage ? 5600 : 2600);
         }
     }
 

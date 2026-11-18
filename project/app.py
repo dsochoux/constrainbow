@@ -396,6 +396,7 @@ def game():
                 "givens": game_object["givens"],
                 "solution": game_object["solution"],
                 "emoji": game_object.get("emoji", []),  # themed days: emojis that fall instead of confetti
+                "title": game_object.get("title"),  # themed days: the 12-letter message the title shows on a win
                 "num_possible_solutions": 1,
                 "num_possible_points": 0,
                 "words": words

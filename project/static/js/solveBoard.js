@@ -268,6 +268,12 @@ export class SolveBoard extends SpeedBoard {
         return { seconds: this.elapsedSeconds, reveals: this.revealedTiles };
     }
 
+    // solved without REVEAL (a themed day's message comes first). Board's, not SpeedBoard's
+    // (that one is for QUICKESTTIME)
+    getTitleMessage() {
+        return Board.prototype.getTitleMessage.call(this) || (this.revealedTiles === 0 ? "NOHELPNEEDED" : null);
+    }
+
     // what the manager sends to /log-solve
     getSolveResult() {
         // remembers the answers this browser has solved, to flag a second solve of the same puzzle

@@ -174,6 +174,19 @@ export class SpeedBoard extends Board {
         return { seconds: this.elapsedSeconds };
     }
 
+    // faster than every earlier daily speed puzzle in the stats (so never on the first one; archive
+    // puzzles aren't in the stats, so they don't count)
+    getTitleMessage() {
+        const manager = this.manager;
+        if (manager.isArchive || !manager.statsPopup) {
+            return null;
+        }
+        const earlier = manager.stats.results('speed')
+            .filter((result) => result.gameId !== manager.gameId)
+            .map((result) => result.seconds);
+        return earlier.length > 0 && this.elapsedSeconds < Math.min(...earlier) ? "QUICKESTTIME" : null;
+    }
+
     getMetric(doIncludeEmoji) {
         if (doIncludeEmoji) {
             if (this.manager.gameId.substring(0, 4) === "0408") {

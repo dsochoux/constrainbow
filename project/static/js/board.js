@@ -5,6 +5,8 @@ export class Board {
         this.element = document.getElementById("board");
         this.words = []; // list of Word objects
         this.confettiEmoji = data["emoji"] || []; // themed SOLVE days: emojis that fall instead of confetti
+        this.themeTitle = data["title"] || null; // themed SOLVE days: a 12-letter message the title shows on a win
+        this.titleMessage = null; // the message the title shows for this win (see getTitleMessage)
         this.selectedLetter = null; // the currently selected letter (Letter object)
         this.tappedLetter = null; // the tile the player just tapped, if nothing has happened since
         
@@ -395,12 +397,20 @@ export class Board {
             this.manager.logEvent('finish', { ...this.getStatsResult(), words: this.getShareWords() });
         }
         this.isSolutionFound = true;
+        // decided before the result is saved, so speed mode compares against earlier times only
+        this.titleMessage = this.getTitleMessage();
         this.manager.recordResult();
         this.celebrate();
         this.manager.showCopyButton();
         this.selectedLetter.setIsSelected(false);
         this.selectedLetter = null;
         this.manager.updateKeyboard();
+    }
+
+    // a 12-letter message the title turns into during the win (null for none): a themed day's own message;
+    // the modes add their perfect-game messages
+    getTitleMessage() {
+        return this.themeTitle;
     }
 
     isInSolvedState() {
@@ -456,7 +466,7 @@ export class Board {
     // new color as it hops. Once the title's wave reaches its last letter, the board's diagonal wave
     // starts: each tile jumps and flashes its color
     celebrate() {
-        const titleLetters = this.manager.showRainbow(true);
+        const titleLetters = this.manager.showRainbow(true, this.titleMessage);
         launchConfetti(this.confettiEmoji, titleLetters);
         const boardStart = titleLetters.length > 0 ? titleLetters[titleLetters.length - 1].delay : 0;
         const delayTime = 70;

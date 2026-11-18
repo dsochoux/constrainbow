@@ -100,10 +100,16 @@ In priority order. The aim: give players a reason to come back, something to com
 8. Lower priority: hints, dark mode, an installable PWA.
 
 ## Feature ideas to discuss
+- **Share through the phone's share menu (next up, 2026-11-17).** Messages only shows the link-preview card when the link is the whole message, so shared results (text + link) arrive as plain text with an underlined link, and the card never shows under them there (Discord, Slack, WhatsApp and Telegram do show it). Idea: on phones, COPY RESULTS (or a SHARE button next to it) calls `navigator.share({text, url})`, passing the results and the link separately, which may make Messages attach the link as its own card beside the text. Unproven: try it first as a SHARE button on the unlisted `/preview-test` page with sample results, send it into Messages from an iPhone, and see what arrives, before touching the real button. Keep copying as the fallback on computers.
+- **Back up progress on the server (held off, 2026-11-17).** Safari deletes a site's localStorage after 7 days of using Safari without visiting it, which loses stats and the archive ✓ marks (the streak is broken by then anyway). Fix: the server sets a long-lived cookie holding the player id (Safari's 7-day rule only covers storage the page's JavaScript writes), keeps a small per-player record of finished puzzles (backfilled from the event log since 2026-11-16), and the page restores from it when its localStorage is empty. Doesn't cover clearing browsing data, private browsing or other devices. Worth it once there's a steady group of returning players, or if anyone complains. Until then, `Manager.keepStorage()` asks Chrome and Safari not to clear storage on low disk space.
 - *(Stats and streaks built 2026-11-16.)* A results screen comparing you with everyone else (the server already logs times and scores).
-- An archive/practice mode for past puzzles (597 already exist per mode).
+- ~~An archive/practice mode for past puzzles.~~ Done 2026-11-16: the 📅 archive.
 - Show "you beat X% of players" from the logs.
 - A share text that encodes something player-specific (e.g. score tiles shaded by points, or time).
-- A hint system (reveal one color), and an "optimal solution" reveal after solving in score mode (`best_solution` already exists in the JSON).
+- ~~A hint system (reveal one color), and an "optimal solution" reveal after solving in score mode.~~ Done: SOLVE's REVEAL and score mode's SHOW BEST.
 - ~~A first-time tutorial instead of the long text popup.~~ Done: 4-step visual intro (not interactive).
 - A PWA/offline mode (manifest already present).
+
+## Easy SOLVE batch (2026-11-17, local only)
+`games/solve-test/13.json`–`17.json`: five puzzles whose difficulty estimate is 1 (easy deductions alone solve them), with 4, 5, 5, 6 and 7 given letters, made to gauge how easy "1" feels. They're untracked and kept off the server (deploys set them aside, since deploy.sh copies any game the server lacks); delete or commit them once played. Finding them took 20 random answer sets: most sets are harder than 1 at every count from 4 to 7.
+

@@ -3,3 +3,5 @@ env/
 .DS_Store
 logs/
 game_solutions/
+# private notes, kept out of the public repo
+private/

@@ -82,6 +82,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - The 📊 button next to `?` opens the stats (and pauses the game, like `?`). They also open by themselves about 2 s after today's puzzle is finished for the first time. Today's bar is highlighted. Once today's puzzle is solved, the popup also has a COPY RESULTS button that works the page's button (same text; in speed and score a second click includes the solution).
 - Only the daily puzzles count: the SOLVE test batch and `/solve/day` have no 📊 button and record nothing.
 - Nothing was recorded before this, so everyone's streak started on 2026-11-16.
+- Stats live only in this browser. They survive indefinitely in Chrome and Firefox (after a finish the game asks Chrome and Safari not to clear them when the device is low on space), but Safari deletes them after 7 days of using Safari without visiting the site (not for home-screen web apps), and clearing browsing data or private windows lose them too.
 
 ## Sharing
 The first click on COPY RESULTS copies the following (the `| 🔥 5` streak appears once that mode's streak is at least 2 days):
@@ -95,6 +96,8 @@ constrainbow.com/score
 462,754 solutions
 ```
 The button then reads "COPIED! INCLUDE SOLUTION?". A second click within 5 s copies the same text plus the four words. The emoji grid shows the puzzle's layout, not the player's answer (unlike Wordle).
+
+Since 2026-11-17 a shared link to `/solve`, `/speed`, `/score` (or plain `constrainbow.com`) shows a preview card: the wordmark, a partly filled SOLVE / SPEED / SCORE / SH_RE board, and "Same color, same letter. Three ways to play, every day." Discord, Slack, WhatsApp and Telegram show it under shared results too. Messages only shows it when the link is sent on its own, not inside the results text (a share-menu idea to fix that is in findings.md).
 
 ## How to play (intro)
 A 4-step popup with BACK / NEXT and progress dots, each step with a small example board. Since 2026-11-16 the example board is **yesterday's SOLVE answer**, and step 3 ends with "This is yesterday's Solve answer (MM/DD)." The letters in the text come from that board (`get_tutorial` and `describe_tutorial` in app.py): the orange letter, the four color letters in reading order, and the most repeated black-tile letter ("like the two Hs"; "A's", "I's", "U's" get an apostrophe). About 1 day in 8 has no repeated black letter; then step 3 says "Black tiles can share letters with each other." If yesterday's file is missing or lacks a color, the fixed FIFTY / FLASK / SPARK / PUPIL board is used, with no caption.

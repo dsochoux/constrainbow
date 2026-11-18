@@ -172,6 +172,10 @@ button:focus-visible, a:focus-visible {
 .wordmark.rainbow-again span {
     --from: var(--r);
 }
+/* the RAINBOW easter egg before the day's win: the same wave in the title's own four colors (no green) */
+.wordmark.four-colors span {
+    --r: var(--c);
+}
 @keyframes rainbow-in {
     0% { transform: none; box-shadow: 2px 2px 0 var(--from, var(--c)); }
     40% { transform: translateY(-7px) rotate(-5deg); background-color: var(--r); color: var(--card); box-shadow: 4px 5px 0 var(--ink); }

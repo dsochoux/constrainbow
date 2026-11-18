@@ -4,7 +4,7 @@ import { SolveBoard } from "./solveBoard.js";
 import { Stats } from "./stats.js";
 import { StatsPopup } from "./statsPopup.js";
 import { Feedback } from "./feedback.js";
-import { deleteAllCookies } from "./helpers.js";
+import { deleteAllCookies, launchConfetti } from "./helpers.js";
 
 export class Manager {
     constructor() {
@@ -85,10 +85,14 @@ export class Manager {
             // ignore keystrokes if the user is holding down the meta key, control key, 
             // or if the board is not listening for input
             // or if the user is typing in a text box (the feedback form)
-            if (e.metaKey || e.ctrlKey || (e.target instanceof Element && e.target.closest('input, textarea'))
-                || !this.board.isListeningForInput(e.key)) {
+            if (e.metaKey || e.ctrlKey || (e.target instanceof Element && e.target.closest('input, textarea'))) {
                 return;
             }
+            if (!this.board.isListeningForInput(e.key)) {
+                this.listenForSecretWord(e.key);
+                return;
+            }
+            this.secretWordTyped = '';
             this.board.handleKeyPressed(e.key);
         });
 
@@ -185,26 +189,53 @@ export class Manager {
         }
         wordmark.classList.toggle('rainbow-again', wordmark.classList.contains('rainbow'));
         wordmark.classList.add('rainbow');
-        if (animate) {
-            wordmark.classList.remove('rainbow-in');
-            void wordmark.offsetWidth; // forces the browser to notice the removal, so the wave restarts
-            wordmark.classList.add('rainbow-in');
-            clearTimeout(this.rainbowTimeout);
-            this.rainbowTimeout = setTimeout(() => wordmark.classList.remove('rainbow-in', 'rainbow-again'), 1600);
-            const stagger = 55; // ms between letters; the CSS reads it from --rainbow-stagger
-            wordmark.style.setProperty('--rainbow-stagger', `${stagger}ms`);
-            return [...wordmark.querySelectorAll('span')].map((span, i) => {
-                const rect = span.getBoundingClientRect();
-                return {
-                    left: rect.left,
-                    width: rect.width,
-                    top: rect.bottom,
-                    color: getComputedStyle(span).getPropertyValue('--r').trim(),
-                    delay: i * stagger,
-                };
-            });
+        return animate ? this.playTitleWave(wordmark) : [];
+    }
+
+    // easter egg: typing R-A-I-N-B-O-W while the board isn't taking keys (no tile selected, or paused)
+    // plays the title's wave and drops confetti. Before the day's win the title keeps its four colors,
+    // so green stays the reward for winning
+    listenForSecretWord(key) {
+        if (key.length !== 1 || !/[a-z]/i.test(key)) {
+            this.secretWordTyped = '';
+            return;
         }
-        return [];
+        this.secretWordTyped = ((this.secretWordTyped || '') + key.toUpperCase()).slice(-7);
+        if (this.secretWordTyped === 'RAINBOW') {
+            this.secretWordTyped = '';
+            const wordmark = document.querySelector('.wordmark');
+            if (!wordmark) {
+                return;
+            }
+            const isWon = wordmark.classList.contains('rainbow');
+            wordmark.classList.toggle('rainbow-again', isWon);
+            wordmark.classList.toggle('four-colors', !isWon);
+            launchConfetti(this.board.confettiEmoji, this.playTitleWave(wordmark));
+        }
+    }
+
+    // plays the title's hop-and-fill wave (left to right) and returns where and when each letter hops,
+    // for the confetti it drops
+    playTitleWave(wordmark) {
+        wordmark.classList.remove('rainbow-in');
+        void wordmark.offsetWidth; // forces the browser to notice the removal, so the wave restarts
+        wordmark.classList.add('rainbow-in');
+        clearTimeout(this.rainbowTimeout);
+        this.rainbowTimeout = setTimeout(() => {
+            wordmark.classList.remove('rainbow-in', 'rainbow-again', 'four-colors');
+        }, 1600);
+        const stagger = 55; // ms between letters; the CSS reads it from --rainbow-stagger
+        wordmark.style.setProperty('--rainbow-stagger', `${stagger}ms`);
+        return [...wordmark.querySelectorAll('span')].map((span, i) => {
+            const rect = span.getBoundingClientRect();
+            return {
+                left: rect.left,
+                width: rect.width,
+                top: rect.bottom,
+                color: getComputedStyle(span).getPropertyValue('--r').trim(),
+                delay: i * stagger,
+            };
+        });
     }
 
     // called when a puzzle is finished: saves today's result to the stats, and shows the stats the

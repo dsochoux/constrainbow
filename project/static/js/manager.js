@@ -277,8 +277,9 @@ export class Manager {
         const isBetter = (old, result) => result.points > old.points;
         const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
         if (isFirst) {
-            // after the title's and the board's waves (and after a title message has changed back)
-            setTimeout(() => this.statsPopup.show(), this.board.titleMessage ? 5600 : 2600);
+            // as the board's wave finishes; the confetti keeps falling behind the popup (the overlay sits
+            // above it) and a title message changes back behind it too
+            setTimeout(() => this.statsPopup.show(), 2000);
         }
     }
 

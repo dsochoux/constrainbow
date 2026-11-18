@@ -4,6 +4,24 @@
     <meta name="theme-color" content="#fbf4e6">
     <meta name="description" content="A daily word puzzle: fill four five-letter words that fit the color constraints.">
     <title>{{ page_title or "CONSTRAINBOW" }}</title>
+    {% if preview_url %}
+    {# the link-preview card (Open Graph) that Messages, Discord, WhatsApp and others show for a shared link.
+       The image was chosen with /preview-test and design/og-preview.html. Apps keep old cards for days, so
+       when the image changes, bump preview_version so they fetch the new one. Apps need full https:// links #}
+    {% set preview_version = 1 %}
+    {% set preview_image = "https://constrainbow.com/static/preview/constrainbow.png?v=" ~ preview_version %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Constrainbow">
+    <meta property="og:title" content="Constrainbow">
+    <meta property="og:description" content="Same color, same letter. Three ways to play, every day.">
+    <meta property="og:url" content="{{ preview_url }}">
+    <meta property="og:image" content="{{ preview_image }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="The Constrainbow wordmark above a partly filled board: S_LVE, SPEE_, SC_RE, SH_RE">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ preview_image }}">
+    {% endif %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;700&display=swap">

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {# today's puzzle in each mode gets a link-preview card (see head.html); archive and test pages don't #}
+    {% if game_mode in ["solve", "speed", "score"] and not is_archive %}{% set preview_url = "https://constrainbow.com/" ~ game_mode %}{% endif %}
     {% include "head.html" %}
 </head>
 <body class="row-links">

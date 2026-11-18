@@ -186,6 +186,15 @@ body.only h2 { display: none; }
 .aligned .below { gap: 56px; }
 .aligned .text-b { flex: 1; width: auto; }
 .aligned .l2 { font-size: 28px; white-space: nowrap; } /* "Three ways to play, every day." stays on one line */
+/* bigger: the same design scaled up to fill more of the card (Messages showed a lot of empty paper) */
+.card.bigger { flex-direction: column; }
+.bigger .inner { display: flex; flex-direction: column; align-items: center; gap: 44px; zoom: 1.13; }
+/* bigger still (test-3): twice test-2's increase, with less space between the wordmark and the board */
+.biggest .inner { zoom: 1.26; gap: 30px; }
+/* test-4: test-3 with bigger text (the board and wordmark unchanged); the small line breaks at its comma */
+.bigtext .below { gap: 48px; }
+.bigtext .l1 { font-size: 68px; }
+.bigtext .l2 { margin-top: 24px; font-size: 34px; line-height: 1.2; white-space: normal; }
 .aligned .emoji-row { margin-top: 18px; font-size: 52px; letter-spacing: 14px; }
 .chips { display: flex; gap: 10px; margin-top: 16px; }
 .chip {
@@ -346,6 +355,39 @@ body.only h2 { display: none; }
     <div class="below">
         <div class="board"></div>
         <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div><div class="chips"><span class="chip">🔑 Solve</span><span class="chip">⏱️ Speed</span><span class="chip">🎯 Score</span></div></div>
+    </div>
+</div>
+
+<h2>B1, aligned and bigger (test-2)</h2>
+<div class="card top aligned bigger" id="b1b">
+    <div class="inner">
+        <div class="wordmark"></div>
+        <div class="below">
+            <div class="board"></div>
+            <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div></div>
+        </div>
+    </div>
+</div>
+
+<h2>B1, aligned, bigger still (test-3)</h2>
+<div class="card top aligned bigger biggest" id="b1c">
+    <div class="inner">
+        <div class="wordmark"></div>
+        <div class="below">
+            <div class="board"></div>
+            <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play, every day.</div></div>
+        </div>
+    </div>
+</div>
+
+<h2>B1, aligned and bigger, bigger text (test-4)</h2>
+<div class="card top aligned bigger bigtext" id="b1d">
+    <div class="inner">
+        <div class="wordmark"></div>
+        <div class="below">
+            <div class="board"></div>
+            <div class="text-b"><div class="l1">Same color,<br>same letter.</div><div class="l2">Three ways to play,<br>every day.</div></div>
+        </div>
     </div>
 </div>
 

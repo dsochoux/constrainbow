@@ -73,6 +73,10 @@ export class Manager {
                 this.board.selectFirstBlank();
             }
         }
+        // a puzzle finished earlier keeps the rainbow wordmark (no animation)
+        if (this.board.isSolutionFound) {
+            this.showRainbow(false);
+        }
     }
 
     addEventListeners() {
@@ -170,6 +174,39 @@ export class Manager {
         }
     }
 
+    // the wordmark turns into a full rainbow (green and purple join the four colors) when the puzzle
+    // is finished; animate plays the hop-and-fill wave, which replays (from the rainbow colors) on every
+    // win, like the board's wave. Returns where and when each letter hops, for the confetti it drops
+    // (empty when not animating)
+    showRainbow(animate) {
+        const wordmark = document.querySelector('.wordmark');
+        if (!wordmark) {
+            return [];
+        }
+        wordmark.classList.toggle('rainbow-again', wordmark.classList.contains('rainbow'));
+        wordmark.classList.add('rainbow');
+        if (animate) {
+            wordmark.classList.remove('rainbow-in');
+            void wordmark.offsetWidth; // forces the browser to notice the removal, so the wave restarts
+            wordmark.classList.add('rainbow-in');
+            clearTimeout(this.rainbowTimeout);
+            this.rainbowTimeout = setTimeout(() => wordmark.classList.remove('rainbow-in', 'rainbow-again'), 1600);
+            const stagger = 55; // ms between letters; the CSS reads it from --rainbow-stagger
+            wordmark.style.setProperty('--rainbow-stagger', `${stagger}ms`);
+            return [...wordmark.querySelectorAll('span')].map((span, i) => {
+                const rect = span.getBoundingClientRect();
+                return {
+                    left: rect.left,
+                    width: rect.width,
+                    top: rect.bottom,
+                    color: getComputedStyle(span).getPropertyValue('--r').trim(),
+                    delay: i * stagger,
+                };
+            });
+        }
+        return [];
+    }
+
     // called when a puzzle is finished: saves today's result to the stats, and shows the stats the
     // first time today's puzzle is finished (after the celebration)
     recordResult() {
@@ -186,7 +223,7 @@ export class Manager {
         const isBetter = (old, result) => result.points > old.points;
         const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
         if (isFirst) {
-            setTimeout(() => this.statsPopup.show(), 1800);
+            setTimeout(() => this.statsPopup.show(), 2600); // after the title's and the board's waves
         }
     }
 

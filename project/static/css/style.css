@@ -23,6 +23,11 @@
     --t3: #fff6c2;
     --t4: #dfe1ff;
 
+    /* green and purple aren't constraint colors: they're kept for winning. In the win wave, black tiles
+       you typed flash green and given (or revealed) black tiles flash purple; both join the wordmark */
+    --win: #1f9d55;
+    --win-given: #9a3cc9;
+
     --display-font: 'Archivo Black', 'Arial Black', Arial, sans-serif;
     --ui-font: 'Space Grotesk', Arial, Helvetica, sans-serif;
 
@@ -147,6 +152,34 @@ button:focus-visible, a:focus-visible {
 .wordmark span:nth-child(4n + 2) { --c: var(--c2); }
 .wordmark span:nth-child(4n + 3) { --c: var(--c3); }
 .wordmark span:nth-child(4n + 4) { --c: var(--c4); }
+
+/* after a win the wordmark becomes a full rainbow: green and purple join the four colors
+   (red, orange, yellow, green, blue, purple, twice), and it stays for the rest of the day (Manager.showRainbow) */
+.wordmark span:nth-child(6n + 1) { --r: var(--c1); }
+.wordmark span:nth-child(6n + 2) { --r: var(--c2); }
+.wordmark span:nth-child(6n + 3) { --r: var(--c3); }
+.wordmark span:nth-child(6n + 4) { --r: var(--win); }
+.wordmark span:nth-child(6n + 5) { --r: var(--c4); }
+.wordmark span:nth-child(6n + 6) { --r: var(--win-given); }
+.wordmark.rainbow span {
+    box-shadow: 2px 2px 0 var(--r);
+}
+/* the moment of the win: left to right, each letter hops, fills with its new color, and lands
+   with its new shadow, so the colors after the green look like they slide over (--i is the
+   letter's position, set in game.html) */
+.wordmark.rainbow-in span {
+    animation: rainbow-in 650ms ease-out calc(var(--i) * var(--rainbow-stagger, 55ms)) backwards;
+}
+/* winning again (a letter deleted and retyped): the wave replays, starting from the rainbow colors */
+.wordmark.rainbow-again span {
+    --from: var(--r);
+}
+@keyframes rainbow-in {
+    0% { transform: none; box-shadow: 2px 2px 0 var(--from, var(--c)); }
+    40% { transform: translateY(-7px) rotate(-5deg); background-color: var(--r); color: var(--card); box-shadow: 4px 5px 0 var(--ink); }
+    65% { transform: none; background-color: var(--r); color: var(--card); box-shadow: 2px 2px 0 var(--r); }
+    100% { transform: none; box-shadow: 2px 2px 0 var(--r); }
+}
 
 #sub-header {
     display: flex;
@@ -401,6 +434,7 @@ body.row-links .word-row .letter {
 
 .letter {
     --c: var(--ink);
+    --flash: var(--win); /* the win wave's color: green on black tiles */
     position: relative; /* Ensures child elements position relative to the tile */
     display: flex;
     align-items: center;
@@ -441,6 +475,7 @@ body.row-links .word-row .letter {
 
 .letter.c1, .letter.c2, .letter.c3, .letter.c4 {
     background-color: var(--t);
+    --flash: var(--c); /* colored tiles flash their own color in the win wave */
 }
 
 .letter.c1::before, .letter.c2::before, .letter.c3::before, .letter.c4::before,
@@ -513,6 +548,10 @@ body.row-links .word-row .letter {
 .letter.given.selected::after {
     display: none;
 }
+/* in the win wave, given (and revealed) black tiles flash purple; the ones you typed flash green */
+.letter.given:not(.c1, .c2, .c3, .c4) {
+    --flash: var(--win-given);
+}
 .letter.revealed .letter-text {
     color: #8a8290;
 }
@@ -553,8 +592,8 @@ body.row-links .word-row .letter {
 
 @keyframes celebrate {
     0% { transform: translateY(0); }
-    30% { transform: translateY(-14px) rotate(-4deg); background-color: var(--c); color: var(--card); }
-    55% { transform: translateY(0) rotate(0); background-color: var(--c); color: var(--card); }
+    30% { transform: translateY(-14px) rotate(-4deg); background-color: var(--flash); color: var(--card); }
+    55% { transform: translateY(0) rotate(0); background-color: var(--flash); color: var(--card); }
     75% { transform: translateY(-4px); }
     100% { transform: translateY(0); }
 }
@@ -582,10 +621,20 @@ body.row-links .word-row .letter {
 @keyframes confetti-fall {
     to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); }
 }
+/* confetti dropped by the title's letters: hidden until its letter lets it go, then it pops out and
+   falls, slowly at first, like it's dropping */
+.confetti i.dropped {
+    animation: confetti-drop ease-in both;
+}
+@keyframes confetti-drop {
+    0% { transform: scale(0.2); opacity: 0; }
+    6% { transform: translate(0, 6px) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 1; }
+}
 
 @media (prefers-reduced-motion: reduce) {
     .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, #copy-results-button,
-    .letter.selected::after, #score.shake, #reveal-button.shake {
+    .letter.selected::after, #score.shake, #reveal-button.shake, .wordmark.rainbow-in span {
         animation: none;
     }
     .letter {

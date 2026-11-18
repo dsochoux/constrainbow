@@ -108,7 +108,7 @@
     <div id="container">
         <div id="header-div">
             {# the wordmark links to / (which goes to the default mode, SOLVE) #}
-            <h1 class="wordmark"><a href="/" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true">{{ ch }}</span>{% endfor %}</a></h1>
+            <h1 class="wordmark"><a href="/" aria-label="Constrainbow">{% for ch in "CONSTRAINBOW" %}<span aria-hidden="true" style="--i: {{ loop.index0 }}">{{ ch }}</span>{% endfor %}</a></h1>
             <div id="sub-header">
                 {% if is_archive %}
                 {# an archive puzzle: the past puzzles before and after it (› goes to today's after the last one) #}

@@ -452,15 +452,19 @@ export class Board {
         });
     }
 
-    // a diagonal wave: each tile jumps and flashes its color, then confetti
+    // the title goes first: a rainbow wave sweeps across it, and each letter drops confetti in its
+    // new color as it hops. Once the title's wave reaches its last letter, the board's diagonal wave
+    // starts: each tile jumps and flashes its color
     celebrate() {
+        const titleLetters = this.manager.showRainbow(true);
+        launchConfetti(this.confettiEmoji, titleLetters);
+        const boardStart = titleLetters.length > 0 ? titleLetters[titleLetters.length - 1].delay : 0;
         const delayTime = 70;
         this.words.forEach((word, w) => {
             word.letters.forEach((letter, l) => {
-                letter.celebrate((w + l) * delayTime);
+                letter.celebrate(boardStart + (w + l) * delayTime);
             });
         });
-        setTimeout(() => launchConfetti(this.confettiEmoji), 350);
     }
 
     getEmojiBoard() {

@@ -56,7 +56,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - **Yesterday's best** is in the score stats popup for everyone ("MAXIM · GYOZA · EPOXY · OXIDE (64 points)"), and a small "Yesterday's best ›" link at the end of the description opens it.
 
 ## Controls
-- Tap a tile to select it (tapping the selected tile keeps it selected). Score mode starts with the first empty tile selected, and speed mode selects it on START.
+- Tap a tile to select it. Tapping it again right away deselects it, so nothing is selected; a tile the cursor moved to on its own (after typing, a reveal or an arrow key) stays selected when tapped, so keystrokes aren't lost (2026-11-18). Score mode starts with the first empty tile selected, and speed mode selects it on START.
 - On-screen keyboard or a physical keyboard. Arrow keys and space move the cursor, wrapping between rows and from the last tile back to the first (and, with left arrow, from the first tile to the last). Backspace (DEL key) clears the letter on a filled tile (the cursor stays put); on an empty tile (or a SOLVE given letter) it moves back one tile, exactly like the left arrow. The CLEAR key clears the whole board. The selected tile lifts (bigger shadow) and shows a blinking cursor bar.
 - Typing a letter on a colored tile fills **every** tile of that color. The cursor then jumps to the next blank tile in reading order.
 - Illegal letters are refused, and the conflicting tiles flash pink for 200 ms. Illegal means a letter already owned by another color, or (on a colored tile) a letter already used on a black tile.

@@ -63,9 +63,11 @@ export class Letter {
 
     // plays a one-shot CSS animation (pop, shake, celebrate) on the tile, after delay milliseconds
     // the class is removed again when the animation ends, so it can be played again later
+    // each animation has its own delay variable (--pop-delay, --celebrate-delay): with a shared one,
+    // the win cascade's delay also pushed back the last letter's pop-in, hiding it until the wave arrived
     playAnimation(className, delay = 0) {
         const tile = this.tileElement;
-        tile.style.setProperty('--delay', `${delay}ms`);
+        tile.style.setProperty(`--${className}-delay`, `${delay}ms`);
         tile.classList.remove(className);
         void tile.offsetWidth; // forces the browser to notice the removal, so the animation restarts
         tile.classList.add(className);

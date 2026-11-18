@@ -6,6 +6,7 @@ export class Board {
         this.words = []; // list of Word objects
         this.confettiEmoji = data["emoji"] || []; // themed SOLVE days: emojis that fall instead of confetti
         this.selectedLetter = null; // the currently selected letter (Letter object)
+        this.tappedLetter = null; // the tile the player just tapped, if nothing has happened since
         
         // both SpeedBoard and ScoreBoard will inherit this
         // for both, it is used to know when to send a solved board to the server for logging
@@ -133,6 +134,7 @@ export class Board {
     }
 
     handleKeyPressed(key) {
+        this.tappedLetter = null;
         if (key === "ArrowLeft") {
             this.moveLeft();
         }
@@ -216,13 +218,31 @@ export class Board {
     }
 
     // this is the callback that a Letter object will call when it is clicked
-    // clicking the tile that is already selected keeps it selected (it used to deselect it,
-    // which silently swallowed the next key presses)
+    // tapping a tile twice in a row deselects it, so nothing is selected; a tile the cursor moved to
+    // on its own (after typing, a reveal, arrow keys) stays selected when tapped, so players who tap
+    // where the cursor already is don't lose their next key presses (not while paused either:
+    // that tap resumes the game instead)
     handleLetterClicked(w, l) {
-        this.selectLetter(this.words[w].letters[l]);
+        const letter = this.words[w].letters[l];
+        if (letter === this.selectedLetter && letter === this.tappedLetter && !this.isPaused) {
+            this.deselectLetter();
+            return;
+        }
+        this.selectLetter(letter);
+        this.tappedLetter = letter;
+    }
+
+    deselectLetter() {
+        this.tappedLetter = null;
+        if (this.selectedLetter !== null) {
+            this.selectedLetter.setIsSelected(false);
+            this.selectedLetter = null;
+        }
+        this.manager.updateKeyboard();
     }
 
     selectLetter(letter) {
+        this.tappedLetter = null;
         if (this.selectedLetter !== null) {
             this.selectedLetter.setIsSelected(false);
         }

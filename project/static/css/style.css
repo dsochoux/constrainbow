@@ -519,12 +519,12 @@ body.row-links .word-row .letter {
 
 /* ---------- animations ---------- */
 
-/* a letter lands: the tile bumps and the letter pops in (--delay staggers a color fill) */
+/* a letter lands: the tile bumps and the letter pops in (--pop-delay staggers a color fill) */
 .letter.pop {
-    animation: bump 260ms ease-out var(--delay, 0ms);
+    animation: bump 260ms ease-out var(--pop-delay, 0ms);
 }
 .letter.pop .letter-text {
-    animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1) var(--delay, 0ms) backwards;
+    animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1) var(--pop-delay, 0ms) backwards;
 }
 
 .letter.shake {
@@ -533,7 +533,7 @@ body.row-links .word-row .letter {
 
 /* solved: a diagonal wave where each tile jumps and flashes its color */
 .letter.celebrate {
-    animation: celebrate 750ms ease-out var(--delay, 0ms) both;
+    animation: celebrate 750ms ease-out var(--celebrate-delay, 0ms) both;
 }
 
 @keyframes bump {

@@ -577,6 +577,43 @@ button.pill:active {
     75% { translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.16); rotate: 25deg; }
 }
 
+/* easter egg: a row that spells DIZZY has a cartoon dizzy spell, once: each letter spins around twice, fast
+   then slowing, and wobbles unsteadily as it stops, while the tiles sway in little circles, out of step,
+   as if the row can't stand up straight. The tiles' own pop, win hop and error shake come first */
+.word-row.dizzy .letter:not(.pop, .celebrate, .shake) {
+    animation: woozy 2.8s ease-in-out;
+}
+.word-row.dizzy .letter:not(.pop) .letter-text {
+    animation: dizzy-spin 2.8s ease-out;
+}
+.word-row.dizzy .letter:nth-child(2):not(.pop, .celebrate, .shake),
+.word-row.dizzy .letter:nth-child(2):not(.pop) .letter-text { animation-delay: 80ms; }
+.word-row.dizzy .letter:nth-child(3):not(.pop, .celebrate, .shake),
+.word-row.dizzy .letter:nth-child(3):not(.pop) .letter-text { animation-delay: 160ms; }
+.word-row.dizzy .letter:nth-child(4):not(.pop, .celebrate, .shake),
+.word-row.dizzy .letter:nth-child(4):not(.pop) .letter-text { animation-delay: 240ms; }
+.word-row.dizzy .letter:nth-child(5):not(.pop, .celebrate, .shake),
+.word-row.dizzy .letter:nth-child(5):not(.pop) .letter-text { animation-delay: 320ms; }
+@keyframes dizzy-spin {
+    0% { rotate: 0deg; }
+    45% { rotate: 720deg; }
+    55% { rotate: 738deg; }
+    65% { rotate: 706deg; }
+    75% { rotate: 730deg; }
+    85% { rotate: 713deg; }
+    100% { rotate: 720deg; }
+}
+@keyframes woozy {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    12% { translate: 0 -4px; rotate: -3deg; }
+    25% { translate: 4px 0; rotate: 3deg; }
+    37% { translate: 0 4px; rotate: -3deg; }
+    50% { translate: -4px 0; rotate: 3deg; }
+    62% { translate: 0 -3px; rotate: -2deg; }
+    75% { translate: 2px 0; rotate: 2deg; }
+    87% { translate: 0 1px; rotate: -1deg; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -872,7 +909,7 @@ body.row-links .word-row .letter {
     .letter.selected::after, #score.shake, #reveal-button.shake, .wordmark.rainbow-in span,
     .word-row.shake .letter, .word-row.quake .letter, #board:has(.word-row.quake),
     .word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after,
-    .word-row.float .letter-text {
+    .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text {
         animation: none;
     }
     .letter, .word-row {

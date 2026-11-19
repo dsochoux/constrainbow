@@ -745,6 +745,12 @@ button.pill:active {
     74% { translate: 0 0; scale: 1; }
 }
 
+/* easter egg: a row that spells AVOID has letters that dodge the pointer (Word.startAvoiding sets each letter's
+   translate); this makes them slide away quickly rather than jump */
+.word-row.avoid .letter-text {
+    transition: translate 120ms ease-out;
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {

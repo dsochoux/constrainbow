@@ -462,6 +462,9 @@ button.pill:active {
 .word-row.wacky .letter-text {
     padding: 2px 4px;
     border-radius: 2px;
+    /* the letters swing into their new sizes and angles (only here: other eggs set a letter's rotate and
+       scale too, and easing back from those when the word changes looks glitchy) */
+    transition: scale 350ms cubic-bezier(.3, 1.6, .5, 1), rotate 350ms cubic-bezier(.3, 1.6, .5, 1);
 }
 .word-row.wacky .letter:nth-child(1) .letter-text {
     scale: 1.2; rotate: -12deg;
@@ -948,6 +951,37 @@ button.pill:active {
     100% { scale: 1.3 1.12; }
 }
 
+/* easter egg: a row that spells BATTY ("bats in the belfry") turns its letters into roosting bats: each turns over
+   in place, rises to hang by its feet from the top of its tile, sways a few times, a little out of step, then
+   hangs still while the word is there. Everything pivots on the letter's feet (the bottom of its box), so the
+   flip moves the letter along as it turns to keep it in place, and the sway swings from the feet. A letter
+   still popping in waits for that first. translate and rotate are the separate properties */
+.word-row.batty .letter:not(.pop) .letter-text {
+    transform-origin: 50% 100%;
+    rotate: 180deg;
+    translate: 0 calc(var(--tile) * -0.64);
+    animation: bat-flip 600ms linear, bat-sway 1.6s ease-in-out 700ms 3;
+}
+.word-row.batty .letter:nth-child(2):not(.pop) .letter-text { animation-delay: 60ms, 830ms; }
+.word-row.batty .letter:nth-child(3):not(.pop) .letter-text { animation-delay: 30ms, 760ms; }
+.word-row.batty .letter:nth-child(4):not(.pop) .letter-text { animation-delay: 90ms, 900ms; }
+.word-row.batty .letter:nth-child(5):not(.pop) .letter-text { animation-delay: 20ms, 720ms; }
+@keyframes bat-flip {
+    0% { rotate: 0deg; translate: calc(var(--tile) * -0.000) calc(var(--tile) * 0.000); }
+    12% { rotate: 30deg; translate: calc(var(--tile) * -0.125) calc(var(--tile) * -0.033); }
+    23% { rotate: 60deg; translate: calc(var(--tile) * -0.217) calc(var(--tile) * -0.125); }
+    35% { rotate: 90deg; translate: calc(var(--tile) * -0.250) calc(var(--tile) * -0.250); }
+    47% { rotate: 120deg; translate: calc(var(--tile) * -0.217) calc(var(--tile) * -0.375); }
+    58% { rotate: 150deg; translate: calc(var(--tile) * -0.125) calc(var(--tile) * -0.467); }
+    70% { rotate: 180deg; translate: calc(var(--tile) * -0.000) calc(var(--tile) * -0.500); }
+    100% { rotate: 180deg; translate: 0 calc(var(--tile) * -0.64); }
+}
+@keyframes bat-sway {
+    0%, 100% { rotate: 180deg; }
+    25% { rotate: 190deg; }
+    75% { rotate: 170deg; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -1060,7 +1094,6 @@ body.row-links .word-row .letter {
 
 .letter-text {
     line-height: 1;
-    transition: scale 350ms cubic-bezier(.3, 1.6, .5, 1), rotate 350ms cubic-bezier(.3, 1.6, .5, 1);
 }
 
 .letter-points {
@@ -1245,7 +1278,8 @@ body.row-links .word-row .letter {
     .word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after,
     .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text,
     .word-row.jumpy .letter-text, .word-row.crazy .letter, .word-row.crazy .letter-text,
-    .word-row.disco .letter, .word-row.disco .letter-text, .word-row.beefy .letter-text {
+    .word-row.disco .letter, .word-row.disco .letter-text, .word-row.beefy .letter-text,
+    .word-row.batty .letter-text {
         animation: none;
     }
     .letter, .word-row {

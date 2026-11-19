@@ -36,7 +36,8 @@ export class Word {
         // one that spells FLOAT lets its letters drift weightless, one that spells DIZZY gets dizzy, one
         // that spells DROOP sags, one that spells JUMPY hops like jumping beans, one that spells AVOID
         // has letters that dodge the pointer (see startAvoiding), one that spells CRAZY goes wild, one that
-        // spells DISCO turns into a light-up dance floor, and one that spells BEEFY bulks up its letters
+        // spells DISCO turns into a light-up dance floor, one that spells BEEFY bulks up its letters, and
+        // one that spells BATTY hangs its letters upside down like bats
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -54,6 +55,7 @@ export class Word {
         this.rowElement.classList.toggle('crazy', word === 'crazy');
         this.rowElement.classList.toggle('disco', word === 'disco');
         this.rowElement.classList.toggle('beefy', word === 'beefy');
+        this.rowElement.classList.toggle('batty', word === 'batty');
         if (word === 'avoid') {
             this.startAvoiding();
         } else {

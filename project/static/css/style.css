@@ -856,6 +856,79 @@ button.pill:active {
     100% { rotate: 360deg; scale: 1; }
 }
 
+/* easter egg: a row that spells DISCO becomes a light-up dance floor, once: for 4 s (8 beats) the tiles flash
+   in a moving checkerboard, lit squares in the four game colors (never green, which is kept for winning) and
+   dark squares in ink, while the letters dance, bobbing and swaying to the beat. No sound. The tiles' own pop,
+   win hop and error shake come first */
+.word-row.disco .letter:nth-child(1):not(.pop, .celebrate, .shake) { animation: disco-floor-1 4s step-end; }
+.word-row.disco .letter:nth-child(2):not(.pop, .celebrate, .shake) { animation: disco-floor-2 4s step-end; }
+.word-row.disco .letter:nth-child(3):not(.pop, .celebrate, .shake) { animation: disco-floor-3 4s step-end; }
+.word-row.disco .letter:nth-child(4):not(.pop, .celebrate, .shake) { animation: disco-floor-4 4s step-end; }
+.word-row.disco .letter:nth-child(5):not(.pop, .celebrate, .shake) { animation: disco-floor-5 4s step-end; }
+.word-row.disco .letter:not(.pop) .letter-text {
+    animation: disco-dance 1s ease-in-out 4;
+}
+@keyframes disco-floor-1 {
+    0% { background-color: var(--c1); color: var(--card); }
+    12.5% { background-color: var(--ink); color: var(--card); }
+    25% { background-color: var(--c2); color: var(--card); }
+    37.5% { background-color: var(--ink); color: var(--card); }
+    50% { background-color: var(--c3); color: var(--card); }
+    62.5% { background-color: var(--ink); color: var(--card); }
+    75% { background-color: var(--c4); color: var(--card); }
+    87.5% { background-color: var(--ink); color: var(--card); }
+    100% { background-color: var(--card); color: var(--ink); }
+}
+@keyframes disco-floor-2 {
+    0% { background-color: var(--ink); color: var(--card); }
+    12.5% { background-color: var(--c2); color: var(--card); }
+    25% { background-color: var(--ink); color: var(--card); }
+    37.5% { background-color: var(--c3); color: var(--card); }
+    50% { background-color: var(--ink); color: var(--card); }
+    62.5% { background-color: var(--c4); color: var(--card); }
+    75% { background-color: var(--ink); color: var(--card); }
+    87.5% { background-color: var(--c1); color: var(--card); }
+    100% { background-color: var(--card); color: var(--ink); }
+}
+@keyframes disco-floor-3 {
+    0% { background-color: var(--c3); color: var(--card); }
+    12.5% { background-color: var(--ink); color: var(--card); }
+    25% { background-color: var(--c4); color: var(--card); }
+    37.5% { background-color: var(--ink); color: var(--card); }
+    50% { background-color: var(--c1); color: var(--card); }
+    62.5% { background-color: var(--ink); color: var(--card); }
+    75% { background-color: var(--c2); color: var(--card); }
+    87.5% { background-color: var(--ink); color: var(--card); }
+    100% { background-color: var(--card); color: var(--ink); }
+}
+@keyframes disco-floor-4 {
+    0% { background-color: var(--ink); color: var(--card); }
+    12.5% { background-color: var(--c4); color: var(--card); }
+    25% { background-color: var(--ink); color: var(--card); }
+    37.5% { background-color: var(--c1); color: var(--card); }
+    50% { background-color: var(--ink); color: var(--card); }
+    62.5% { background-color: var(--c2); color: var(--card); }
+    75% { background-color: var(--ink); color: var(--card); }
+    87.5% { background-color: var(--c3); color: var(--card); }
+    100% { background-color: var(--card); color: var(--ink); }
+}
+@keyframes disco-floor-5 {
+    0% { background-color: var(--c1); color: var(--card); }
+    12.5% { background-color: var(--ink); color: var(--card); }
+    25% { background-color: var(--c2); color: var(--card); }
+    37.5% { background-color: var(--ink); color: var(--card); }
+    50% { background-color: var(--c3); color: var(--card); }
+    62.5% { background-color: var(--ink); color: var(--card); }
+    75% { background-color: var(--c4); color: var(--card); }
+    87.5% { background-color: var(--ink); color: var(--card); }
+    100% { background-color: var(--card); color: var(--ink); }
+}
+@keyframes disco-dance {
+    0%, 50%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: 0 calc(var(--tile) * -0.1); rotate: -9deg; }
+    75% { translate: 0 calc(var(--tile) * -0.1); rotate: 9deg; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -1152,7 +1225,8 @@ body.row-links .word-row .letter {
     .word-row.shake .letter, .word-row.quake .letter, #board:has(.word-row.quake),
     .word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after,
     .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text,
-    .word-row.jumpy .letter-text, .word-row.crazy .letter, .word-row.crazy .letter-text {
+    .word-row.jumpy .letter-text, .word-row.crazy .letter, .word-row.crazy .letter-text,
+    .word-row.disco .letter, .word-row.disco .letter-text {
         animation: none;
     }
     .letter, .word-row {

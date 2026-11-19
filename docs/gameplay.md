@@ -26,7 +26,7 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
   ⬜🟥⬛️💡⬛️
   ...
   ```
-- Answers come from `word_files/common_words.txt` and aren't reused within 90 days. Hand-picked answers for a date go in `word_files/solve_themes.json`, optionally with an emoji (or a list) that falls instead of confetti when the puzzle is solved. To try a day before it goes live, open `/solve/day?d=2026-11-26` (unlisted). First themed day: Thanksgiving 2026-11-26, STUFF / CARVE / GRAVY / THANK with 🦃 🥧 🍂.
+- Answers come from `word_files/common_words.txt` and aren't reused within 90 days. A puzzle never has more than one easter-egg word (since 2026-11-18; the generator reads the egg words from `word.js`, so new eggs count automatically; themed days are exempt). Hand-picked answers for a date go in `word_files/solve_themes.json`, optionally with an emoji (or a list) that falls instead of confetti when the puzzle is solved. To try a day before it goes live, open `/solve/day?d=2026-11-26` (unlisted). First themed day: Thanksgiving 2026-11-26, STUFF / CARVE / GRAVY / THANK with 🦃 🥧 🍂.
 - The 12-puzzle play-test batch is still at `/solve/test?p=N` (unlinked).
 
 ### Themed SOLVE days
@@ -78,6 +78,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - Easter egg (2026-11-18): a row that spells DROOP sags like a clothesline under too much weight: the end tiles stay up, the middle tile hangs lowest, and each tile tips to follow the line's slope. It eases into the sag and stays. (A first version caved in the tops of the tiles; Danny preferred this.) Same rules as SLANT.
 - Easter egg (2026-11-18): a row that spells JUMPY hops like jumping beans, once: each letter jumps three times at its own uneven rhythm, crouching first, stretching as it leaves, clearing the top of its tile and squashing when it lands (2.8 s). Same rules as SLANT; off under reduced motion.
 - Easter egg (2026-11-18): a row that spells AVOID has letters that dodge the pointer: each is pushed away from the cursor (harder the closer it gets, from a little outside the tile) and stops at its tile's edge. On a phone a tap makes the letters flinch away from the finger, and they drift back when it lifts. Same rules as SLANT.
+- Easter egg (2026-11-18): a row that spells CRAZY goes totally wild, once: for 3 s every tile flings itself around, spinning and growing and shrinking, while its letter flips and spins on its own, then everything snaps back into place. First live on 11/19, whose SOLVE answers include CRAZY. Same rules as SLANT; off under reduced motion.
 - Each word's tiles are joined by ink "links" (bars between the tiles, never vertically), because players were forgetting that only the rows (across) need to be words. A "rails" alternative (each word on a strip, green when valid, red when invalid) is still in the CSS: remove `class="row-links"` from `<body>` in game.html to switch.
 - Colored tiles also carry a small shape (red circle, orange square, yellow diamond, blue triangle) for color-blind players.
 - Progress (letters, timer, solved flag) saves in localStorage per mode and resets when the game id changes.

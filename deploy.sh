@@ -36,8 +36,8 @@ scp ./project/static/favicon_io/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/
 # link-preview test images (see /preview-test in app.py)
 ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_DIR/project/static/preview"
 scp ./project/static/preview/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/preview
-# bundle.js
-scp ./project/static/js/bundle.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
+# bundle.js, and word.js, which the server's puzzle generator reads the easter-egg words from
+scp ./project/static/js/bundle.js ./project/static/js/word.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
 # words.txt (accepted words), common_words.txt (SOLVE answers), and SOLVE themes if there are any
 scp ./word_files/words.txt ./word_files/common_words.txt $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
 if [ -f ./word_files/solve_themes.json ]; then

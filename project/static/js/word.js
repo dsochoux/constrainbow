@@ -34,8 +34,8 @@ export class Word {
         // one that spells CUBIC turns them into blocks, one that spells WACKY jumbles its letters, one that
         // spells SHAKE rattles, one that spells QUAKE sets off an earthquake, one that spells BLINK blinks,
         // one that spells FLOAT lets its letters drift weightless, one that spells DIZZY gets dizzy, one
-        // that spells DROOP sags, one that spells JUMPY hops like jumping beans, and one that spells AVOID
-        // has letters that dodge the pointer (see startAvoiding)
+        // that spells DROOP sags, one that spells JUMPY hops like jumping beans, one that spells AVOID
+        // has letters that dodge the pointer (see startAvoiding), and one that spells CRAZY goes wild
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -50,6 +50,7 @@ export class Word {
         this.rowElement.classList.toggle('droop', word === 'droop');
         this.rowElement.classList.toggle('jumpy', word === 'jumpy');
         this.rowElement.classList.toggle('avoid', word === 'avoid');
+        this.rowElement.classList.toggle('crazy', word === 'crazy');
         if (word === 'avoid') {
             this.startAvoiding();
         } else {

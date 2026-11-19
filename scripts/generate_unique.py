@@ -31,6 +31,7 @@ import itertools
 import json
 import os
 import random
+import re
 from collections import Counter
 from datetime import datetime, timedelta
 
@@ -65,6 +66,20 @@ def solve_path(game_id):
 def load_common_words():
     with open(COMMON_WORDS_PATH, "r") as f:
         return [line.strip() for line in f if line.strip()]
+
+
+# the easter-egg words (a row that spells one does something special) are read straight from the game's
+# code, where each is a `word === '...'` line in Word.setRowState, so this list can't fall behind when an
+# egg is added. deploy.sh copies word.js to the server, which makes its own puzzles
+EGG_WORDS_PATH = "project/static/js/word.js"
+
+
+def load_egg_words():
+    if not os.path.exists(EGG_WORDS_PATH):
+        print(f"WARNING: {EGG_WORDS_PATH} is missing, so a SOLVE puzzle could get two easter-egg words", flush=True)
+        return set()
+    with open(EGG_WORDS_PATH, "r") as f:
+        return set(re.findall(r"word === '([a-z]+)'", f.read()))
 
 
 class TooManySolutions(Exception):
@@ -448,8 +463,13 @@ def generate_solve_day(date):
 
     avoid = nearby_answer_words(date)
     candidates = [word for word in load_common_words() if word not in avoid]
+    egg_words = load_egg_words()
     while True:
         answer = rng.sample(candidates, 4)
+        # at most one easter-egg word per puzzle, so each day has at most one to discover (themed days,
+        # above, are hand-picked and exempt)
+        if sum(word in egg_words for word in answer) > 1:
+            continue
         puzzle = UniqueGame(answer).build(target=DAILY_GIVENS, max_givens=DAILY_GIVENS, rng=rng)
         if puzzle is not None and puzzle["num_givens"] == DAILY_GIVENS and has_starter_row(puzzle):
             write_puzzle(solve_path(game_id), puzzle)

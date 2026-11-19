@@ -23,10 +23,11 @@ export class Letter {
         const div = document.createElement('div');
         // add the letter span to the div
         div.appendChild(textElement);
-        // the edge between a cube's top and side, only shown in a row that spells CUBIC (see style.css)
-        const edge = document.createElement('span');
-        edge.classList.add('letter-edge');
-        div.appendChild(edge);
+        // an extra piece for the word easter eggs, hidden otherwise (see style.css): the edge between a
+        // cube's top and side in a row that spells CUBIC, the eyelids in one that spells BLINK
+        const extra = document.createElement('span');
+        extra.classList.add('letter-extra');
+        div.appendChild(extra);
         div.classList.add('letter');
         div.addEventListener('click', () => {
             // call the click handler with its identity

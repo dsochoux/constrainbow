@@ -32,7 +32,8 @@ export class Word {
         // easter eggs, for as long as the word is there: a row that spells SLANT leans like italic type,
         // one that spells ASKEW knocks its tiles crooked, one that spells ROUND turns them into circles,
         // one that spells CUBIC turns them into blocks, one that spells WACKY jumbles its letters, one that
-        // spells SHAKE rattles, and one that spells QUAKE sets off an earthquake
+        // spells SHAKE rattles, one that spells QUAKE sets off an earthquake, one that spells BLINK blinks,
+        // and one that spells FLOAT lets its letters drift weightless
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -41,6 +42,8 @@ export class Word {
         this.rowElement.classList.toggle('wacky', word === 'wacky');
         this.rowElement.classList.toggle('shake', word === 'shake');
         this.rowElement.classList.toggle('quake', word === 'quake');
+        this.rowElement.classList.toggle('blink', word === 'blink');
+        this.rowElement.classList.toggle('float', word === 'float');
     }
 
     // some handy functions might live here,

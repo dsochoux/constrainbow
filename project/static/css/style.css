@@ -485,12 +485,12 @@ button.pill:active {
     scale: 1.3; rotate: 6deg;
 }
 
-/* easter egg: a row that spells SHAKE rattles like a maraca: every 2.4 s its tiles twist quickly back and
+/* easter egg: a row that spells SHAKE rattles like a maraca, once: its tiles twist quickly back and
    forth, one after another, then go still. It twists (rotate) rather than sliding sideways, so it can't be
    mistaken for the shake that means a conflict or an invalid word */
 /* (not while a tile plays its own pop, win hop or error shake, which would otherwise be overridden) */
 .word-row.shake .letter:not(.pop, .celebrate, .shake) {
-    animation: rattle 2.4s ease-in-out infinite;
+    animation: rattle 2.4s ease-in-out;
 }
 .word-row.shake .letter:nth-child(2):not(.pop, .celebrate, .shake) { animation-delay: 50ms; }
 .word-row.shake .letter:nth-child(3):not(.pop, .celebrate, .shake) { animation-delay: 100ms; }
@@ -507,13 +507,13 @@ button.pill:active {
 
 /* easter egg: a row that spells QUAKE sets off an earthquake: the whole board rumbles (a jolt, then smaller
    tremors) and the QUAKE row's tiles bounce unevenly, as if the ground moved under them, then everything
-   settles until the next aftershock, every 3.5 s. translate is the separate property, so it adds to the
+   settles (once). translate is the separate property, so it adds to the
    tiles' own transforms */
 #board:has(.word-row.quake) {
-    animation: quake-board 3.5s ease-out infinite;
+    animation: quake-board 3.5s ease-out;
 }
 .word-row.quake .letter:not(.pop, .celebrate, .shake) {
-    animation: quake-tile 3.5s ease-out infinite;
+    animation: quake-tile 3.5s ease-out;
 }
 .word-row.quake .letter:nth-child(2):not(.pop, .celebrate, .shake) { animation-delay: 60ms; }
 .word-row.quake .letter:nth-child(3):not(.pop, .celebrate, .shake) { animation-delay: 20ms; }
@@ -537,12 +537,52 @@ button.pill:active {
     24% { translate: 0 -1px; rotate: 0deg; }
 }
 
+/* easter egg: a row that spells FLOAT goes weightless, once: each letter drifts loose inside its tile in its
+   own direction, bumps softly off the walls, tumbling slowly, then drifts back to the middle (the tiles stay
+   still). Distances are a share of the tile's size, so the letters stay inside it on any screen. translate
+   and rotate are the separate properties; the letter's pop-in plays first */
+.word-row.float .letter:nth-child(1):not(.pop) .letter-text { animation: float-1 5s ease-in-out; }
+.word-row.float .letter:nth-child(2):not(.pop) .letter-text { animation: float-2 5s ease-in-out; }
+.word-row.float .letter:nth-child(3):not(.pop) .letter-text { animation: float-3 5s ease-in-out; }
+.word-row.float .letter:nth-child(4):not(.pop) .letter-text { animation: float-4 5s ease-in-out; }
+.word-row.float .letter:nth-child(5):not(.pop) .letter-text { animation: float-5 5s ease-in-out; }
+@keyframes float-1 {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: calc(var(--tile) * -0.18) calc(var(--tile) * -0.16); rotate: -25deg; }
+    50% { translate: calc(var(--tile) * 0.06) calc(var(--tile) * -0.20); rotate: -10deg; }
+    75% { translate: calc(var(--tile) * 0.18) calc(var(--tile) * 0.06); rotate: 15deg; }
+}
+@keyframes float-2 {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: calc(var(--tile) * 0.20) calc(var(--tile) * 0.10); rotate: 20deg; }
+    50% { translate: calc(var(--tile) * -0.04) calc(var(--tile) * 0.20); rotate: 35deg; }
+    75% { translate: calc(var(--tile) * -0.18) calc(var(--tile) * -0.06); rotate: 10deg; }
+}
+@keyframes float-3 {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: calc(var(--tile) * 0.06) calc(var(--tile) * -0.20); rotate: -15deg; }
+    50% { translate: calc(var(--tile) * 0.20) calc(var(--tile) * 0.04); rotate: -30deg; }
+    75% { translate: calc(var(--tile) * -0.10) calc(var(--tile) * 0.18); rotate: -5deg; }
+}
+@keyframes float-4 {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: calc(var(--tile) * -0.20) calc(var(--tile) * 0.08); rotate: 25deg; }
+    50% { translate: calc(var(--tile) * -0.06) calc(var(--tile) * -0.20); rotate: 10deg; }
+    75% { translate: calc(var(--tile) * 0.16) calc(var(--tile) * -0.10); rotate: -20deg; }
+}
+@keyframes float-5 {
+    0%, 100% { translate: 0 0; rotate: 0deg; }
+    25% { translate: calc(var(--tile) * 0.14) calc(var(--tile) * 0.18); rotate: -20deg; }
+    50% { translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.06); rotate: 5deg; }
+    75% { translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.16); rotate: 25deg; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
-.letter-edge {
+.letter-extra {
     display: none;
 }
-.word-row.cubic .letter-edge {
+.word-row.cubic .letter-extra {
     display: block;
     position: absolute;
     left: calc(100% + var(--border) - 1.25px);
@@ -554,6 +594,44 @@ button.pill:active {
     transform: rotate(45deg);
     pointer-events: none;
 }
+/* easter egg: a row that spells BLINK turns its tiles into eyes: ink eyelids close from the top and bottom
+   and open again, twice in quick succession, then the eyes stay open. The lids are the
+   tile's extra span (covering the tile, under its rounded corners) and that span's ::before and ::after;
+   their curved edges meet in the middle like real eyelids */
+.word-row.blink .letter-extra {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: calc(var(--radius) - var(--border));
+    overflow: hidden;
+    pointer-events: none;
+}
+.word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after {
+    content: '';
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 0;
+    background: var(--ink);
+    animation: eyelid 3.6s ease-in-out;
+}
+.word-row.blink .letter-extra::before {
+    top: 0;
+    border-radius: 0 0 50% 50% / 0 0 40% 40%; /* the top lid's edge curves down in the middle */
+}
+.word-row.blink .letter-extra::after {
+    bottom: 0;
+    border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+}
+@keyframes eyelid {
+    0%, 26%, 100% { height: 0; }
+    5% { height: 62%; }
+    11% { height: 0; }
+    16% { height: 62%; }
+    22% { height: 0; }
+}
+
 .word-row.cubic .letter.c1, .word-row.cubic .letter.c2, .word-row.cubic .letter.c3, .word-row.cubic .letter.c4 {
     --side: color-mix(in srgb, var(--c) 75%, var(--ink));
 }
@@ -792,7 +870,9 @@ body.row-links .word-row .letter {
 @media (prefers-reduced-motion: reduce) {
     .letter.pop, .letter.pop .letter-text, .letter.shake, .letter.celebrate, #copy-results-button,
     .letter.selected::after, #score.shake, #reveal-button.shake, .wordmark.rainbow-in span,
-    .word-row.shake .letter, .word-row.quake .letter, #board:has(.word-row.quake) {
+    .word-row.shake .letter, .word-row.quake .letter, #board:has(.word-row.quake),
+    .word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after,
+    .word-row.float .letter-text {
         animation: none;
     }
     .letter, .word-row {

@@ -416,6 +416,65 @@ button.pill:active {
 .word-row.askew .letter:nth-child(3) { rotate: -3deg; }
 .word-row.askew .letter:nth-child(4) { rotate: 8deg; }
 .word-row.askew .letter:nth-child(5) { rotate: -5deg; }
+/* easter egg: a row that spells ROUND turns its tiles into circles (the shadows follow). The color shape
+   and score mode's points sit in the corners, which a circle cuts off, so they move inward */
+.word-row.round .letter {
+    border-radius: 50%;
+}
+.word-row.round .letter::before {
+    top: 15%;
+    left: 15%;
+}
+.word-row.round .letter-points {
+    bottom: 12%;
+    right: 17%;
+}
+/* easter egg: a row that spells CUBIC turns its tiles into cubes, seen from above: each block's top and
+   right side show, going up and to the right (the opposite of the usual shadow, so it can't read as one).
+   The sides are the tile's shadow stacked a pixel at a time (a darker shade of its color, gray for black
+   tiles), with the same stack again behind it, spread by 2px in ink, outlining the whole block like the
+   rest of the paper-pop drawings. The face moves down and left by half the depth so the row stays where
+   it was (translate is the separate property, so it adds to the tiles' own transforms) */
+.word-row.cubic .letter {
+    --side: #9b958c;
+    border-radius: 0; /* sharp corners, like a real cube */
+    translate: -3px 3px;
+    box-shadow:
+        1px -1px 0 var(--side),
+        2px -2px 0 var(--side),
+        3px -3px 0 var(--side),
+        4px -4px 0 var(--side),
+        5px -5px 0 var(--side),
+        6px -6px 0 var(--side),
+        7px -7px 0 var(--side),
+        1px -1px 0 2px var(--ink),
+        2px -2px 0 2px var(--ink),
+        3px -3px 0 2px var(--ink),
+        4px -4px 0 2px var(--ink),
+        5px -5px 0 2px var(--ink),
+        6px -6px 0 2px var(--ink),
+        7px -7px 0 2px var(--ink);
+}
+/* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
+   right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
+.letter-edge {
+    display: none;
+}
+.word-row.cubic .letter-edge {
+    display: block;
+    position: absolute;
+    left: calc(100% + var(--border) - 1.25px);
+    bottom: calc(100% + var(--border));
+    width: 2.5px;
+    height: 11px;
+    background: var(--ink);
+    transform-origin: bottom center;
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+.word-row.cubic .letter.c1, .word-row.cubic .letter.c2, .word-row.cubic .letter.c3, .word-row.cubic .letter.c4 {
+    --side: color-mix(in srgb, var(--c) 75%, var(--ink));
+}
 .word-row.valid {
     background-color: #b3dd98; /* a real word */
 }
@@ -464,7 +523,8 @@ body.row-links .word-row .letter {
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    transition: transform 120ms ease-out, box-shadow 120ms ease-out, rotate 350ms cubic-bezier(.3, 1.6, .5, 1);
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, rotate 350ms cubic-bezier(.3, 1.6, .5, 1),
+                border-radius 300ms ease-out, translate 300ms ease-out;
 }
 
 .letter-text {

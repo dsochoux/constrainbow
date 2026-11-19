@@ -23,6 +23,10 @@ export class Letter {
         const div = document.createElement('div');
         // add the letter span to the div
         div.appendChild(textElement);
+        // the edge between a cube's top and side, only shown in a row that spells CUBIC (see style.css)
+        const edge = document.createElement('span');
+        edge.classList.add('letter-edge');
+        div.appendChild(edge);
         div.classList.add('letter');
         div.addEventListener('click', () => {
             // call the click handler with its identity

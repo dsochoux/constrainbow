@@ -614,6 +614,137 @@ button.pill:active {
     87% { translate: 0 1px; rotate: -1deg; }
 }
 
+/* easter egg: a row that spells DROOP sags like a clothesline under too much weight: the end tiles stay up,
+   the middle hangs lowest, and each tile tips to follow the line's slope. It eases into the sag and stays.
+   translate and rotate are the separate properties, so they add to the tiles' own transforms */
+.word-row.droop .letter {
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out,
+                translate 900ms cubic-bezier(.3, 1.3, .5, 1), rotate 900ms cubic-bezier(.3, 1.3, .5, 1);
+}
+.word-row.droop .letter:nth-child(1) { rotate: 7deg; }
+.word-row.droop .letter:nth-child(2) { translate: 0 calc(var(--tile) * 0.1); rotate: 4deg; }
+.word-row.droop .letter:nth-child(3) { translate: 0 calc(var(--tile) * 0.15); }
+.word-row.droop .letter:nth-child(4) { translate: 0 calc(var(--tile) * 0.1); rotate: -4deg; }
+.word-row.droop .letter:nth-child(5) { rotate: -7deg; }
+
+/* easter egg: a row that spells JUMPY hops like jumping beans, once: each letter jumps three times at its own
+   uneven rhythm, crouching before each jump, stretching as it leaves, clearing the top of its tile, and
+   squashing when it lands. Heights are a share of the tile's size; the squash pivots on the letter's feet.
+   translate and scale are the separate properties; the letter's pop-in plays first */
+.word-row.jumpy .letter-text {
+    transform-origin: 50% 100%;
+}
+.word-row.jumpy .letter:nth-child(1):not(.pop) .letter-text { animation: jumpy-1 2.8s ease-in-out; }
+.word-row.jumpy .letter:nth-child(2):not(.pop) .letter-text { animation: jumpy-2 2.8s ease-in-out; }
+.word-row.jumpy .letter:nth-child(3):not(.pop) .letter-text { animation: jumpy-3 2.8s ease-in-out; }
+.word-row.jumpy .letter:nth-child(4):not(.pop) .letter-text { animation: jumpy-4 2.8s ease-in-out; }
+.word-row.jumpy .letter:nth-child(5):not(.pop) .letter-text { animation: jumpy-5 2.8s ease-in-out; }
+@keyframes jumpy-1 {
+    0%, 100% { translate: 0 0; scale: 1; }
+    2.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    6.6% { translate: 0 calc(var(--tile) * -0.270); scale: 0.88 1.18; }
+    11% { translate: 0 calc(var(--tile) * -0.450); scale: 1 1; }
+    16.5% { translate: 0 calc(var(--tile) * -0.158); scale: 0.92 1.1; }
+    19.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    22% { translate: 0 0; scale: 1; }
+    32.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    36.6% { translate: 0 calc(var(--tile) * -0.180); scale: 0.88 1.18; }
+    41% { translate: 0 calc(var(--tile) * -0.300); scale: 1 1; }
+    46.5% { translate: 0 calc(var(--tile) * -0.105); scale: 0.92 1.1; }
+    49.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    52% { translate: 0 0; scale: 1; }
+    64.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    68.6% { translate: 0 calc(var(--tile) * -0.120); scale: 0.88 1.18; }
+    73% { translate: 0 calc(var(--tile) * -0.200); scale: 1 1; }
+    78.5% { translate: 0 calc(var(--tile) * -0.070); scale: 0.92 1.1; }
+    81.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    84% { translate: 0 0; scale: 1; }
+}
+@keyframes jumpy-2 {
+    0%, 100% { translate: 0 0; scale: 1; }
+    12.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    16.6% { translate: 0 calc(var(--tile) * -0.210); scale: 0.88 1.18; }
+    21% { translate: 0 calc(var(--tile) * -0.350); scale: 1 1; }
+    26.5% { translate: 0 calc(var(--tile) * -0.122); scale: 0.92 1.1; }
+    29.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    32% { translate: 0 0; scale: 1; }
+    38.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    42.6% { translate: 0 calc(var(--tile) * -0.252); scale: 0.88 1.18; }
+    47% { translate: 0 calc(var(--tile) * -0.420); scale: 1 1; }
+    52.5% { translate: 0 calc(var(--tile) * -0.147); scale: 0.92 1.1; }
+    55.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    58% { translate: 0 0; scale: 1; }
+    64.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    68.6% { translate: 0 calc(var(--tile) * -0.090); scale: 0.88 1.18; }
+    73% { translate: 0 calc(var(--tile) * -0.150); scale: 1 1; }
+    78.5% { translate: 0 calc(var(--tile) * -0.052); scale: 0.92 1.1; }
+    81.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    84% { translate: 0 0; scale: 1; }
+}
+@keyframes jumpy-3 {
+    0%, 100% { translate: 0 0; scale: 1; }
+    7.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    11.6% { translate: 0 calc(var(--tile) * -0.300); scale: 0.88 1.18; }
+    16% { translate: 0 calc(var(--tile) * -0.500); scale: 1 1; }
+    21.5% { translate: 0 calc(var(--tile) * -0.175); scale: 0.92 1.1; }
+    24.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    27% { translate: 0 0; scale: 1; }
+    44.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    48.6% { translate: 0 calc(var(--tile) * -0.150); scale: 0.88 1.18; }
+    53% { translate: 0 calc(var(--tile) * -0.250); scale: 1 1; }
+    58.5% { translate: 0 calc(var(--tile) * -0.087); scale: 0.92 1.1; }
+    61.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    64% { translate: 0 0; scale: 1; }
+    72.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    76.6% { translate: 0 calc(var(--tile) * -0.120); scale: 0.88 1.18; }
+    81% { translate: 0 calc(var(--tile) * -0.200); scale: 1 1; }
+    86.5% { translate: 0 calc(var(--tile) * -0.070); scale: 0.92 1.1; }
+    89.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    92% { translate: 0 0; scale: 1; }
+}
+@keyframes jumpy-4 {
+    0%, 100% { translate: 0 0; scale: 1; }
+    20.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    24.6% { translate: 0 calc(var(--tile) * -0.180); scale: 0.88 1.18; }
+    29% { translate: 0 calc(var(--tile) * -0.300); scale: 1 1; }
+    34.5% { translate: 0 calc(var(--tile) * -0.105); scale: 0.92 1.1; }
+    37.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    40% { translate: 0 0; scale: 1; }
+    44.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    48.6% { translate: 0 calc(var(--tile) * -0.270); scale: 0.88 1.18; }
+    53% { translate: 0 calc(var(--tile) * -0.450); scale: 1 1; }
+    58.5% { translate: 0 calc(var(--tile) * -0.158); scale: 0.92 1.1; }
+    61.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    64% { translate: 0 0; scale: 1; }
+    70.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    74.6% { translate: 0 calc(var(--tile) * -0.108); scale: 0.88 1.18; }
+    79% { translate: 0 calc(var(--tile) * -0.180); scale: 1 1; }
+    84.5% { translate: 0 calc(var(--tile) * -0.063); scale: 0.92 1.1; }
+    87.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    90% { translate: 0 0; scale: 1; }
+}
+@keyframes jumpy-5 {
+    0%, 100% { translate: 0 0; scale: 1; }
+    4.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    8.6% { translate: 0 calc(var(--tile) * -0.240); scale: 0.88 1.18; }
+    13% { translate: 0 calc(var(--tile) * -0.400); scale: 1 1; }
+    18.5% { translate: 0 calc(var(--tile) * -0.140); scale: 0.92 1.1; }
+    21.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    24% { translate: 0 0; scale: 1; }
+    28.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    32.6% { translate: 0 calc(var(--tile) * -0.180); scale: 0.88 1.18; }
+    37% { translate: 0 calc(var(--tile) * -0.300); scale: 1 1; }
+    42.5% { translate: 0 calc(var(--tile) * -0.105); scale: 0.92 1.1; }
+    45.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    48% { translate: 0 0; scale: 1; }
+    54.6% { translate: 0 calc(var(--tile) * -0.000); scale: 1.15 0.82; }
+    58.6% { translate: 0 calc(var(--tile) * -0.210); scale: 0.88 1.18; }
+    63% { translate: 0 calc(var(--tile) * -0.350); scale: 1 1; }
+    68.5% { translate: 0 calc(var(--tile) * -0.122); scale: 0.92 1.1; }
+    71.4% { translate: 0 calc(var(--tile) * -0.000); scale: 1.18 0.8; }
+    74% { translate: 0 0; scale: 1; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -909,7 +1040,8 @@ body.row-links .word-row .letter {
     .letter.selected::after, #score.shake, #reveal-button.shake, .wordmark.rainbow-in span,
     .word-row.shake .letter, .word-row.quake .letter, #board:has(.word-row.quake),
     .word-row.blink .letter-extra::before, .word-row.blink .letter-extra::after,
-    .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text {
+    .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text,
+    .word-row.jumpy .letter-text {
         animation: none;
     }
     .letter, .word-row {

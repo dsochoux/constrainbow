@@ -33,7 +33,8 @@ export class Word {
         // one that spells ASKEW knocks its tiles crooked, one that spells ROUND turns them into circles,
         // one that spells CUBIC turns them into blocks, one that spells WACKY jumbles its letters, one that
         // spells SHAKE rattles, one that spells QUAKE sets off an earthquake, one that spells BLINK blinks,
-        // one that spells FLOAT lets its letters drift weightless, and one that spells DIZZY gets dizzy
+        // one that spells FLOAT lets its letters drift weightless, one that spells DIZZY gets dizzy, and one
+        // that spells DROOP sags, and one that spells JUMPY hops like jumping beans
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -45,6 +46,8 @@ export class Word {
         this.rowElement.classList.toggle('blink', word === 'blink');
         this.rowElement.classList.toggle('float', word === 'float');
         this.rowElement.classList.toggle('dizzy', word === 'dizzy');
+        this.rowElement.classList.toggle('droop', word === 'droop');
+        this.rowElement.classList.toggle('jumpy', word === 'jumpy');
     }
 
     // some handy functions might live here,

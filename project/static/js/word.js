@@ -29,6 +29,11 @@ export class Word {
         }
         this.rowElement.classList.toggle('valid', state === 'valid');
         this.rowElement.classList.toggle('invalid', state === 'invalid');
+        // easter eggs, for as long as the word is there: a row that spells SLANT leans like italic type,
+        // and a row that spells ASKEW knocks its tiles crooked
+        const word = state === 'valid' ? this.getWordString() : '';
+        this.rowElement.classList.toggle('slant', word === 'slant');
+        this.rowElement.classList.toggle('askew', word === 'askew');
     }
 
     // some handy functions might live here,

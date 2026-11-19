@@ -402,8 +402,20 @@ button.pill:active {
     background-color: #d9c8a3;
     box-shadow: inset 0 0 0 2px rgba(29, 27, 32, 0.12); /* a soft outline, without changing the layout */
     border-radius: calc(var(--radius) + 4px);
-    transition: background-color 200ms ease-out;
+    transition: background-color 200ms ease-out, transform 350ms cubic-bezier(.3, 1.6, .5, 1);
 }
+/* easter egg: a row that spells SLANT is sheared like italic type (the tiles become parallelograms,
+   the links stay level); see Word.setRowState */
+.word-row.slant {
+    transform: skewX(-10deg);
+}
+/* easter egg: a row that spells ASKEW knocks each tile a little crooked, each its own way. It uses the
+   separate rotate property, which adds to the tiles' own transforms (selected, given, the win hop) */
+.word-row.askew .letter:nth-child(1) { rotate: -7deg; }
+.word-row.askew .letter:nth-child(2) { rotate: 4deg; }
+.word-row.askew .letter:nth-child(3) { rotate: -3deg; }
+.word-row.askew .letter:nth-child(4) { rotate: 8deg; }
+.word-row.askew .letter:nth-child(5) { rotate: -5deg; }
 .word-row.valid {
     background-color: #b3dd98; /* a real word */
 }
@@ -452,7 +464,7 @@ body.row-links .word-row .letter {
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, rotate 350ms cubic-bezier(.3, 1.6, .5, 1);
 }
 
 .letter-text {
@@ -639,7 +651,7 @@ body.row-links .word-row .letter {
     .letter.selected::after, #score.shake, #reveal-button.shake, .wordmark.rainbow-in span {
         animation: none;
     }
-    .letter {
+    .letter, .word-row {
         transition: none;
     }
     .confetti {

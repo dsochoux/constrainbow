@@ -1076,7 +1076,6 @@ prior
 prism
 prize
 probe
-promo
 prone
 proof
 proud

@@ -208,6 +208,7 @@ polka
 porky
 posse
 prawn
+promo
 prude
 pudgy
 pylon

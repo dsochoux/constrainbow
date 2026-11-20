@@ -39,7 +39,8 @@ export class Word {
         // spells DISCO turns into a light-up dance floor, one that spells BEEFY bulks up its letters, one
         // that spells BATTY hangs its letters upside down like bats, one that spells PIANO plays itself, one
         // that spells PLUCK twangs like a plucked guitar string (see pluck), one that spells BUGGY glitches,
-        // one that spells GLASS turns its tiles to glass, and one that spells CLONE clones its letters
+        // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, and one
+        // that spells CRASH piles up like cars on a highway (see crash)
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -64,6 +65,8 @@ export class Word {
         this.rowElement.classList.toggle('clone', word === 'clone');
         const wasPluck = this.rowElement.classList.contains('pluck');
         this.rowElement.classList.toggle('pluck', word === 'pluck');
+        const wasCrash = this.rowElement.classList.contains('crash');
+        this.rowElement.classList.toggle('crash', word === 'crash');
         if (word === 'avoid') {
             this.startAvoiding();
         } else {
@@ -73,6 +76,11 @@ export class Word {
             this.pluck();
         } else if (word !== 'pluck') {
             this.stopPlucking();
+        }
+        if (word === 'crash' && !wasCrash) {
+            this.crash();
+        } else if (word !== 'crash') {
+            this.stopCrashing();
         }
     }
 
@@ -163,6 +171,162 @@ export class Word {
         this.pluckAnimations.forEach((animation) => animation.cancel());
         this.pluckAnimations = null;
         this.rowElement.classList.remove('plucking');
+    }
+
+    // easter egg: a row that spells CRASH piles up like cars on a highway, once: the first tile backs up, floors
+    // it and slams into the second, which lurches into the third, and so on down the row, each hit squashing
+    // both tiles a little and losing some energy, until the last tile skids to a stop; then the row eases back
+    // into place. The letters obey the same physics: a letter stays put while its tile starts to move, until
+    // the tile's inner left wall reaches it and shoves it along, and when its tile stops short the letter
+    // keeps going and smacks into the inner right wall. A small simulation works this out (simulateCrash),
+    // and its result plays as an animation of each tile's and letter's translate
+    crash() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        this.stopCrashing();
+        const tiles = this.letters.map((letter) => letter.tileElement);
+        const texts = this.letters.map((letter) => letter.textElement);
+        const size = tiles[0].offsetWidth;
+        const gap = parseFloat(getComputedStyle(this.rowElement).columnGap) || 0;
+        // how far each letter can slide before it touches a wall of its tile
+        const room = texts.map((text, k) => Math.max(0, (tiles[k].clientWidth - text.offsetWidth) / 2 - 1));
+        const frames = this.simulateCrash(size, gap, room);
+        const duration = frames[frames.length - 1].t;
+        const timing = { duration, easing: 'linear' };
+        this.crashAnimations = [];
+        tiles.forEach((tile, k) => {
+            this.crashAnimations.push(tile.animate(frames.map((frame) => ({
+                offset: frame.t / duration,
+                translate: `${frame.tiles[k].toFixed(2)}px 0px`,
+                scale: `${frame.squash[k].toFixed(3)} ${(2 - frame.squash[k]).toFixed(3)}`,
+            })), timing));
+            this.crashAnimations.push(texts[k].animate(frames.map((frame) => ({
+                offset: frame.t / duration,
+                translate: `${frame.letters[k].toFixed(2)}px 0px`,
+            })), timing));
+        });
+        this.crashAnimations[0].finished.then(() => this.stopCrashing(), () => {});
+    }
+
+    // the physics for CRASH, in one dimension, a frame every 16 ms. Tiles are equal masses sliding with friction;
+    // when two touch while closing in they collide, keeping their momentum and losing some energy (restitution
+    // 0.3); the first tile keeps accelerating a moment after its first hit, crunching the pile together. Each letter slides freely inside its tile between walls `room` px either side of center, bouncing
+    // softly off them. Returns, per frame, each tile's offset from its place, its squash (from the hits), and
+    // each letter's offset inside its tile
+    simulateCrash(size, gap, room) {
+        const dt = 1 / 240; // seconds per physics step (4 per frame, so fast hits don't pass through each other)
+        const backUp = size * 0.45, backUpTime = 0.35, pause = 0.12; // the first tile reverses, then waits
+        const throttle = 4200; // px/s², the first tile's acceleration
+        const pushOn = 0.2; // seconds the first driver keeps the gas down after the first hit, crunching the pile
+        const friction = 2200; // px/s², how fast a sliding tile slows down (the others are braking)
+        const bounce = 0.3, letterBounce = 0.4;
+        const settleBy = 1.7, returnTime = 0.6; // when the row starts easing back, and how long that takes
+        const x = [0, 0, 0, 0, 0], v = [0, 0, 0, 0, 0]; // tiles: offset and velocity
+        const y = [0, 0, 0, 0, 0], u = [0, 0, 0, 0, 0]; // letters: offset inside the tile, and velocity in the world
+        const hits = []; // [time, tile, strength] for the squash
+        let driveUntil = Infinity; // set at the first hit
+        const frames = [];
+        const squashAt = (t, k) => hits.reduce((sum, [when, tile, strength]) => {
+            const age = t - when;
+            return tile === k && age >= 0 && age < 0.25 ? sum + strength * Math.sin(Math.PI * age / 0.25) : sum;
+        }, 0);
+        let endState = null;
+        for (let step = 0, t = 0; t <= settleBy + returnTime + 1e-9; step++, t = step * dt) {
+            if (t < settleBy) {
+                const start = x.slice(); // where the tiles were at the start of this step, for the letters
+                // the first tile: reverse (eased), pause, then accelerate until it hits the second
+                const before = x[0];
+                if (t < backUpTime) {
+                    x[0] = -backUp * (1 - Math.cos(Math.PI * t / backUpTime)) / 2;
+                    v[0] = (x[0] - before) / dt;
+                } else if (t < backUpTime + pause) {
+                    v[0] = 0;
+                } else if (t < driveUntil) {
+                    v[0] += throttle * dt;
+                    x[0] += v[0] * dt;
+                }
+                // everything else slides, slowing down
+                const driving = t >= backUpTime && t < driveUntil;
+                for (let k = driving || t < backUpTime + pause ? 1 : 0; k < 5; k++) {
+                    if (v[k] !== 0) {
+                        const slowed = v[k] - Math.sign(v[k]) * friction * dt;
+                        v[k] = Math.sign(slowed) === Math.sign(v[k]) ? slowed : 0;
+                        x[k] += v[k] * dt;
+                    }
+                }
+                // collisions between neighbors: the gap between them closes at gap + x[k+1] - x[k]
+                for (let pass = 0; pass < 3; pass++) {
+                    for (let k = 0; k < 4; k++) {
+                        const overlap = -(gap + x[k + 1] - x[k]);
+                        if (overlap >= 0 && v[k] > v[k + 1]) {
+                            const a = v[k], b = v[k + 1];
+                            v[k] = ((1 - bounce) * a + (1 + bounce) * b) / 2;
+                            v[k + 1] = ((1 + bounce) * a + (1 - bounce) * b) / 2;
+                            if (a - b > 80) { // a real impact, not the steady shove of the pile
+                                const strength = Math.min(0.14, (a - b) / 4000);
+                                hits.push([t, k, strength], [t, k + 1, strength]);
+                            }
+                            if (k === 0 && driveUntil === Infinity) {
+                                driveUntil = t + pushOn;
+                            }
+                        }
+                        if (overlap > 0) {
+                            x[k] -= overlap / 2;
+                            x[k + 1] += overlap / 2;
+                        }
+                    }
+                }
+                // letters: no friction, so each keeps its own speed until a wall of its tile reaches it
+                for (let k = 0; k < 5; k++) {
+                    const world = start[k] + y[k] + u[k] * dt;
+                    y[k] = world - x[k];
+                    u[k] *= Math.exp(-0.8 * dt); // a little drag, so they come to rest
+                    if (y[k] < -room[k]) { // the left wall caught up with it (or it slid back into the left wall)
+                        y[k] = -room[k];
+                        if (u[k] < v[k]) {
+                            u[k] = v[k] + letterBounce * (v[k] - u[k]);
+                        }
+                    } else if (y[k] > room[k]) { // it ran into the right wall
+                        y[k] = room[k];
+                        if (u[k] > v[k]) {
+                            u[k] = v[k] - letterBounce * (u[k] - v[k]);
+                        }
+                    }
+                }
+            } else {
+                // the scene is cleared: everything eases back to where it belongs
+                if (!endState) {
+                    endState = { x: x.slice(), y: y.slice() };
+                }
+                const p = Math.min(1, (t - settleBy) / returnTime);
+                const left = 1 - (1 - Math.cos(Math.PI * p)) / 2;
+                for (let k = 0; k < 5; k++) {
+                    x[k] = endState.x[k] * left;
+                    y[k] = endState.y[k] * left;
+                }
+            }
+            if (step % 4 === 0) {
+                frames.push({
+                    t: t * 1000,
+                    tiles: x.slice(),
+                    letters: y.slice(),
+                    squash: [0, 1, 2, 3, 4].map((k) => 1 - Math.min(0.15, squashAt(t, k))),
+                });
+            }
+        }
+        const last = frames[frames.length - 1];
+        last.tiles = [0, 0, 0, 0, 0];
+        last.letters = [0, 0, 0, 0, 0];
+        return frames;
+    }
+
+    stopCrashing() {
+        if (!this.crashAnimations) {
+            return;
+        }
+        this.crashAnimations.forEach((animation) => animation.cancel());
+        this.crashAnimations = null;
     }
 
     // easter egg: while the row spells AVOID, each letter is pushed away from the pointer (harder the closer it

@@ -1385,6 +1385,37 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
     100% { translate: 0 0; }
 }
 
+/* easter egg: a row that spells REPEL pushes the rows around it away, like the same poles of two magnets: the
+   nearest row on each side is shoved hard (15px) and crowds into the next, which is pushed along less (11px)
+   and a moment later, and so on (8px): the gap next to the REPEL row opens wide while the rows beyond bunch up,
+   like a crowd being pushed back. Each overshoots and wobbles as it finds its balance, then they hover there
+   for as long as the word is there. Change the word and they spring back (the translate transition below).
+   Each row works out where the REPEL row is from its neighbors (+ and :has) and gets --push (how far and
+   which way) and --push-delay (how long until the row in front reaches it) */
+.word-row {
+    transition: background-color 200ms ease-out, transform 350ms cubic-bezier(.3, 1.6, .5, 1),
+        translate 450ms cubic-bezier(.3, 1.6, .5, 1);
+}
+.word-row.repel + .word-row { --push: 15px; --push-delay: 0ms; }
+.word-row.repel + .word-row + .word-row { --push: 11px; --push-delay: 25ms; }
+.word-row.repel + .word-row + .word-row + .word-row { --push: 8px; --push-delay: 50ms; }
+.word-row:has(+ .word-row.repel) { --push: -15px; --push-delay: 0ms; }
+.word-row:has(+ .word-row + .word-row.repel) { --push: -11px; --push-delay: 25ms; }
+.word-row:has(+ .word-row + .word-row + .word-row.repel) { --push: -8px; --push-delay: 50ms; }
+.word-row.repel ~ .word-row, .word-row:has(~ .word-row.repel) {
+    translate: 0 var(--push);
+    animation: repel-push 1300ms ease-out var(--push-delay) backwards;
+}
+@keyframes repel-push {
+    0% { translate: 0 0; }
+    18% { translate: 0 calc(var(--push) * 1.2); }    /* shoved away hard */
+    36% { translate: 0 calc(var(--push) * 0.75); }   /* swings back toward it */
+    54% { translate: 0 calc(var(--push) * 1.18); }
+    72% { translate: 0 calc(var(--push) * 0.92); }
+    86% { translate: 0 calc(var(--push) * 1.04); }
+    100% { translate: 0 var(--push); }              /* hovering, balanced */
+}
+
 /* in a CUBIC row, a SOLVE given tile stays pressed into the board (no cube sides), as it did when these
    rules lived inside style.css, where the given tile's rule came after them */
 .word-row.cubic .letter.given:not(.paused) {

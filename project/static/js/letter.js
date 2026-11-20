@@ -24,7 +24,8 @@ export class Letter {
         // add the letter span to the div
         div.appendChild(textElement);
         // an extra piece for the word easter eggs, hidden otherwise (see style.css): the edge between a
-        // cube's top and side in a row that spells CUBIC, the eyelids in one that spells BLINK
+        // cube's top and side in a row that spells CUBIC, the eyelids in one that spells BLINK, the floating
+        // notes in one that spells PIANO
         const extra = document.createElement('span');
         extra.classList.add('letter-extra');
         div.appendChild(extra);

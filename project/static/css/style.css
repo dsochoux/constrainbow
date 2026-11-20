@@ -982,6 +982,307 @@ button.pill:active {
     75% { rotate: 170deg; }
 }
 
+/* easter egg: a row that spells PIANO becomes a little keyboard that plays itself, once (4 s, no sound): the
+   tiles turn into white keys with their letters low like key labels, black keys drop in across the top of the
+   gaps (between keys 1-2, 2-3 and 4-5, never 3-4, like C D E F G on a real piano), and the keys press down to
+   an uneven tune, chords and a run, ending on a chord, each press squashing the key's shadow and sending a ♪
+   or ♫ floating up. Then everything goes back. The keyframes (when each key is pressed) are generated: see
+   docs/architecture.md. --key-up cancels a given or selected tile's own offset, so every key starts level.
+   A letter popping in keeps its pop alongside */
+.word-row.piano {
+    position: relative;
+}
+.word-row.piano .letter { --key-up: 0px; }
+.word-row.piano .letter.given:not(.paused) { --key-up: -3px; }
+.word-row.piano .letter.selected { --key-up: 3px; }
+.word-row.piano .letter:nth-child(1):not(.celebrate, .shake) { animation: piano-key-1 4s linear; }
+.word-row.piano .letter:nth-child(2):not(.celebrate, .shake) { animation: piano-key-2 4s linear; }
+.word-row.piano .letter:nth-child(3):not(.celebrate, .shake) { animation: piano-key-3 4s linear; }
+.word-row.piano .letter:nth-child(4):not(.celebrate, .shake) { animation: piano-key-4 4s linear; }
+.word-row.piano .letter:nth-child(5):not(.celebrate, .shake) { animation: piano-key-5 4s linear; }
+.word-row.piano .letter.pop:nth-child(1):not(.celebrate, .shake) { animation: bump 260ms ease-out var(--pop-delay, 0ms), piano-key-1 4s linear; }
+.word-row.piano .letter.pop:nth-child(2):not(.celebrate, .shake) { animation: bump 260ms ease-out var(--pop-delay, 0ms), piano-key-2 4s linear; }
+.word-row.piano .letter.pop:nth-child(3):not(.celebrate, .shake) { animation: bump 260ms ease-out var(--pop-delay, 0ms), piano-key-3 4s linear; }
+.word-row.piano .letter.pop:nth-child(4):not(.celebrate, .shake) { animation: bump 260ms ease-out var(--pop-delay, 0ms), piano-key-4 4s linear; }
+.word-row.piano .letter.pop:nth-child(5):not(.celebrate, .shake) { animation: bump 260ms ease-out var(--pop-delay, 0ms), piano-key-5 4s linear; }
+/* the color shapes would sit under the black keys: they step aside while it plays */
+.word-row.piano .letter::before {
+    animation: piano-hide 4s linear;
+}
+@keyframes piano-hide {
+    7.5%, 93.75% { opacity: 0; }
+}
+.word-row.piano .letter-text {
+    animation: piano-label 4s ease-in-out;
+}
+.word-row.piano .letter.pop .letter-text {
+    animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1) var(--pop-delay, 0ms) backwards, piano-label 4s ease-in-out;
+}
+@keyframes piano-label {
+    7.5%, 93.75% { translate: 0 calc(var(--tile) * 0.2); scale: 0.7; }
+}
+/* the black keys: one key, copied to the other two gaps by its shadows */
+.word-row.piano::after {
+    content: '';
+    position: absolute;
+    z-index: 2; /* over the white keys */
+    top: var(--rail-pad-start);
+    left: calc(var(--rail-pad-start) + var(--tile) + var(--row-gap) / 2 - var(--tile) * 0.18);
+    width: calc(var(--tile) * 0.36);
+    height: calc(var(--tile) * 0.56);
+    background: var(--ink);
+    border-radius: 0 0 5px 5px;
+    box-shadow: calc(var(--tile) + var(--row-gap)) 0 0 var(--ink), calc(3 * (var(--tile) + var(--row-gap))) 0 0 var(--ink);
+    opacity: 0;
+    pointer-events: none;
+    animation: piano-black 4s ease-out;
+}
+@keyframes piano-black {
+    0% { opacity: 0; translate: 0 calc(var(--tile) * -0.3); }
+    7.5%, 93.75% { opacity: 1; translate: 0 0; }
+    100% { opacity: 0; translate: 0 0; }
+}
+/* the notes: each tile's two (♪ and ♫, drawn as text, not emoji) take turns floating up from its presses */
+.word-row.piano .letter-extra {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.word-row.piano .letter-extra::before, .word-row.piano .letter-extra::after {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-50%);
+    font-family: var(--ui-font);
+    font-weight: 700;
+    font-size: calc(var(--tile) * 0.4);
+    line-height: 1;
+    color: var(--ink);
+    opacity: 0;
+}
+.word-row.piano .letter-extra::before { content: '\266A\FE0E'; }
+.word-row.piano .letter-extra::after { content: '\266B\FE0E'; }
+.word-row.piano .letter:nth-child(1) .letter-extra::before { animation: piano-note-1a 4s ease-out; }
+.word-row.piano .letter:nth-child(1) .letter-extra::after { animation: piano-note-1b 4s ease-out; }
+.word-row.piano .letter:nth-child(2) .letter-extra::before { animation: piano-note-2a 4s ease-out; }
+.word-row.piano .letter:nth-child(2) .letter-extra::after { animation: piano-note-2b 4s ease-out; }
+.word-row.piano .letter:nth-child(3) .letter-extra::before { animation: piano-note-3a 4s ease-out; }
+.word-row.piano .letter:nth-child(3) .letter-extra::after { animation: piano-note-3b 4s ease-out; }
+.word-row.piano .letter:nth-child(4) .letter-extra::before { animation: piano-note-4a 4s ease-out; }
+.word-row.piano .letter:nth-child(4) .letter-extra::after { animation: piano-note-4b 4s ease-out; }
+.word-row.piano .letter:nth-child(5) .letter-extra::before { animation: piano-note-5a 4s ease-out; }
+.word-row.piano .letter:nth-child(5) .letter-extra::after { animation: piano-note-5b 4s ease-out; }
+@keyframes piano-key-1 {
+    0% { translate: var(--key-up) var(--key-up); }
+    5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    7.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    8.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    11.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    14% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    42.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    43.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    46.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    49% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    70% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    71% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    74.25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    76.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    77.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    78.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    84.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    87% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    93.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    100% { translate: var(--key-up) var(--key-up); }
+}
+@keyframes piano-key-2 {
+    0% { translate: var(--key-up) var(--key-up); }
+    5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    13% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    14% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    17.25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    19.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    32.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    33.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    36.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    39% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    66.25% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    67.25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    70.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    72.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    93.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    100% { translate: var(--key-up) var(--key-up); }
+}
+@keyframes piano-key-3 {
+    0% { translate: var(--key-up) var(--key-up); }
+    5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    18.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    19.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    22.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    25% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    42.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    43.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    46.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    49% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    62.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    63.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    66.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    69% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    77.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    78.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    84.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    87% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    93.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    100% { translate: var(--key-up) var(--key-up); }
+}
+@keyframes piano-key-4 {
+    0% { translate: var(--key-up) var(--key-up); }
+    5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    32.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    33.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    36.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    39% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    58.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    59.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    63% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    65.25% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    93.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    100% { translate: var(--key-up) var(--key-up); }
+}
+@keyframes piano-key-5 {
+    0% { translate: var(--key-up) var(--key-up); }
+    5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    24% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    28.25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    30.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    42.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    43.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    46.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    49% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    55% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    56% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    59.25% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    61.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    77.5% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    78.5% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    84.75% { translate: calc(var(--key-up) + 3px) calc(var(--key-up) + 3px); box-shadow: 0 0 0 var(--ink); background-color: #ebe6dc; }
+    87% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    93.75% { translate: var(--key-up) var(--key-up); box-shadow: 3px 3px 0 var(--ink); background-color: var(--card); }
+    100% { translate: var(--key-up) var(--key-up); }
+}
+@keyframes piano-note-1a {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    8.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    8.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    19.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    27.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    70.97% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    71% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    82.25% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    89.75% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-1b {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    54.75% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    62.25% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    78.47% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    78.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    89.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    97.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-2a {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    13.98% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    14% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    25.25% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    32.75% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    67.22% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    67.25% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    78.5% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    86% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-2b {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    33.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    33.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    44.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    52.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-3a {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    19.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    19.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    30.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    38.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    63.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    63.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    74.75% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    82.25% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-3b {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    54.75% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    62.25% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    78.47% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    78.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    89.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    97.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-4a {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    33.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    33.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    44.75% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    52.25% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-4b {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    59.72% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    59.75% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    71% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    78.5% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-5a {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    24.98% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    25% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    36.25% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    43.75% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    55.97% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    56% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    67.25% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    74.75% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    100% { opacity: 0; }
+}
+@keyframes piano-note-5b {
+    0% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.48% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    43.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    54.75% { opacity: 1; translate: calc(var(--tile) * -0.12) calc(var(--tile) * -0.45); rotate: -12deg; }
+    62.25% { opacity: 0; translate: calc(var(--tile) * -0.20) calc(var(--tile) * -0.7); rotate: -20deg; }
+    78.47% { opacity: 0; translate: 0 0; rotate: 0deg; }
+    78.5% { opacity: 1; translate: 0 0; rotate: 0deg; }
+    89.75% { opacity: 1; translate: calc(var(--tile) * 0.12) calc(var(--tile) * -0.45); rotate: 12deg; }
+    97.25% { opacity: 0; translate: calc(var(--tile) * 0.20) calc(var(--tile) * -0.7); rotate: 20deg; }
+    100% { opacity: 0; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -1279,7 +1580,8 @@ body.row-links .word-row .letter {
     .word-row.float .letter-text, .word-row.dizzy .letter, .word-row.dizzy .letter-text,
     .word-row.jumpy .letter-text, .word-row.crazy .letter, .word-row.crazy .letter-text,
     .word-row.disco .letter, .word-row.disco .letter-text, .word-row.beefy .letter-text,
-    .word-row.batty .letter-text {
+    .word-row.batty .letter-text, .word-row.piano .letter, .word-row.piano .letter-text, .word-row.piano::after,
+    .word-row.piano .letter-extra::before, .word-row.piano .letter-extra::after {
         animation: none;
     }
     .letter, .word-row {

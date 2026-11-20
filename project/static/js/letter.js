@@ -54,6 +54,9 @@ export class Letter {
     update(letter) {
         this.value = letter;
         this.textElement.textContent = letter;
+        // the letter again, as a label CSS can read: a row that spells CLONE shows each letter twice
+        // (content: attr(data-letter) in eggs.css)
+        this.textElement.dataset.letter = letter;
     }
 
     isConstrained() {

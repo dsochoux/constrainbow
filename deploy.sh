@@ -29,8 +29,8 @@ echo "Syncing files..."
 scp ./project/app.py ./project/dashboard.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
 # the page templates (not word_review.html, which is only for running locally)
 scp ./project/templates/game.html ./project/templates/head.html ./project/templates/archive.html ./project/templates/dashboard.html ./project/templates/preview_test.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
-# style.css
-scp ./project/static/css/style.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
+# style.css and eggs.css (the easter eggs)
+scp ./project/static/css/style.css ./project/static/css/eggs.css $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/css
 # favicons and the web app manifest
 scp ./project/static/favicon_io/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/favicon_io
 # link-preview test images (see /preview-test in app.py)
@@ -38,6 +38,10 @@ ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_DIR/project/static/preview"
 scp ./project/static/preview/* $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/preview
 # bundle.js, and word.js, which the server's puzzle generator reads the easter-egg words from
 scp ./project/static/js/bundle.js ./project/static/js/word.js $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/static/js
+# compressed copies of the big text files, which nginx sends to browsers instead of compressing on every
+# request (gzip_static; see server/nginx-static.conf). Made fresh on every deploy, right after the files
+# they copy: a stale .gz would serve an old version
+ssh $REMOTE_USER@$REMOTE_HOST "cd $REMOTE_DIR/project/static && gzip -9 -k -f css/style.css css/eggs.css js/bundle.js"
 # words.txt (accepted words), common_words.txt (SOLVE answers), and SOLVE themes if there are any
 scp ./word_files/words.txt ./word_files/common_words.txt $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/word_files
 if [ -f ./word_files/solve_themes.json ]; then

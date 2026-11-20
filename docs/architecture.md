@@ -5,13 +5,14 @@ constrainbow/
 ├── project/
 │   ├── app.py                 Flask app (all routes)
 │   ├── static/js/stats.js, statsPopup.js  streaks and the 📊 stats popup (localStorage only)
-│   ├── templates/head.html    the shared <head> (fonts, style.css, icon links with `?v=`, and the link-preview tags when `preview_url` is set), included by every page
+│   ├── templates/head.html    the shared <head> (fonts, style.css and eggs.css, icon links with `?v=`, and the link-preview tags when `preview_url` is set), included by every page
 │   ├── templates/preview_test.html  the unlisted /preview-test page (link-preview tags for test images)
 │   ├── templates/archive.html the archive calendar
 │   ├── dashboard.py, templates/dashboard.html  Danny's analytics page (/dashboard)
 │   ├── templates/game.html    single page for every mode (Jinja): 4-step how-to-play popup (its example is yesterday's SOLVE answer, passed to every page as `tutorial` by a context processor in app.py), mode switch, on-screen keyboard
 │   └── static/
-│       ├── css/style.css      all styles, "Paper pop" (~780 lines)
+│       ├── css/style.css      all styles, "Paper pop" (~1,400 lines), except the easter eggs
+│       ├── css/eggs.css       the easter eggs (rows that spell SLANT, CUBIC, PIANO, ...), loaded after style.css
 │       ├── js/                ES-module sources → bundled to bundle.js
 │       ├── favicon_io/        rainbow-C icons: favicon.svg/.ico, 16/32 PNGs, apple-touch, android 192/512, site.webmanifest
 │       └── preview/           link-preview images, 1200×630: constrainbow.png (the live card) and test-N.png (tried with /preview-test)
@@ -70,7 +71,7 @@ Loads `words.txt` into memory at import. Input validation lives at the top: `GAM
 | `GET /preview-test?v=N` | unlisted: a page whose link-preview tags point at `static/preview/test-N.png` (N must exist, else the newest), for trying a design in Messages without touching the real pages. Messages caches a card per link, so each try uses a new N. Remove once the share-sheet experiment (findings.md) is done |
 | `GET /favicon.ico` | send `static/favicon_io/favicon.ico` (browsers ask for it at the root) |
 
-Production: nginx 1.26 (HTTPS via Let's Encrypt, auto-renewed by certbot) proxies to gunicorn `-w 4 project.app:app -b 127.0.0.1:5001`. gunicorn runs from `/srv/constrainbow` as the systemd service `constrainbow` (`server/constrainbow.service`). The service runs as the no-login system user `constrainbow`, restarts on crash and starts at boot. It is sandboxed (`ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `NoNewPrivileges`) and may write only to `logs/` and `word_files/reported_missing_words.txt`; everything else under `/srv/constrainbow` is root-owned and read-only to it. gunicorn's output goes to `gunicorn.log`. The nightly root cron runs `ensure_games.py` from `/srv/constrainbow`. No gzip on JSON responses.
+Production: nginx 1.26 (HTTPS via Let's Encrypt, auto-renewed by certbot) proxies to gunicorn `-w 4 project.app:app -b 127.0.0.1:5001`, except `/static/`, which nginx sends straight from disk (`server/nginx-static.conf`): pre-compressed `.gz` copies of `style.css`, `eggs.css` and `bundle.js` (written by deploy.sh, `gzip_static`), other text files compressed as they're sent, all with `Cache-Control: no-cache`. gunicorn runs from `/srv/constrainbow` as the systemd service `constrainbow` (`server/constrainbow.service`). The service runs as the no-login system user `constrainbow`, restarts on crash and starts at boot. It is sandboxed (`ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, `NoNewPrivileges`) and may write only to `logs/` and `word_files/reported_missing_words.txt`; everything else under `/srv/constrainbow` is root-owned and read-only to it. gunicorn's output goes to `gunicorn.log`. The nightly root cron runs `ensure_games.py` from `/srv/constrainbow`. No gzip on JSON responses.
 
 
 Server (checked 2026-11-15): DigitalOcean droplet with 1 vCPU and 1 GB RAM, Ubuntu 24.10, clock in UTC, Python 3.12.7. The venv `env/` was built from `project/requirements.txt` (pinned). `/srv/constrainbow` is not a git checkout. The server's `project/templates/` also holds an old, unused `index.html` from before 2026-11-15. The pre-move folder is kept at `/root/constrainbow-backup-2026-11-15` (contains legacy `generated_games/` and old `gunicorn.log`). The server's `reported_missing_words.txt` is the real one (478 lines on 2026-11-16; the local copy was synced from it that day and every word decided). ufw is inactive; port 5001 is not publicly reachable because gunicorn binds 127.0.0.1. Access: `ssh root@constrainbow.com`. Because the app user isn't root, every file it serves must be world-readable: a root-only `favicon_io/` made every icon 404 after the move, and deploy.sh now runs `chmod -R a+rX` on `project`, `word_files`, `games` and `scripts`.
@@ -129,7 +130,7 @@ Note: count is over (letter assignment × word choices); different assignments c
 
 ## Deploy — `deploy.sh`
 Asks two y/n questions (bundle rebuilt? dev changes removed?), then:
-1. scp `app.py`, `game.html`, `head.html`, `archive.html`, `style.css`, `bundle.js`, `favicon_io/*`, `words.txt`, `common_words.txt`, `solve_themes.json` (if any) and the generation scripts to `/srv/constrainbow`. The word review page (`word_review.py`, `word_review.html`) and the list-maintenance scripts are deliberately not copied.
+1. scp `app.py`, `game.html`, `head.html`, `archive.html`, `style.css`, `eggs.css`, `bundle.js`, `favicon_io/*`, `words.txt`, `common_words.txt`, `solve_themes.json` (if any) and the generation scripts to `/srv/constrainbow`. Then write fresh `.gz` copies of `style.css`, `eggs.css` and `bundle.js` on the server (`gzip -9 -k -f`) for nginx to send; a stale one would serve an old version, so they're always remade right after the files. The word review page (`word_review.py`, `word_review.html`) and the list-maintenance scripts are deliberately not copied.
 2. rsync games both ways with `--ignore-existing` (never overwrites), run `ensure_games.py`, and (re)install the cron line `15 3 * * * cd /srv/constrainbow && env/bin/python scripts/ensure_games.py >> generate.log 2>&1`.
 3. Create the `constrainbow` user if missing; make sure `logs/` and `reported_missing_words.txt` exist and belong to it; `chmod -R a+rX` the read-only folders.
 4. Install `server/constrainbow.service`, `daemon-reload`, `enable`, `restart`; reload nginx.

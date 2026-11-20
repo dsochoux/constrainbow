@@ -1619,6 +1619,61 @@ body.row-links .word-row.plucking .letter:nth-child(-n+4) .letter-extra {
     100% { translate: 0 0; }
 }
 
+/* easter egg: a row that spells GLASS turns its tiles into slabs of glass, for as long as the word is there:
+   nearly clear, so the link bar shows through, softened by a blur (backdrop-filter); a bright edge on the
+   top and left and a darker one on the bottom and right for thickness; a diagonal sheen across the face;
+   colored tiles become stained glass in their own color; and the hard shadow turns see-through. When the
+   word lands, a glint of light sweeps across the row once (each tile's .letter-extra). body raises the
+   specificity over the given and colored tile rules */
+body .word-row.glass .letter:not(.paused) {
+    background-color: rgba(255, 255, 255, 0.22);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.18) 34%,
+        rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.2) 100%);
+    -webkit-backdrop-filter: blur(2.5px) saturate(1.5);
+    backdrop-filter: blur(2.5px) saturate(1.5);
+    border-color: rgba(29, 27, 32, 0.55);
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.85), inset -2px -2px 0 rgba(29, 27, 32, 0.14),
+        3px 3px 0 color-mix(in srgb, var(--c) 30%, transparent);
+}
+body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
+    background-color: color-mix(in srgb, var(--c) 24%, transparent);
+    border-color: color-mix(in srgb, var(--c) 70%, var(--ink));
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.7), inset -2px -2px 0 color-mix(in srgb, var(--c) 35%, transparent),
+        3px 3px 0 color-mix(in srgb, var(--c) 40%, transparent);
+}
+.word-row.glass .letter-text {
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6); /* a faint catch of light under each letter */
+}
+/* the glint: a pale band, slanted, that slides across each tile once, a little after the one before */
+.word-row.glass .letter-extra {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--radius) - var(--border));
+    overflow: hidden;
+    pointer-events: none;
+}
+.word-row.glass .letter-extra::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: 0;
+    width: 35%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+    rotate: 20deg;
+    translate: -200% 0;
+    animation: glass-glint 700ms ease-in-out 150ms both;
+}
+.word-row.glass .letter:nth-child(2) .letter-extra::before { animation-delay: 240ms; }
+.word-row.glass .letter:nth-child(3) .letter-extra::before { animation-delay: 330ms; }
+.word-row.glass .letter:nth-child(4) .letter-extra::before { animation-delay: 420ms; }
+.word-row.glass .letter:nth-child(5) .letter-extra::before { animation-delay: 510ms; }
+@keyframes glass-glint {
+    from { translate: -200% 0; }
+    to { translate: 400% 0; }
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {
@@ -1918,7 +1973,8 @@ body.row-links .word-row .letter {
     .word-row.disco .letter, .word-row.disco .letter-text, .word-row.beefy .letter-text,
     .word-row.batty .letter-text, .word-row.piano .letter, .word-row.piano .letter-text, .word-row.piano::after,
     .word-row.piano .letter-extra::before, .word-row.piano .letter-extra::after, .word-row.buggy,
-    .word-row.buggy .letter, .word-row.buggy .letter-text, .word-row.buggy .letter-extra::before {
+    .word-row.buggy .letter, .word-row.buggy .letter-text, .word-row.buggy .letter-extra::before,
+    .word-row.glass .letter-extra::before {
         animation: none;
     }
     .letter, .word-row {

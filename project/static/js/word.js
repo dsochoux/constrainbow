@@ -38,7 +38,8 @@ export class Word {
         // has letters that dodge the pointer (see startAvoiding), one that spells CRAZY goes wild, one that
         // spells DISCO turns into a light-up dance floor, one that spells BEEFY bulks up its letters, one
         // that spells BATTY hangs its letters upside down like bats, one that spells PIANO plays itself, one
-        // that spells PLUCK twangs like a plucked guitar string (see pluck), and one that spells BUGGY glitches
+        // that spells PLUCK twangs like a plucked guitar string (see pluck), one that spells BUGGY glitches,
+        // and one that spells GLASS turns its tiles to glass
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -59,6 +60,7 @@ export class Word {
         this.rowElement.classList.toggle('batty', word === 'batty');
         this.rowElement.classList.toggle('piano', word === 'piano');
         this.rowElement.classList.toggle('buggy', word === 'buggy');
+        this.rowElement.classList.toggle('glass', word === 'glass');
         const wasPluck = this.rowElement.classList.contains('pluck');
         this.rowElement.classList.toggle('pluck', word === 'pluck');
         if (word === 'avoid') {

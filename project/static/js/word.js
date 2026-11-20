@@ -37,7 +37,8 @@ export class Word {
         // that spells DROOP sags, one that spells JUMPY hops like jumping beans, one that spells AVOID
         // has letters that dodge the pointer (see startAvoiding), one that spells CRAZY goes wild, one that
         // spells DISCO turns into a light-up dance floor, one that spells BEEFY bulks up its letters, one
-        // that spells BATTY hangs its letters upside down like bats, and one that spells PIANO plays itself
+        // that spells BATTY hangs its letters upside down like bats, one that spells PIANO plays itself, and
+        // one that spells PLUCK twangs like a plucked guitar string (see pluck)
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -57,11 +58,107 @@ export class Word {
         this.rowElement.classList.toggle('beefy', word === 'beefy');
         this.rowElement.classList.toggle('batty', word === 'batty');
         this.rowElement.classList.toggle('piano', word === 'piano');
+        const wasPluck = this.rowElement.classList.contains('pluck');
+        this.rowElement.classList.toggle('pluck', word === 'pluck');
         if (word === 'avoid') {
             this.startAvoiding();
         } else {
             this.stopAvoiding();
         }
+        if (word === 'pluck' && !wasPluck) {
+            this.pluck();
+        } else if (word !== 'pluck') {
+            this.stopPlucking();
+        }
+    }
+
+    // easter egg: a row that spells PLUCK is a guitar string (the ink link bar), plucked once from the middle:
+    // the middle tile pulls the string up into a bow, holds, and lets go, and the string vibrates and dies away.
+    // It moves like a real string: its main bow swinging, with the faster third harmonic shimmering on top
+    // (the ends move least, the middle most), and each tile tilts along the curve. While it plays, the bar is
+    // swapped for four short links, one per gap (each tile's .letter-extra), which stretch and turn to stay
+    // joined to the tiles either side
+    pluck() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        this.stopPlucking();
+        const tiles = this.letters.map((letter) => letter.tileElement);
+        const size = tiles[0].offsetWidth;
+        const gap = parseFloat(getComputedStyle(this.rowElement).columnGap) || 0;
+        const step = size + gap; // from one tile's center to the next
+        const height = size * 0.3; // how far the middle is pulled
+        const pullTime = 350, holdTime = 100, ringTime = 2000;
+        const duration = pullTime + holdTime + ringTime;
+
+        // the string's shape at a time t (ms) after it's let go, at the five tiles: a plucked string's first and
+        // third harmonics (the others are small), each fading, the third faster
+        const positions = [1, 2, 3, 4, 5].map((k) => k / 6); // the string's ends are a tile past the row's ends
+        const shapeAt = (t) => positions.map((x) => {
+            const first = 0.811 * Math.sin(Math.PI * x) * Math.cos(2 * Math.PI * 7 * t / 1000) * Math.exp(-t / 500);
+            const third = -0.090 * Math.sin(3 * Math.PI * x) * Math.cos(2 * Math.PI * 21 * t / 1000) * Math.exp(-t / 250);
+            return -height * (first + third) / 0.901;
+        });
+
+        // a frame for each 16 ms: the pull (eased), the hold, then the ringing
+        const frames = [];
+        for (let t = 0; t <= duration; t += 16) {
+            let heights;
+            if (t < pullTime) {
+                const eased = 1 - Math.pow(1 - t / pullTime, 3);
+                heights = shapeAt(0).map((y) => y * eased);
+            } else if (t < pullTime + holdTime) {
+                heights = shapeAt(0);
+            } else {
+                heights = shapeAt(t - pullTime - holdTime);
+            }
+            frames.push({ offset: t / duration, heights });
+        }
+        frames.push({ offset: 1, heights: [0, 0, 0, 0, 0] });
+
+        // each tile tilts along the string (a little less than the string's slope, so it reads as a tile)
+        const tiltsOf = (heights) => heights.map((y, k) => {
+            const before = k > 0 ? heights[k - 1] : 0;
+            const after = k < 4 ? heights[k + 1] : 0;
+            return 0.6 * Math.atan((after - before) / (2 * step));
+        });
+
+        this.rowElement.classList.add('plucking');
+        const timing = { duration, easing: 'linear' };
+        this.pluckAnimations = tiles.map((tile, k) => tile.animate(frames.map((frame) => ({
+            offset: frame.offset,
+            translate: `0px ${frame.heights[k].toFixed(2)}px`,
+            rotate: `${tiltsOf(frame.heights)[k].toFixed(4)}rad`,
+        })), timing));
+
+        // the links: from the right edge of tile k to the left edge of tile k + 1, wherever they've moved
+        tiles.slice(0, 4).forEach((tile, k) => {
+            const link = tile.querySelector('.letter-extra');
+            this.pluckAnimations.push(link.animate(frames.map((frame) => {
+                const tilts = tiltsOf(frame.heights);
+                const startX = k * step + size / 2 * Math.cos(tilts[k]);
+                const startY = frame.heights[k] + size / 2 * Math.sin(tilts[k]);
+                const endX = (k + 1) * step - size / 2 * Math.cos(tilts[k + 1]);
+                const endY = frame.heights[k + 1] - size / 2 * Math.sin(tilts[k + 1]);
+                const angle = Math.atan2(endY - startY, endX - startX) - tilts[k]; // the tile's own tilt turns it too
+                const length = Math.hypot(endX - startX, endY - startY);
+                return {
+                    offset: frame.offset,
+                    rotate: `${angle.toFixed(4)}rad`,
+                    scale: `${(length / gap).toFixed(3)} 1`,
+                };
+            }), timing));
+        });
+        this.pluckAnimations[0].finished.then(() => this.stopPlucking(), () => {});
+    }
+
+    stopPlucking() {
+        if (!this.pluckAnimations) {
+            return;
+        }
+        this.pluckAnimations.forEach((animation) => animation.cancel());
+        this.pluckAnimations = null;
+        this.rowElement.classList.remove('plucking');
     }
 
     // easter egg: while the row spells AVOID, each letter is pushed away from the pointer (harder the closer it

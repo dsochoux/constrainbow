@@ -1283,6 +1283,24 @@ button.pill:active {
     100% { opacity: 0; }
 }
 
+/* easter egg: a row that spells PLUCK twangs like a plucked guitar string. The motion is computed in
+   Word.pluck; while it plays (.plucking), the link bar is swapped for one short link per gap, each the
+   .letter-extra of the tile on its left, which the animation stretches and turns */
+body.row-links .word-row.plucking::before {
+    visibility: hidden;
+}
+body.row-links .word-row.plucking .letter:nth-child(-n+4) .letter-extra {
+    display: block;
+    position: absolute;
+    left: calc(100% + var(--border));
+    top: calc(50% - 3px);
+    width: var(--row-gap);
+    height: 6px;
+    background: var(--ink);
+    transform-origin: 0 50%;
+    pointer-events: none;
+}
+
 /* the ink edge between the cube's top and right side: from the face's top-right corner up and to the
    right to the back corner (the depth is 7px, so the line is about 7 * 1.41 long) */
 .letter-extra {

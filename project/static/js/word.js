@@ -39,8 +39,9 @@ export class Word {
         // spells DISCO turns into a light-up dance floor, one that spells BEEFY bulks up its letters, one
         // that spells BATTY hangs its letters upside down like bats, one that spells PIANO plays itself, one
         // that spells PLUCK twangs like a plucked guitar string (see pluck), one that spells BUGGY glitches,
-        // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, and one
-        // that spells REPEL pushes the rows around it away like magnets
+        // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, one
+        // that spells REPEL pushes the rows around it away like magnets, and one that spells CYCLE runs once
+        // around like a bike chain (see cycle)
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -76,6 +77,104 @@ export class Word {
         } else if (word !== 'pluck') {
             this.stopPlucking();
         }
+        const wasCycle = this.rowElement.classList.contains('cycle');
+        this.rowElement.classList.toggle('cycle', word === 'cycle');
+        if (word === 'cycle' && !wasCycle) {
+            this.cycle();
+        } else if (word !== 'cycle') {
+            this.stopCycling();
+        }
+    }
+
+    // easter egg: a row that spells CYCLE runs once around like a bike chain. The tiles move together along a
+    // loop: right along the row one slot per step, and the tile at the end goes around a "gear" down under the
+    // row, back along the bottom (upside down, like a chain link) and up around the front gear into the first
+    // slot. Five steps take every tile all the way around and home again; it starts slowly, picks up speed
+    // like someone pedaling, and settles with a little bounce
+    cycle() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        this.stopCycling();
+        const tiles = this.letters.map((letter) => letter.tileElement);
+        const size = tiles[0].offsetWidth;
+        const gap = parseFloat(getComputedStyle(this.rowElement).columnGap) || 0;
+        const step = size + gap; // from one tile's center to the next
+        const radius = size * 0.55; // the gears: the loop's bottom run is two radii below the row
+        const duration = 2400;
+
+        // a point on the loop, by distance along it: 0 is slot 1, the top run goes to slot 5 (4 steps), then
+        // half a circle down around the back gear, the bottom run back to slot 1, and half a circle up
+        const curve = Math.PI * radius, top = 4 * step;
+        const length = 2 * top + 2 * curve;
+        const pointAt = (d) => {
+            d = ((d % length) + length) % length;
+            if (d <= top) {
+                return { x: d, y: 0, angle: 0 };
+            }
+            if (d <= top + curve) { // around the back gear
+                const a = (d - top) / radius;
+                return { x: top + radius * Math.sin(a), y: radius - radius * Math.cos(a), angle: a };
+            }
+            if (d <= 2 * top + curve) { // the bottom run, upside down
+                return { x: top - (d - top - curve), y: 2 * radius, angle: Math.PI };
+            }
+            const a = Math.PI + (d - 2 * top - curve) / radius; // up around the front gear
+            return { x: -radius * Math.sin(a - Math.PI), y: radius + radius * Math.cos(a - Math.PI), angle: a };
+        };
+
+        // how far along the loop each tile is: the top run is one step per slot, so tile k starts at k * step.
+        // The tile leaving the last slot has to cover the whole loop's other side (from slot 5 back to slot 1)
+        // in the time the others move one slot, so the distance it travels is stretched to fit
+        const slotsToDistance = (s) => { // s: a position in slots, 0 to 5 (5 is all the way around)
+            s = ((s % 5) + 5) % 5;
+            return s <= 4 ? s * step : top + (s - 4) * (length - top);
+        };
+
+        // the chain's progress in slots over time (0 to 5): it eases in like someone starting to pedal, then
+        // rolls a little past home and springs back (an ease-out-back). The part past home moves the whole
+        // row together, without sending another tile around a gear
+        const progressAt = (t) => {
+            if (t < 0.5) {
+                return 5 * 4 * t * t * t;
+            }
+            const u = 2 * t - 1, back = 1.2;
+            return 5 * (0.5 + 0.5 * (1 + (back + 1) * Math.pow(u - 1, 3) + back * Math.pow(u - 1, 2)));
+        };
+
+        const frames = [];
+        for (let t = 0; t <= duration; t += 16) {
+            frames.push({ offset: t / duration, progress: progressAt(t / duration) });
+        }
+        frames.push({ offset: 1, progress: 5 });
+
+        this.rowElement.classList.add('cycling');
+        const timing = { duration, easing: 'linear' };
+        this.cycleAnimations = tiles.map((tile, k) => {
+            let turned = 0; // the tile's total turn so far, so a tile coming up from under keeps turning forward
+            return tile.animate(frames.map((frame) => {
+                const extra = frame.progress - Math.min(frame.progress, 5); // past home: the whole row shifts
+                const point = pointAt(slotsToDistance(k + frame.progress - extra));
+                point.x += extra * step;
+                // the loop gives an angle from 0 to 2 pi; take whichever full turn is closest to the last frame
+                turned = point.angle + 2 * Math.PI * Math.round((turned - point.angle) / (2 * Math.PI));
+                return {
+                    offset: frame.offset,
+                    translate: `${(point.x - k * step).toFixed(2)}px ${point.y.toFixed(2)}px`,
+                    rotate: `${turned.toFixed(4)}rad`,
+                };
+            }), timing);
+        });
+        this.cycleAnimations[0].finished.then(() => this.stopCycling(), () => {});
+    }
+
+    stopCycling() {
+        if (!this.cycleAnimations) {
+            return;
+        }
+        this.cycleAnimations.forEach((animation) => animation.cancel());
+        this.cycleAnimations = null;
+        this.rowElement.classList.remove('cycling');
     }
 
     // easter egg: a row that spells PLUCK is a guitar string (the ink link bar), plucked once from the middle:

@@ -1416,6 +1416,14 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
     100% { translate: 0 var(--push); }              /* hovering, balanced */
 }
 
+/* easter egg: a row that spells CYCLE runs once around like a bike chain. The motion is computed in
+   Word.cycle; while it plays (.cycling), the row sits above the rows around it, since the tile going around
+   under it passes over the row below */
+.word-row.cycling {
+    position: relative;
+    z-index: 2;
+}
+
 /* in a CUBIC row, a SOLVE given tile stays pressed into the board (no cube sides), as it did when these
    rules lived inside style.css, where the given tile's rule came after them */
 .word-row.cubic .letter.given:not(.paused) {
@@ -1424,7 +1432,7 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
 
 /* reduced motion: no egg moves (the looks stay). !important because many egg animations use more specific
    selectors than these (to stay out of the way of the game's own pop, win hop and error shake). PLUCK
-   checks this setting itself, in Word.pluck */
+   and CYCLE check this setting themselves, in Word.pluck and Word.cycle */
 @media (prefers-reduced-motion: reduce) {
     .word-row, .word-row::after, .word-row .letter, .word-row .letter-text, .word-row .letter-extra,
     .word-row .letter-extra::before, .word-row .letter-extra::after, .word-row .letter-text::after,

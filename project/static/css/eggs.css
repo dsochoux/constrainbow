@@ -1424,6 +1424,248 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
     z-index: 2;
 }
 
+/* easter egg: a row that spells DEPTH sinks each tile into the screen like a deep hole, with its letter at
+   the bottom, for as long as the word is there. It's real 3D: each tile gets a perspective whose vanishing
+   point is above the middle of the row, so the floors slide toward it and the outer holes show their side
+   walls. The floor is two layers pushed back by --depth: the .letter-extra (the floor's color, and its
+   ::before and ::after are the left and right walls) and the .letter-text over it (the letter, and its
+   ::before and ::after are the top and bottom walls). Each wall hangs from the floor's edge and is turned
+   90 degrees to come back up to the rim. The tile clips everything to the hole (overflow: hidden), and
+   loses its shadow, since a hole casts none. --depth is registered so it can animate: the tiles sink in
+   once, one after another, with a small settle */
+@property --depth {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+}
+.word-row.depth .letter {
+    --depth: calc(var(--tile) * 1.2);
+    --floor: var(--t, var(--card));
+    --step: calc((var(--tile) + var(--row-gap)) * 0.45); /* the vanishing point is closer than the true center, so the outer letters stay in view */
+    --eye: calc(50% - var(--tile) * 0.3);
+    perspective: calc(var(--tile) * 3); /* the floor ends up about 70% of the tile */
+    perspective-origin: 50% var(--eye);
+    overflow: hidden;
+    background-color: color-mix(in srgb, var(--floor), var(--ink) 45%);
+    animation: depth-sink 900ms cubic-bezier(.3, 1.3, .5, 1) var(--depth-delay, 0ms) backwards;
+}
+.word-row.depth .letter:not(.pop, .celebrate, .shake) {
+    box-shadow: none;
+}
+.word-row.depth .letter:nth-child(1) { perspective-origin: calc(50% + var(--step) * 2) var(--eye); }
+.word-row.depth .letter:nth-child(2) { perspective-origin: calc(50% + var(--step)) var(--eye); --depth-delay: 60ms; }
+.word-row.depth .letter:nth-child(3) { --depth-delay: 120ms; }
+.word-row.depth .letter:nth-child(4) { perspective-origin: calc(50% - var(--step)) var(--eye); --depth-delay: 180ms; }
+.word-row.depth .letter:nth-child(5) { perspective-origin: calc(50% - var(--step) * 2) var(--eye); --depth-delay: 240ms; }
+@keyframes depth-sink {
+    from { --depth: 0px; }
+}
+/* the color's shape, the points (score mode) and the cursor stay on the rim, over the hole */
+.word-row.depth .letter::before, .word-row.depth .letter::after, .word-row.depth .letter-points {
+    z-index: 2;
+}
+/* the two floor layers */
+.word-row.depth .letter-extra, .word-row.depth .letter-text {
+    position: absolute;
+    inset: 0;
+    translate: 0 0 calc(var(--depth) * -1);
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+.word-row.depth .letter-extra {
+    display: block;
+    z-index: 0;
+    /* the floor, a little darker than the tile, and shaded in its corners where the walls meet it */
+    background: color-mix(in srgb, var(--floor), var(--ink) 10%);
+    box-shadow: inset 0 0 calc(var(--tile) * 0.12) color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.word-row.depth .letter-text {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* the walls: lit from above, so the bottom wall (which faces up) is the lightest and the top wall the darkest,
+   each darker toward the floor */
+.word-row.depth .letter-extra::before, .word-row.depth .letter-extra::after,
+.word-row.depth .letter-text::before, .word-row.depth .letter-text::after {
+    content: '';
+    position: absolute;
+    display: block;
+}
+.word-row.depth .letter-extra::before, .word-row.depth .letter-extra::after {
+    top: 0;
+    bottom: 0;
+    width: var(--depth);
+}
+.word-row.depth .letter-extra::before { /* left */
+    left: 0;
+    transform-origin: left center;
+    transform: rotateY(-90deg);
+    background: linear-gradient(to left, color-mix(in srgb, var(--floor), var(--ink) 30%), color-mix(in srgb, var(--floor), var(--ink) 50%));
+}
+.word-row.depth .letter-extra::after { /* right */
+    right: 0;
+    transform-origin: right center;
+    transform: rotateY(90deg);
+    background: linear-gradient(to right, color-mix(in srgb, var(--floor), var(--ink) 30%), color-mix(in srgb, var(--floor), var(--ink) 50%));
+}
+.word-row.depth .letter-text::before, .word-row.depth .letter-text::after {
+    left: 0;
+    right: 0;
+    height: var(--depth);
+}
+.word-row.depth .letter-text::before { /* top */
+    top: 0;
+    transform-origin: center top;
+    transform: rotateX(90deg);
+    background: linear-gradient(to top, color-mix(in srgb, var(--floor), var(--ink) 45%), color-mix(in srgb, var(--floor), var(--ink) 60%));
+}
+.word-row.depth .letter-text::after { /* bottom */
+    bottom: 0;
+    transform-origin: center bottom;
+    transform: rotateX(-90deg);
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--floor), var(--ink) 8%), color-mix(in srgb, var(--floor), var(--ink) 28%));
+}
+
+/* easter egg: a row that spells DICEY rolls like a handful of dice, once, and then the tiles are dice for as long
+   as the word is there. Each tile hops and tumbles in quarter turns, bouncing three times out of step with the
+   others, lands a little crooked and straightens; while it tumbles its letter hides and its face flicks through
+   pip patterns. Each die lands with its letter as the middle pip, showing 3 (two dots, on the top-right and
+   bottom-left corners, clear of the color shape and the points) or 1 (the letter alone): 3-1-3-3-1. The pips are
+   radial gradients on the tile's .letter-extra, one per dot (--face-N, with the letter-less 3 being --face-2).
+   A tile still popping in runs its bump alongside the roll, so the roll keeps going when the pop ends */
+.word-row.dicey .letter {
+    border-radius: calc(var(--tile) * 0.2);
+}
+.word-row.dicey .letter:not(.celebrate, .shake) {
+    animation: var(--roll) var(--roll-time) ease-out var(--roll-delay) backwards;
+}
+.word-row.dicey .letter.pop:not(.celebrate, .shake) {
+    animation: bump 260ms ease-out var(--pop-delay, 0ms), var(--roll) var(--roll-time) ease-out var(--roll-delay) backwards;
+}
+.word-row.dicey .letter:nth-child(1) { --roll: dice-roll-1; --roll-time: 1250ms; --roll-delay: 0ms; --faces: dice-faces-a; }
+.word-row.dicey .letter:nth-child(2) { --roll: dice-roll-2; --roll-time: 1400ms; --roll-delay: 70ms; --faces: dice-faces-b; }
+.word-row.dicey .letter:nth-child(3) { --roll: dice-roll-3; --roll-time: 1150ms; --roll-delay: 30ms; --faces: dice-faces-a; }
+.word-row.dicey .letter:nth-child(4) { --roll: dice-roll-4; --roll-time: 1350ms; --roll-delay: 110ms; --faces: dice-faces-b; }
+.word-row.dicey .letter:nth-child(5) { --roll: dice-roll-5; --roll-time: 1300ms; --roll-delay: 50ms; --faces: dice-faces-a; }
+.word-row.dicey .letter-extra {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    --pip: calc(var(--tile) * 0.065);
+    --face-1: radial-gradient(circle at 50% 50%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    --face-2: radial-gradient(circle at 80% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    --face-3: radial-gradient(circle at 80% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 50% 50%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    --face-4: radial-gradient(circle at 20% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    --face-5: radial-gradient(circle at 20% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 50% 50%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    --face-6: radial-gradient(circle at 20% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 20%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 50%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 50%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 20% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px)), radial-gradient(circle at 80% 80%, var(--ink) var(--pip), transparent calc(var(--pip) + 0.5px));
+    background-image: var(--rest);
+    animation: var(--faces) var(--roll-time) step-end var(--roll-delay) backwards;
+}
+.word-row.dicey .letter:nth-child(1) .letter-extra { --rest: var(--face-2); }
+.word-row.dicey .letter:nth-child(2) .letter-extra { --rest: none; }
+.word-row.dicey .letter:nth-child(3) .letter-extra { --rest: var(--face-2); }
+.word-row.dicey .letter:nth-child(4) .letter-extra { --rest: var(--face-2); }
+.word-row.dicey .letter:nth-child(5) .letter-extra { --rest: none; }
+/* the letter hides while the die tumbles (scale, since the pop-in animates the transform), and so do the
+   color shape and the points, so only pips show */
+.word-row.dicey .letter::before, .word-row.dicey .letter-points {
+    animation: dice-hide var(--roll-time) step-end var(--roll-delay) backwards;
+}
+.word-row.dicey .letter-text {
+    scale: 1;
+    animation: dice-hide var(--roll-time) step-end var(--roll-delay) backwards;
+}
+.word-row.dicey .letter.pop .letter-text {
+    animation: pop-in 300ms cubic-bezier(.3, 1.6, .5, 1) var(--pop-delay, 0ms) backwards,
+        dice-hide var(--roll-time) step-end var(--roll-delay) backwards;
+}
+@keyframes dice-hide {
+    0% { scale: 0; }
+    66% { scale: 1; }
+}
+@keyframes dice-faces-a {
+    0.0% { background-image: var(--face-5); }
+    7.3% { background-image: var(--face-2); }
+    14.7% { background-image: var(--face-6); }
+    22.0% { background-image: var(--face-1); }
+    29.3% { background-image: var(--face-4); }
+    36.7% { background-image: var(--face-3); }
+    44.0% { background-image: var(--face-6); }
+    51.3% { background-image: var(--face-2); }
+    58.7% { background-image: var(--face-5); }
+    66% { background-image: var(--rest); }
+}
+@keyframes dice-faces-b {
+    0.0% { background-image: var(--face-3); }
+    7.3% { background-image: var(--face-6); }
+    14.7% { background-image: var(--face-1); }
+    22.0% { background-image: var(--face-5); }
+    29.3% { background-image: var(--face-2); }
+    36.7% { background-image: var(--face-4); }
+    44.0% { background-image: var(--face-1); }
+    51.3% { background-image: var(--face-6); }
+    58.7% { background-image: var(--face-3); }
+    66% { background-image: var(--rest); }
+}
+@keyframes dice-roll-1 {
+    0% { translate: 0 0; rotate: 0deg; }
+    14% { translate: 0 -55%; rotate: 90deg; }
+    28% { translate: 0 0; rotate: 180deg; }
+    40% { translate: 0 -25%; rotate: 270deg; }
+    52% { translate: 0 0; rotate: 360deg; }
+    60% { translate: 0 -8%; rotate: 405deg; }
+    68% { translate: 0 0; rotate: 367deg; }
+    86% { translate: 0 0; rotate: 367deg; }
+    100% { translate: 0 0; rotate: 360deg; }
+}
+@keyframes dice-roll-2 {
+    0% { translate: 0 0; rotate: 0deg; }
+    14% { translate: 0 -65%; rotate: -90deg; }
+    28% { translate: 0 0; rotate: -180deg; }
+    40% { translate: 0 -30%; rotate: -270deg; }
+    52% { translate: 0 0; rotate: -360deg; }
+    60% { translate: 0 -10%; rotate: -405deg; }
+    68% { translate: 0 0; rotate: -366deg; }
+    86% { translate: 0 0; rotate: -366deg; }
+    100% { translate: 0 0; rotate: -360deg; }
+}
+@keyframes dice-roll-3 {
+    0% { translate: 0 0; rotate: 0deg; }
+    14% { translate: 0 -50%; rotate: 90deg; }
+    28% { translate: 0 0; rotate: 180deg; }
+    40% { translate: 0 -20%; rotate: 270deg; }
+    52% { translate: 0 0; rotate: 360deg; }
+    60% { translate: 0 -6%; rotate: 405deg; }
+    68% { translate: 0 0; rotate: 352deg; }
+    86% { translate: 0 0; rotate: 352deg; }
+    100% { translate: 0 0; rotate: 360deg; }
+}
+@keyframes dice-roll-4 {
+    0% { translate: 0 0; rotate: 0deg; }
+    14% { translate: 0 -60%; rotate: -90deg; }
+    28% { translate: 0 0; rotate: -180deg; }
+    40% { translate: 0 -28%; rotate: -270deg; }
+    52% { translate: 0 0; rotate: -360deg; }
+    60% { translate: 0 -9%; rotate: -405deg; }
+    68% { translate: 0 0; rotate: -355deg; }
+    86% { translate: 0 0; rotate: -355deg; }
+    100% { translate: 0 0; rotate: -360deg; }
+}
+@keyframes dice-roll-5 {
+    0% { translate: 0 0; rotate: 0deg; }
+    14% { translate: 0 -58%; rotate: 90deg; }
+    28% { translate: 0 0; rotate: 180deg; }
+    40% { translate: 0 -24%; rotate: 270deg; }
+    52% { translate: 0 0; rotate: 360deg; }
+    60% { translate: 0 -7%; rotate: 405deg; }
+    68% { translate: 0 0; rotate: 353deg; }
+    86% { translate: 0 0; rotate: 353deg; }
+    100% { translate: 0 0; rotate: 360deg; }
+}
+
 /* in a CUBIC row, a SOLVE given tile stays pressed into the board (no cube sides), as it did when these
    rules lived inside style.css, where the given tile's rule came after them */
 .word-row.cubic .letter.given:not(.paused) {

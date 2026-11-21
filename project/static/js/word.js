@@ -40,8 +40,9 @@ export class Word {
         // that spells BATTY hangs its letters upside down like bats, one that spells PIANO plays itself, one
         // that spells PLUCK twangs like a plucked guitar string (see pluck), one that spells BUGGY glitches,
         // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, one
-        // that spells REPEL pushes the rows around it away like magnets, and one that spells CYCLE runs once
-        // around like a bike chain (see cycle)
+        // that spells REPEL pushes the rows around it away like magnets, one that spells CYCLE runs once around
+        // like a bike chain (see cycle), one that spells DEPTH sinks its tiles into deep holes, and one
+        // that spells DICEY rolls like dice and turns its tiles into dice
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -65,6 +66,8 @@ export class Word {
         this.rowElement.classList.toggle('glass', word === 'glass');
         this.rowElement.classList.toggle('clone', word === 'clone');
         this.rowElement.classList.toggle('repel', word === 'repel');
+        this.rowElement.classList.toggle('depth', word === 'depth');
+        this.rowElement.classList.toggle('dicey', word === 'dicey');
         const wasPluck = this.rowElement.classList.contains('pluck');
         this.rowElement.classList.toggle('pluck', word === 'pluck');
         if (word === 'avoid') {

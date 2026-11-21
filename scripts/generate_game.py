@@ -128,6 +128,13 @@ class Game:
             self.grid[random_word][random_position] = random_constraint
             total += 1
 
+    # the four guaranteed pairs are all different, but in speed mode the two extra tiles can turn
+    # two rows into the same three colors, and every so often they land in the same places too
+    # (12/09/2025 and 11/21/2026); then any word for one row fits the other, so the best solution repeats a word
+    def has_identical_rows(self):
+        rows = [tuple(row) for row in self.grid]
+        return len(set(rows)) < len(rows)
+
     # returns a bitset of the words that fit a row of the grid with the current constraint assignments
     # every colored tile whose constraint has a letter must be that letter (constraints that
     # are not assigned yet are ignored)
@@ -228,6 +235,8 @@ class Game:
             result = {
             } # the result object that will be converted to JSON at the end
             self.generate_constraints()
+            if self.has_identical_rows():
+                continue # two rows with the same colors in the same places, try another grid
             result["grid"] = self.grid
 
             # writing constraints in useful format for the front end

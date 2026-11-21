@@ -24,6 +24,7 @@ The new parts only make sense against the old structure, so here's a recap. `Gam
 ### 1a. Make a layout (`generate_constraints`)
 - Shuffle the four colors into an order `s`. Row *i* gets colors `s[i]` and `s[(i+1) % 4]` at two random positions. The colors therefore form a ring (row 0 shares a color with row 1, row 1 with row 2, …, row 3 with row 0), so every color appears at least twice and no color can be solved in isolation.
 - Then add `num_colored − 8` more colored tiles: 2 for speed, 1 for score. Each extra tile gets a different color, placed on a random empty tile.
+- Throw the layout away if two rows came out identical (same colors in the same places), which the two speed extras can do now and then (it happened on 12/09/2025 and 11/21/2026): any word for one of those rows fits the other, so a player can enter the same word twice (`has_identical_rows`, since 2026-11-21).
 
 ### 1b. Count every solution (`find_solution` → `generate_solutions`)
 This is a backtracking search over **color → letter assignments**:

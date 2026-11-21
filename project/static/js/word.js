@@ -1,6 +1,31 @@
 import { Letter } from './letter.js';
 import { WORD_LENGTH } from './helpers.js';
 
+// easter egg: while any row spells RETRO, the whole site turns into an 8-bit video game (body.retro in
+// eggs.css). Its pixel fonts load the first time someone types it, and switching it on plays the power-on
+// of an old TV once (body.retro-on)
+function updateRetroTheme() {
+    const on = document.querySelector('.word-row.retro') !== null;
+    const wasOn = document.body.classList.contains('retro');
+    if (on === wasOn) {
+        return;
+    }
+    if (on && !document.getElementById('retro-fonts')) {
+        const fonts = document.createElement('link');
+        fonts.id = 'retro-fonts';
+        fonts.rel = 'stylesheet';
+        fonts.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@500;700&display=swap';
+        document.head.appendChild(fonts);
+    }
+    document.body.classList.toggle('retro', on);
+    document.body.classList.remove('retro-on');
+    if (on) {
+        void document.body.offsetWidth; // restart the power-on if it was still playing
+        document.body.classList.add('retro-on');
+        setTimeout(() => document.body.classList.remove('retro-on'), 900);
+    }
+}
+
 export class Word {
     // w: index of the word
     constructor(w, manager) {
@@ -41,8 +66,9 @@ export class Word {
         // that spells PLUCK twangs like a plucked guitar string (see pluck), one that spells BUGGY glitches,
         // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, one
         // that spells REPEL pushes the rows around it away like magnets, one that spells CYCLE runs once around
-        // like a bike chain (see cycle), one that spells DEPTH sinks its tiles into deep holes, and one
-        // that spells DICEY rolls like dice and turns its tiles into dice
+        // like a bike chain (see cycle), one that spells DEPTH sinks its tiles into deep holes, one that
+        // spells DICEY rolls like dice and turns its tiles into dice, and one that spells RETRO turns the
+        // whole site into an 8-bit video game (see updateRetroTheme)
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -87,6 +113,8 @@ export class Word {
         } else if (word !== 'cycle') {
             this.stopCycling();
         }
+        this.rowElement.classList.toggle('retro', word === 'retro');
+        updateRetroTheme();
     }
 
     // easter egg: a row that spells CYCLE runs once around like a bike chain. The tiles move together along a

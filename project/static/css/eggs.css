@@ -1683,3 +1683,121 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
         transition: none !important;
     }
 }
+
+/* ---------- RETRO: the whole site turns into an 8-bit video game ----------
+   body.retro is on while any row spells RETRO (updateRetroTheme in word.js, which also loads the two pixel
+   fonts the first time). Pixel fonts, square pixel corners, the color shapes redrawn in pixels, faint TV
+   scanlines and square confetti that falls in steps. Other eggs keep their own looks. Turning it on plays the
+   power-on of an old TV once (body.retro-on) */
+body.retro {
+    --display-font: 'Press Start 2P', 'Courier New', monospace;
+    --ui-font: 'Pixelify Sans', 'Courier New', monospace;
+    --border: 3px;
+    font-variant-ligatures: none; /* Pixelify Sans draws "fi" as one letter that reads like an A */
+}
+/* no round corners anywhere (more specific rules, like the ROUND egg's circles, still win) */
+body.retro *, body.retro *::before, body.retro *::after {
+    border-radius: 0;
+}
+/* the tiles and buttons get pixel-art corners: the frame is drawn from a 3x3-pixel pattern with an empty corner,
+   so each corner steps in by one pixel. background-clip keeps the fill out of the corners */
+body.retro .letter, body.retro .example-letter, body.retro .wordmark span, body.retro .key, body.retro .pill, body.retro .popup,
+body.retro #mode-switch, body.retro #how-to-play-button, body.retro #stats-button, body.retro #archive-button {
+    border-style: solid;
+    border-radius: 0;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M3 0h3v3H3zM0 3h3v3H0zM6 3h3v3H6zM3 6h3v3H3z' fill='%231d1b20'/%3E%3C/svg%3E") 3 / 3px / 0 stretch;
+    background-clip: padding-box;
+}
+/* Press Start 2P is big for its size */
+body.retro .letter {
+    font-size: calc(var(--tile) * 0.36);
+}
+body.retro .wordmark span {
+    font-size: calc((var(--content) - 33px) / 12 * 0.42);
+}
+body.retro .key-word {
+    font-size: min(9px, calc(var(--key-wide) * 0.15));
+}
+/* the color shapes, redrawn on a 5x5 pixel grid: circle, square, diamond, triangle */
+body.retro .letter.c1::before, body.retro .letter.c2::before, body.retro .letter.c3::before,
+body.retro .letter.c4::before {
+    width: 10px;
+    height: 10px;
+    transform: none;
+}
+body.retro .c1::before {
+    clip-path: polygon(20% 0, 80% 0, 80% 20%, 100% 20%, 100% 80%, 80% 80%, 80% 100%, 20% 100%, 20% 80%, 0 80%, 0 20%, 20% 20%);
+}
+body.retro .c3::before {
+    clip-path: polygon(40% 0, 60% 0, 60% 20%, 80% 20%, 80% 40%, 100% 40%, 100% 60%, 80% 60%, 80% 80%, 60% 80%, 60% 100%,
+        40% 100%, 40% 80%, 20% 80%, 20% 60%, 0 60%, 0 40%, 20% 40%, 20% 20%, 40% 20%);
+}
+body.retro .c4::before {
+    clip-path: polygon(40% 0, 60% 0, 60% 20%, 80% 20%, 80% 60%, 100% 60%, 100% 100%, 0 100%, 0 60%, 20% 60%, 20% 20%, 40% 20%);
+}
+/* the cursor blinks like a text cursor on an old computer: a solid block of a bar */
+body.retro .letter.selected::after {
+    height: 5px;
+}
+/* faint scanlines over everything, like an old TV screen */
+body.retro::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(29 27 32 / 0.07) 2px 3px);
+}
+/* confetti: square pixels that fall in jerky steps and never spin (!important beats the pieces' inline sizes) */
+body.retro .confetti i:not(.emoji) {
+    width: 8px !important;
+    height: 8px !important;
+    border: none;
+    --rot: 0deg !important;
+    animation-timing-function: steps(18) !important;
+}
+/* the power-on: a dot of light stretches into a bright line across a dark screen, then opens up into the
+   page, which glows too bright for a moment and settles */
+body.retro-on #container {
+    animation: retro-power-on 800ms ease-out;
+}
+html:has(> body.retro-on), body.retro-on {
+    animation: retro-screen 800ms ease-out;
+}
+body.retro-on::before {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: calc(50% - 2px);
+    height: 4px;
+    z-index: 1999;
+    pointer-events: none;
+    background: #fff;
+    box-shadow: 0 0 14px 4px rgb(255 255 255 / 0.8);
+    animation: retro-line 800ms ease-out forwards;
+}
+@keyframes retro-power-on {
+    0% { scale: 0.02 0.004; filter: brightness(6); }
+    20% { scale: 1 0.004; filter: brightness(6); }
+    50% { scale: 1 1.04; filter: brightness(2); }
+    62% { scale: 1 0.98; filter: brightness(1.5); }
+    100% { scale: 1 1; filter: none; }
+}
+@keyframes retro-line {
+    0% { scale: 0.02 1; opacity: 1; }
+    20% { scale: 1 1; opacity: 1; }
+    34%, 100% { scale: 1 1; opacity: 0; }
+}
+@keyframes retro-screen {
+    0%, 35% { background-color: var(--ink); }
+    100% { background-color: var(--paper); }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.retro-on #container, html:has(> body.retro-on), body.retro-on {
+        animation: none;
+    }
+    body.retro-on::before {
+        display: none;
+    }
+}

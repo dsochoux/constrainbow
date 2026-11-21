@@ -67,8 +67,9 @@ export class Word {
         // one that spells GLASS turns its tiles to glass, one that spells CLONE clones its letters, one
         // that spells REPEL pushes the rows around it away like magnets, one that spells CYCLE runs once around
         // like a bike chain (see cycle), one that spells DEPTH sinks its tiles into deep holes, one that
-        // spells DICEY rolls like dice and turns its tiles into dice, and one that spells RETRO turns the
-        // whole site into an 8-bit video game (see updateRetroTheme)
+        // spells DICEY rolls like dice and turns its tiles into dice, one that spells RETRO turns the
+        // whole site into an 8-bit video game (see updateRetroTheme), and one that spells REMIX shuffles
+        // the rows around once and puts them back (see remix)
         const word = state === 'valid' ? this.getWordString() : '';
         this.rowElement.classList.toggle('slant', word === 'slant');
         this.rowElement.classList.toggle('askew', word === 'askew');
@@ -115,6 +116,13 @@ export class Word {
         }
         this.rowElement.classList.toggle('retro', word === 'retro');
         updateRetroTheme();
+        const wasRemix = this.rowElement.classList.contains('remix');
+        this.rowElement.classList.toggle('remix', word === 'remix');
+        if (word === 'remix' && !wasRemix) {
+            this.remix();
+        } else if (word !== 'remix') {
+            this.stopRemixing();
+        }
     }
 
     // easter egg: a row that spells CYCLE runs once around like a bike chain. The tiles move together along a
@@ -206,6 +214,76 @@ export class Word {
         this.cycleAnimations.forEach((animation) => animation.cancel());
         this.cycleAnimations = null;
         this.rowElement.classList.remove('cycling');
+    }
+
+    // easter egg: a row that spells REMIX shuffles the board's rows once, like a DJ remixing a track: three
+    // swaps on the beat, two rows passing each other each time (the one moving up passes in front, a little
+    // bigger, the one moving down behind it, a little smaller), then every row slides home at once with a
+    // bounce. It only moves the rows on screen; the board itself never changes
+    remix() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        this.stopRemixing();
+        const rows = [...this.rowElement.parentElement.children].filter((row) => row.classList.contains('word-row'));
+        if (rows.length < 4) {
+            return;
+        }
+        const step = rows[1].offsetTop - rows[0].offsetTop; // from one row to the next
+        const side = this.rowElement.offsetWidth * 0.1; // how far apart two rows pass
+
+        // where each row is (by slot) after each move: three swaps of neighbors (so no row passes over a third
+        // one), then home
+        const moves = [];
+        let slots = rows.map((row, i) => i);
+        [[0, 1], [2, 3], [1, 2]].forEach(([a, b]) => {
+            slots = slots.map((slot) => (slot === a ? b : slot === b ? a : slot));
+            moves.push({ slots, time: 300 });
+        });
+        moves.push({ slots: rows.map((row, i) => i), time: 450, home: true });
+        const pause = 90; // between moves, on the beat
+        const duration = moves.reduce((total, move) => total + move.time + pause, 0);
+
+        this.remixAnimations = rows.map((row, i) => {
+            const frames = [];
+            const add = (time, slot, x = 0, scale = 1, z = 1) => frames.push({
+                offset: time / duration,
+                translate: `${x}px ${(slot - i) * step}px`,
+                scale: `${scale}`,
+                zIndex: z,
+                easing: 'ease-in-out',
+            });
+            let time = 0;
+            let from = i;
+            add(0, i);
+            moves.forEach((move) => {
+                const to = move.slots[i];
+                if (to !== from) {
+                    // halfway: moving up passes in front and to the left, moving down behind and to the right
+                    const up = to < from;
+                    add(time + move.time / 2, (from + to) / 2, up ? -side : side, up ? 1.05 : 0.95, up ? 3 : 2);
+                }
+                if (move.home && to !== from) {
+                    // a little past home, then back
+                    add(time + move.time * 0.8, to + (to < from ? -0.06 : 0.06));
+                }
+                add(time + move.time, to);
+                time += move.time + pause;
+                add(time, to);
+                from = to;
+            });
+            frames[frames.length - 1].offset = 1;
+            return row.animate(frames, { duration });
+        });
+        this.remixAnimations[0].onfinish = () => this.stopRemixing();
+    }
+
+    stopRemixing() {
+        if (!this.remixAnimations) {
+            return;
+        }
+        this.remixAnimations.forEach((animation) => animation.cancel());
+        this.remixAnimations = null;
     }
 
     // easter egg: a row that spells PLUCK is a guitar string (the ink link bar), plucked once from the middle:

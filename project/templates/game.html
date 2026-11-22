@@ -12,7 +12,6 @@
     <input type="hidden" id="is-archive" value="{{ 'true' if is_archive else 'false' }}" />
     {% set is_daily = game_mode in ["solve", "speed", "score"] and not is_archive %}
     {% set archive_mode = "solve" if game_mode in ["solve-test", "solve-day"] else game_mode %}
-    {% set speed_emoji = mode_emoji if game_mode == "speed" else other_mode_emoji %}
     {% set is_solve = game_mode in ["solve", "solve-test", "solve-day"] %}
 
     {# the how-to-play examples: yesterday's SOLVE answer, or a fixed board (see get_tutorial in app.py):
@@ -55,7 +54,7 @@
                 <section class="step">
                     <ul class="modes">
                         <li><span class="mode-icon">🔑</span><span><strong>Solve:</strong> one hidden answer, with 5 letters filled in to start you off. Stuck? REVEAL fills in a tile.</span></li>
-                        <li><span class="mode-icon">{{ speed_emoji }}</span><span><strong>Speed:</strong> find any solution, as fast as you can.</span></li>
+                        <li><span class="mode-icon">⏱️</span><span><strong>Speed:</strong> find any solution, as fast as you can.</span></li>
                         <li><span class="mode-icon">🎯</span><span><strong>Score:</strong> letters are worth points. Find the highest-scoring solution.</span></li>
                     </ul>
                     <p>New puzzles come out every day at midnight ET. Solve has one answer everyone shares; Speed and Score have thousands, so compare yours with friends!</p>
@@ -134,7 +133,7 @@
                 {% else %}
                 <nav id="mode-switch" aria-label="Game mode">
                     <a href="/solve" {% if game_mode == "solve" %}class="active" aria-current="page"{% endif %}>🔑 SOLVE</a>
-                    <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>{{ speed_emoji }} SPEED</a>
+                    <a href="/speed" {% if game_mode == "speed" %}class="active" aria-current="page"{% endif %}>⏱️ SPEED</a>
                     <a href="/score" {% if game_mode == "score" %}class="active" aria-current="page"{% endif %}>🎯 SCORE</a>
                 </nav>
                 {% endif %}

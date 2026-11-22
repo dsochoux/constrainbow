@@ -21,10 +21,6 @@ eastern = ZoneInfo("America/New_York")
 
 words = []
 
-emoji_overrides = {
-    "0408": "🎈",
-}
-
 with open('./word_files/words.txt', 'r') as f:
     for word in f:
         words.append(word.strip())
@@ -159,8 +155,7 @@ def speed():
             'game.html',
             game_id=game_id,
             game_mode="speed",
-            mode_emoji=emoji_overrides.get(game_id[:4], "⏱️"),
-            other_mode_emoji="🎯",
+            mode_emoji="⏱️",
             other_mode_endpoint="/score",
             date=get_date_string(game_id)
         )
@@ -177,7 +172,6 @@ def score():
             game_id=game_id,
             game_mode="score",
             mode_emoji="🎯",
-            other_mode_emoji = emoji_overrides.get(game_id[:4], "⏱️"),
             other_mode_endpoint = "/speed",
             date=get_date_string(game_id),
             yesterday_best=get_best_solution(yesterday),  # no secret any more, so it's in the page
@@ -195,7 +189,6 @@ def solve():
             game_id=game_id,
             game_mode="solve",
             mode_emoji="🔑",
-            other_mode_emoji=emoji_overrides.get(game_id[:4], "⏱️"),
             date=get_date_string(game_id),
             num_givens=get_num_givens(f"./games/solve/{game_id}.json"),
             clue=get_clue(f"./games/solve/{game_id}.json"),
@@ -220,7 +213,6 @@ def solve_day():
         game_id=game_id,
         game_mode="solve-day",
         mode_emoji="🔑",
-        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
         date=f"{date.month}/{date.day}/{date.year}",
         previous_day=(date - timedelta(days=1)).strftime("%Y-%m-%d"),
         next_day=(date + timedelta(days=1)).strftime("%Y-%m-%d"),
@@ -333,7 +325,6 @@ def archive_puzzle(mode, day):
         game_mode=mode,
         is_archive=True,
         mode_emoji=MODE_EMOJI[mode],
-        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
         date=f"{date.month}/{date.day}/{date.year}",
         previous_day=earlier[-1].strftime("%Y-%m-%d") if earlier else None,
         next_day=later[0].strftime("%Y-%m-%d") if later else None,
@@ -358,7 +349,6 @@ def solve_test():
         game_id=game_id,
         game_mode="solve-test",
         mode_emoji="🔑",
-        other_mode_emoji=emoji_overrides.get(get_game_id()[:4], "⏱️"),
         puzzle_number=number,
         puzzle_count=count,
         num_givens=get_num_givens(os.path.join(SOLVE_TEST_FOLDER, game_id + '.json')),

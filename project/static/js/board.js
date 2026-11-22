@@ -493,10 +493,11 @@ export class Board {
         if (this.copyResultsTimeout) {
             clearTimeout(this.copyResultsTimeout);
         }
-        let message = `${this.manager.getShareLink()}\n`;
-        message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}${this.manager.getStreakText()}\n`;
+        let message = `${this.manager.getShareHeader()}\n`;
+        message += `${this.manager.getFormatedDate()} | ${this.getMetric(true)}\n`;
         message += this.getEmojiBoard();
         message += `${this.num_possible_solutions.toLocaleString()} solutions\n`;
+        message += this.manager.getStreakText();
         const doIncludeSolution = this.copyButton.textContent !== 'COPY RESULTS!';
         if (doIncludeSolution) {
             message += "\n"

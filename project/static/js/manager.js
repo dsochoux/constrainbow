@@ -7,6 +7,8 @@ import { Feedback } from "./feedback.js";
 import { deleteAllCookies, launchConfetti } from "./helpers.js";
 
 const TITLE = "CONSTRAINBOW"; // the wordmark's letters, one per span in game.html
+// each mode's emoji, which starts the share text (the same ones as the mode switch)
+const MODE_EMOJIS = { solve: "🔑", speed: "⏱️", score: "🎯" };
 
 export class Manager {
     constructor() {
@@ -325,13 +327,20 @@ export class Manager {
         return `constrainbow.com/${this.gameMode}`;
     }
 
-    // " | 🔥 5" for the share text, once a streak is at least 2 days
+    // "🔑 constrainbow.com/solve", the first line of the share text
+    // (the emoji up front says which mode it is before anyone reads the numbers)
+    getShareHeader(link = this.getShareLink()) {
+        return `${MODE_EMOJIS[this.gameMode]} ${link}`;
+    }
+
+    // "🔥 5-day streak" on its own line at the end of the share text, once a streak is at least 2 days
+    // (it used to end the stats line, which made that line wrap in iMessage)
     getStreakText() {
         if (!this.statsPopup) {
             return "";
         }
         const { current } = this.stats.getStreaks(this.gameMode, this.gameId);
-        return current >= 2 ? ` | 🔥 ${current}` : "";
+        return current >= 2 ? `🔥 ${current}-day streak\n` : "";
     }
 
     showCopyButton() {

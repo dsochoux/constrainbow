@@ -19,10 +19,10 @@ All three modes are on one page; the 🔑 SOLVE / ⏱️ SPEED / 🎯 SCORE swit
 - Plays like speed: START GAME, a timer, PAUSE, letters hidden while paused.
 - **REVEAL** fills in the selected tile from the answer: one black tile, or a whole color (the button reads "REVEAL LETTER" on a black tile and "REVEAL 3 LETTERS" on a 3-tile color, so it never looks like it gives away the whole board; plain "REVEAL" while paused, when a click just shakes it. Changed 2026-11-17 after a player avoided REVEAL for fear it would show the whole answer). Revealed tiles show a gray letter and are locked. Reveals count per tile.
 - Progress is saved, so a reload or a trip to another mode resumes where you left off.
-- The share text starts with the mode's link (`constrainbow.com/solve`, `/speed` or `/score`), then shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
+- The share text starts with the mode's emoji and link (`🔑 constrainbow.com/solve`), then shows the date, time and tiles revealed, then the layout with ⬜ for the given letters and 💡 for every revealed tile, so each player's share is different:
   ```
-  constrainbow.com/solve
-  11/15 | 🔑 4:37 | 3 reveals
+  🔑 constrainbow.com/solve
+  11/15 | 4:37 | 3 reveals
   ⬜🟥⬛️💡⬛️
   ...
   ```
@@ -44,7 +44,6 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - The board is hidden (blank black tiles) until you press **START GAME** or tap a tile. A timer then runs.
 - **PAUSE** hides the letters again. The game also pauses when the tab is hidden or the how-to-play popup opens.
 - The goal is any valid solution, as fast as possible. On solving, the timer stops and a **COPY RESULTS!** button appears.
-- On 04/08 the stopwatch emoji becomes 🎈 (`emoji_overrides` in app.py, also hard-coded in speedBoard.js).
 
 ### 🎯 Score (`/score`)
 - Letters carry Scrabble-like point values, which show on the keyboard keys and in each tile's corner.
@@ -101,7 +100,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - The 📅 button in the header (next to 📊 and ?) opens `/archive/<mode>`: a month calendar of past puzzles, with SOLVE / SPEED / SCORE tabs, ‹ › between months, and ✕ back to today's puzzle. Days with a puzzle are tiles; today's tile is dark and goes to today's puzzle; future days are plain numbers. Every mode starts on 2026-11-01 (`ARCHIVE_START` in app.py), so all three have the same number of puzzles. SOLVE was backfilled for 11/1–11/14 to make that possible; older speed and score puzzles (back to 2025-02-10) still exist but aren't listed, and their dates redirect to the calendar.
 - A ✓ marks days finished in this browser, whether as the daily puzzle (from the stats) or in the archive (localStorage `archive`).
 - A past puzzle opens at `/archive/<mode>/YYYY-MM-DD`, the normal game page with `‹ ⏱️ SPEED 11/10/2026 ›` in place of the mode tabs (› after the last past day goes to today's). Today's or a future date redirects to today's puzzle.
-- Archive puzzles keep their own progress (`archiveSpeed11102026Word0`…; SOLVE shares `solveDay…` with `/solve/day`), aren't logged, don't count toward stats or streaks, and have no 📊 button. Score's SHOW BEST works there too. The share text links to the archive page and includes the year: `constrainbow.com/archive/speed/2026-11-10` / `11/10/2026 | ⏱️ 0:41`.
+- Archive puzzles keep their own progress (`archiveSpeed11102026Word0`…; SOLVE shares `solveDay…` with `/solve/day`), aren't logged, don't count toward stats or streaks, and have no 📊 button. Score's SHOW BEST works there too. The share text links to the archive page and includes the year: `⏱️ constrainbow.com/archive/speed/2026-11-10` / `11/10/2026 | 0:41`.
 
 ## Stats and streaks (since 2026-11-16)
 - Each daily mode keeps its own stats in this browser (localStorage `stats`; no accounts): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
@@ -115,17 +114,18 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - Stats live only in this browser. They survive indefinitely in Chrome and Firefox (after a finish the game asks Chrome and Safari not to clear them when the device is low on space), but Safari deletes them after 7 days of using Safari without visiting the site (not for home-screen web apps), and clearing browsing data or private windows lose them too.
 
 ## Sharing
-The first click on COPY RESULTS copies the following (the `| 🔥 5` streak appears once that mode's streak is at least 2 days):
+The first click on COPY RESULTS copies the following (the last line, `🔥 5-day streak`, appears once that mode's streak is at least 2 days):
 ```
-constrainbow.com/score
-11/15 | 🎯 64/64 | 🔥 5
+🎯 constrainbow.com/score
+11/15 | 64/64
 ⬛️🟥⬛️🟧⬛️
 ⬛️⬛️🟦⬛️🟥
 🟨⬛️🟦⬛️⬛️
 🟦⬛️🟧⬛️🟨
 462,754 solutions
+🔥 5-day streak
 ```
-The button then reads "COPIED! INCLUDE SOLUTION?". A second click within 5 s copies the same text plus the four words. The emoji grid shows the puzzle's layout, not the player's answer (unlike Wordle).
+Since 2026-11-22 the mode's emoji starts the link line and the streak has its own last line; before, both were on the stats line ("11/22 | 🔑 1:34 | no reveals | 🔥 7"), which wrapped in iMessage bubbles. The button then reads "COPIED! INCLUDE SOLUTION?". A second click within 5 s copies the same text plus the four words. The emoji grid shows the puzzle's layout, not the player's answer (unlike Wordle).
 
 Since 2026-11-17 a shared link to `/solve`, `/speed`, `/score` (or plain `constrainbow.com`) shows a preview card: the wordmark, a partly filled SOLVE / SPEED / SCORE / SH_RE board, and "Same color, same letter. Three ways to play, every day." Discord, Slack, WhatsApp and Telegram show it under shared results too. Messages only shows it when the link is sent on its own, not inside the results text (a share-menu idea to fix that is in findings.md).
 

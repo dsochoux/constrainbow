@@ -276,11 +276,11 @@ export class ScoreBoard extends Board {
         return { points: this.score, max: this.numPossiblePoints };
     }
 
-    // with the emoji: the share text (the day's best score); without: what's logged when the
+    // for the share text: the day's best score; otherwise: what's logged when the
     // puzzle is first solved (the board on screen)
-    getMetric(doIncludeEmoji) {
-        if (doIncludeEmoji) {
-            return `🎯 ${this.getSharePoints().toLocaleString()}/${this.numPossiblePoints.toLocaleString()}`;
+    getMetric(isForShare) {
+        if (isForShare) {
+            return `${this.getSharePoints().toLocaleString()}/${this.numPossiblePoints.toLocaleString()}`;
         }
         return `${this.getPointsFraction()}`;
     }

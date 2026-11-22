@@ -187,13 +187,8 @@ export class SpeedBoard extends Board {
         return earlier.length > 0 && this.elapsedSeconds < Math.min(...earlier) ? "QUICKESTTIME" : null;
     }
 
-    getMetric(doIncludeEmoji) {
-        if (doIncludeEmoji) {
-            if (this.manager.gameId.substring(0, 4) === "0408") {
-                return `🎈 ${formatTime(this.elapsedSeconds)}`;
-            }
-            return `⏱️ ${formatTime(this.elapsedSeconds)}`;
-        }
+    // the same for the share text and the log (the mode's emoji is on the share text's first line)
+    getMetric(isForShare) {
         return `${formatTime(this.elapsedSeconds)}`;
     }
 

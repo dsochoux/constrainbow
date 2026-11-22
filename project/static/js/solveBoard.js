@@ -321,9 +321,10 @@ export class SolveBoard extends SpeedBoard {
         const reveals = this.revealedTiles;
         const label = this.isTestPuzzle ? `SOLVE #${parseInt(this.manager.gameId, 10)}` : this.manager.getFormatedDate();
         const link = this.isTestPuzzle ? `constrainbow.com/solve/test?p=${parseInt(this.manager.gameId, 10)}` : this.manager.getShareLink();
-        let message = `${link}\n`;
-        message += `${label} | 🔑 ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}${this.manager.getStreakText()}\n`;
+        let message = `${this.manager.getShareHeader(link)}\n`;
+        message += `${label} | ${formatTime(this.elapsedSeconds)} | ${reveals === 0 ? 'no reveals' : `${reveals} reveal${reveals === 1 ? '' : 's'}`}\n`;
         message += this.getEmojiBoard();
+        message += this.manager.getStreakText();
         navigator.clipboard.writeText(message.trim()).then(() => {
             this.copyButton.textContent = "COPIED!";
             this.copyResultsTimeout = setTimeout(() => {

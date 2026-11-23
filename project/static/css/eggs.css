@@ -1432,7 +1432,11 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
    ::before and ::after are the top and bottom walls). Each wall hangs from the floor's edge and is turned
    90 degrees to come back up to the rim. The tile clips everything to the hole (overflow: hidden), and
    loses its shadow, since a hole casts none. --depth is registered so it can animate: the tiles sink in
-   once, one after another, with a small settle */
+   once, one after another, with a small settle.
+   The perspective is a perspective() inside each floor layer's own transform, not the tile's perspective
+   property: Safari ignores a tile's perspective when the tile also clips (overflow: hidden), and the
+   clipping is what keeps the walls inside the tile's border. The layer's transform-origin is the vanishing
+   point. The letter's pop is turned off in this row, as it would replace the letter layer's transform */
 @property --depth {
     syntax: '<length>';
     inherits: true;
@@ -1443,8 +1447,6 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
     --floor: var(--t, var(--card));
     --step: calc((var(--tile) + var(--row-gap)) * 0.45); /* the vanishing point is closer than the true center, so the outer letters stay in view */
     --eye: calc(50% - var(--tile) * 0.3);
-    perspective: calc(var(--tile) * 3); /* the floor ends up about 70% of the tile */
-    perspective-origin: 50% var(--eye);
     overflow: hidden;
     background-color: color-mix(in srgb, var(--floor), var(--ink) 45%);
     animation: depth-sink 900ms cubic-bezier(.3, 1.3, .5, 1) var(--depth-delay, 0ms) backwards;
@@ -1452,11 +1454,11 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
 .word-row.depth .letter:not(.pop, .celebrate, .shake) {
     box-shadow: none;
 }
-.word-row.depth .letter:nth-child(1) { perspective-origin: calc(50% + var(--step) * 2) var(--eye); }
-.word-row.depth .letter:nth-child(2) { perspective-origin: calc(50% + var(--step)) var(--eye); --depth-delay: 60ms; }
+.word-row.depth .letter:nth-child(1) { --eye-x: calc(50% + var(--step) * 2); }
+.word-row.depth .letter:nth-child(2) { --eye-x: calc(50% + var(--step)); --depth-delay: 60ms; }
 .word-row.depth .letter:nth-child(3) { --depth-delay: 120ms; }
-.word-row.depth .letter:nth-child(4) { perspective-origin: calc(50% - var(--step)) var(--eye); --depth-delay: 180ms; }
-.word-row.depth .letter:nth-child(5) { perspective-origin: calc(50% - var(--step) * 2) var(--eye); --depth-delay: 240ms; }
+.word-row.depth .letter:nth-child(4) { --eye-x: calc(50% - var(--step)); --depth-delay: 180ms; }
+.word-row.depth .letter:nth-child(5) { --eye-x: calc(50% - var(--step) * 2); --depth-delay: 240ms; }
 @keyframes depth-sink {
     from { --depth: 0px; }
 }
@@ -1468,7 +1470,8 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
 .word-row.depth .letter-extra, .word-row.depth .letter-text {
     position: absolute;
     inset: 0;
-    translate: 0 0 calc(var(--depth) * -1);
+    transform-origin: var(--eye-x, 50%) var(--eye);
+    transform: perspective(calc(var(--tile) * 3)) translateZ(calc(var(--depth) * -1)); /* the floor ends up about 70% of the tile */
     transform-style: preserve-3d;
     pointer-events: none;
 }
@@ -1478,6 +1481,9 @@ body .word-row.glass .letter:is(.c1, .c2, .c3, .c4):not(.paused) {
     /* the floor, a little darker than the tile, and shaded in its corners where the walls meet it */
     background: color-mix(in srgb, var(--floor), var(--ink) 10%);
     box-shadow: inset 0 0 calc(var(--tile) * 0.12) color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.word-row.depth .letter.pop .letter-text {
+    animation: none;
 }
 .word-row.depth .letter-text {
     z-index: 1;

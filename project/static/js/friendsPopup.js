@@ -16,8 +16,8 @@ function escape(text) {
     return String(text).replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 }
 
-// the 👥 popup: sign up / sign in, then today's scoreboard among your friends, your friend link, and
-// signing in on another device. A friend link (constrainbow.com/friend/CODE) opens the game with
+// the 👥 popup: sign up / sign in, then today's scoreboard among your friends and your friend link.
+// A friend link (constrainbow.com/friend/CODE) opens the game with
 // ?friend=CODE; the code waits in localStorage until this player is signed in, then makes them friends
 export class FriendsPopup {
     constructor(manager) {
@@ -105,14 +105,12 @@ export class FriendsPopup {
         this.button.classList.toggle('has-invite', Boolean(this.invite) && !this.account.signedIn);
     }
 
-    // ?friend=CODE (a friend link) and ?signin=ok|expired (a "sign in on another device" link)
+    // ?friend=CODE (a friend link)
     readLinkFromAddress() {
         const params = new URLSearchParams(location.search);
         const code = params.get('friend');
-        const signin = params.get('signin');
-        if (code || signin) {
+        if (code) {
             params.delete('friend');
-            params.delete('signin');
             const rest = params.toString();
             history.replaceState(null, '', location.pathname + (rest ? `?${rest}` : ''));
         }
@@ -120,20 +118,11 @@ export class FriendsPopup {
             localStorage.setItem('friendInvite', code);
         }
         // opened once the page has heard from the server (afterSync), so it knows who's signed in
-        if (signin === 'expired') {
-            this.message = 'That sign-in link has expired or was already used. Make a new one on your other device.';
-        } else if (signin === 'ok') {
-            this.message = 'Signed in on this device.';
-        }
-        this.openSigninOnLoad = Boolean(signin);
         this.openInviteOnLoad = Boolean(code);
     }
 
-    // after the page's own sync with the server: open for a sign-in link, and deal with a waiting friend link
+    // after the page's own sync with the server: deal with a waiting friend link
     async afterSync() {
-        if (this.openSigninOnLoad) {
-            this.openSoon();
-        }
         const code = localStorage.getItem('friendInvite');
         if (!code) {
             this.updateButton();
@@ -413,11 +402,7 @@ export class FriendsPopup {
                 <input id="friend-link" class="link-box" readonly value="${escape(this.account.info.friendLink)}" aria-label="Your friend link">
                 <button id="copy-friend-link" class="pill primary">COPY</button>
             </div>
-            <p class="fine-print">Posted it somewhere public by mistake? <button id="new-friend-link" class="text-button">Make a new link</button> (the old one stops working; friends stay friends).</p>
-            <h3>Sign in on another device</h3>
-            <div id="device-link-area">
-                <button id="device-link-button" class="pill">MAKE A SIGN-IN LINK</button>
-            </div>`;
+            <p class="fine-print">Posted it somewhere public by mistake? <button id="new-friend-link" class="text-button">Make a new link</button> (the old one stops working; friends stay friends).</p>`;
     }
 
     setUpSignedIn() {
@@ -445,7 +430,6 @@ export class FriendsPopup {
                 this.account.setInfo(data);
             }
         });
-        document.getElementById('device-link-button').addEventListener('click', () => this.makeDeviceLink());
         document.getElementById('sign-out-button').addEventListener('click', async () => {
             await this.account.signOut();
             this.scoreboard = null;
@@ -461,22 +445,6 @@ export class FriendsPopup {
         await this.account.post('/account/unfriend', { username });
         this.message = '';
         await this.loadScoreboard();
-    }
-
-    async makeDeviceLink() {
-        const area = document.getElementById('device-link-area');
-        const { ok, data } = await this.account.post('/account/device-link');
-        if (!ok) {
-            area.innerHTML = '<p class="account-error">Couldn\'t make a link. Try again.</p>';
-            return;
-        }
-        area.innerHTML = `
-            <p>Open this link on your other device within ${data.minutes} minutes. It works once.</p>
-            <div class="link-row">
-                <input class="link-box" readonly value="${escape(data.url)}" aria-label="Sign-in link">
-                <button id="copy-device-link" class="pill primary">COPY</button>
-            </div>`;
-        document.getElementById('copy-device-link').addEventListener('click', (event) => this.copy(data.url, event.target));
     }
 
     copy(text, button) {

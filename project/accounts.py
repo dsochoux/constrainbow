@@ -36,13 +36,12 @@ WORD_PATTERN = re.compile(r"[a-z]{5}")
 CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"     # no 0/o, 1/l/i, so a link read aloud still works
 CODE_PATTERN = re.compile(f"[{CODE_ALPHABET}]{{8}}")
 PASSWORD_MIN, PASSWORD_MAX = 6, 200
-DEVICE_LINK_MINUTES = 10
 
 # rate limits: (how many, in how many seconds)
 SIGNIN_FAILS_PER_NAME = (10, 15 * 60)
 SIGNIN_FAILS_PER_VISITOR = (50, 15 * 60)
 SIGNUPS_PER_VISITOR = (10, 24 * 60 * 60)
-BAD_CODES_PER_VISITOR = (50, 60 * 60)   # friend codes and sign-in links that don't exist
+BAD_CODES_PER_VISITOR = (50, 60 * 60)   # friend codes that don't exist
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -76,12 +75,8 @@ CREATE TABLE IF NOT EXISTS archive (
     game_id TEXT NOT NULL,
     PRIMARY KEY (user_id, mode, game_id)
 );
--- "sign in on another device" links: single use, short-lived, only a hash of the token is kept
-CREATE TABLE IF NOT EXISTS device_links (
-    token_hash TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    expires REAL NOT NULL
-);
+-- the "sign in on another device" links were removed on 2026-11-23
+DROP TABLE IF EXISTS device_links;
 -- recent failed sign-ins, sign-ups and bad codes, for the rate limits (cleared after a day)
 CREATE TABLE IF NOT EXISTS attempts (
     kind TEXT NOT NULL,
@@ -149,10 +144,6 @@ def today_id():
 
 def new_code(length):
     return "".join(secrets.choice(CODE_ALPHABET) for _ in range(length))
-
-
-def hash_token(token):
-    return hashlib.sha256(token.encode()).hexdigest()
 
 
 # ---- rate limits ----
@@ -428,39 +419,6 @@ def archive_done():
     db.execute("INSERT OR IGNORE INTO archive (user_id, mode, game_id) VALUES (?, ?, ?)", (user["id"], mode, game_id))
     db.commit()
     return '', 204
-
-
-# ---- signing in on another device ----
-
-@accounts.route('/account/device-link', methods=['POST'])
-def device_link():
-    user = current_user()
-    if json_body() is None or user is None:
-        return '', 401
-    token = secrets.token_urlsafe(18)
-    db = get_db()
-    db.execute("DELETE FROM device_links WHERE expires < ?", (time.time(),))
-    db.execute("INSERT INTO device_links (token_hash, user_id, expires) VALUES (?, ?, ?)",
-               (hash_token(token), user["id"], time.time() + DEVICE_LINK_MINUTES * 60))
-    db.commit()
-    return jsonify(url=f"{site_url()}signin/{token}", minutes=DEVICE_LINK_MINUTES)
-
-
-# opening the link signs this device in (once), then goes to the game
-@accounts.route('/signin/<token>')
-def device_signin(token):
-    visitor = visitor_key()
-    if is_limited("bad-code", visitor, BAD_CODES_PER_VISITOR):
-        return redirect('/solve?signin=expired')
-    db = get_db()
-    row = db.execute("SELECT * FROM device_links WHERE token_hash = ?", (hash_token(token[:100]),)).fetchone()
-    db.execute("DELETE FROM device_links WHERE token_hash = ? OR expires < ?", (hash_token(token[:100]), time.time()))
-    db.commit()
-    if row is None or row["expires"] < time.time():
-        note_attempt("bad-code", visitor)
-        return redirect('/solve?signin=expired')
-    sign_in_as(row["user_id"])
-    return redirect('/solve?signin=ok')
 
 
 # ---- friends ----

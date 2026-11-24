@@ -1158,6 +1158,17 @@ body.row-links .word-row .letter {
 .friends-account {
     margin-top: 18px !important;
 }
+.privacy-note {
+    margin-top: 14px;
+}
+.privacy-note summary {
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+}
+.privacy-note p {
+    margin-top: 6px;
+}
 
 /* a person's finished board: the how-to-play example board, with SOLVE's revealed tiles marked */
 .friend-board {

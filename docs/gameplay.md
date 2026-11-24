@@ -122,6 +122,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - The popup is titled "Score board". After a win, the stats popup has a SCORE BOARD button next to COPY RESULTS that opens it. While a person's board is open, ×, a click outside and the browser's back gesture all return to the table (opening a board adds a history step).
 - 🗑 next to a friend removes them (after asking): you disappear from each other's boards, and they aren't told.
 - Only the daily puzzles count, as with streaks.
+- A "Privacy" line at the bottom of the popup opens a short note: what an account keeps, that friends see your username and today's results, that plays are counted anonymously, and that you can ask (through feedback) to have your account deleted.
 
 ## Sharing
 The first click on COPY RESULTS copies the following (the last line, `🔥 5-day streak`, appears once that mode's streak is at least 2 days):

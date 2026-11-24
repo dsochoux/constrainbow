@@ -7,3 +7,6 @@ data/
 game_solutions/
 # private notes, kept out of the public repo
 private/
+
+# copies of the accounts database (scripts/backup_accounts.py); they hold password hashes
+backups/

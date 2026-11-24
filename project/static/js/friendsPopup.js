@@ -231,7 +231,7 @@ export class FriendsPopup {
         }
         const note = this.message ? `<p class="friends-message">${this.message}</p>` : '';
         if (!this.account.signedIn) {
-            this.content.innerHTML = `<h2 id="friends-title">Score board</h2>${note}${this.signInForm()}`;
+            this.content.innerHTML = `<h2 id="friends-title">Score board</h2>${note}${this.signInForm()}${this.privacyNote()}`;
             this.setUpForm();
             return;
         }
@@ -240,8 +240,21 @@ export class FriendsPopup {
             ${note}
             ${this.scoreboard ? this.table() : '<p class="fine-print">Loading…</p>'}
             ${this.linkSection()}
-            <p class="fine-print friends-account">Signed in as <strong>${escape(this.account.info.username)}</strong>. <button id="sign-out-button" class="text-button">Sign out</button></p>`;
+            <p class="fine-print friends-account">Signed in as <strong>${escape(this.account.info.username)}</strong>. <button id="sign-out-button" class="text-button">Sign out</button></p>
+            ${this.privacyNote()}`;
         this.setUpSignedIn();
+    }
+
+    // what an account stores and who sees it (the first personal data the site keeps)
+    privacyNote() {
+        return `
+            <details class="fine-print privacy-note">
+                <summary>Privacy</summary>
+                <p>Accounts are optional. With one, the game keeps your username, your password in scrambled form (a hash, so not even I can read it), your result and finished board for each puzzle, the past puzzles you've finished, and who your friends are. A cookie keeps you signed in. No email, no ads, and nothing is sold or shared.</p>
+                <p>Your friends see your username and today's results. Nobody else does.</p>
+                <p>Whether or not you have an account, the game also counts plays anonymously (a random number for each browser, no IP addresses) so I can see how it's doing.</p>
+                <p>To delete your account, send feedback from the how-to-play popup (the ? button) with your username.</p>
+            </details>`;
     }
 
     // ---- signed out ----

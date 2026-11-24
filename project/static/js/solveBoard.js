@@ -263,9 +263,10 @@ export class SolveBoard extends SpeedBoard {
         this.saveState();
     }
 
-    // what the stats keep for a finished day
+    // what the stats keep for a finished day, with the finished board (the answer, and the tiles
+    // revealed) for the friends scoreboard
     getStatsResult() {
-        return { seconds: this.elapsedSeconds, reveals: this.revealedTiles };
+        return { seconds: this.elapsedSeconds, reveals: this.revealedTiles, words: this.getWordsList(), revealed: this.revealedPositions };
     }
 
     // solved without REVEAL (a themed day's message comes first). Board's, not SpeedBoard's

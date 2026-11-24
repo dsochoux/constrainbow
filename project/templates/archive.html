@@ -47,23 +47,51 @@
     </div>
     <script>
         // ✓ every day finished here: past puzzles played in the archive, and days played as the daily
-        // puzzle (from the stats). Both are only in this browser's localStorage
+        // puzzle (from the stats), from this browser's localStorage. A signed-in player's ✓s from other
+        // devices arrive from the account (see account.js) and are added too
         (function () {
             const mode = "{{ mode }}";
-            let finished = {};
-            try {
-                const archive = JSON.parse(localStorage.getItem('archive')) || {};
-                const stats = JSON.parse(localStorage.getItem('stats')) || {};
-                finished = Object.assign({}, archive[mode] || {}, stats[mode] || {});
-            } catch (e) {
-                finished = {};
-            }
-            document.querySelectorAll('.calendar a.day[data-game-id]').forEach((day) => {
-                if (day.dataset.gameId in finished) {
-                    day.classList.add('done');
-                    day.setAttribute('aria-label', `${day.textContent}, finished`);
+            function markFinished() {
+                let finished = {};
+                try {
+                    const archive = JSON.parse(localStorage.getItem('archive')) || {};
+                    const stats = JSON.parse(localStorage.getItem('stats')) || {};
+                    finished = Object.assign({}, archive[mode] || {}, stats[mode] || {});
+                } catch (e) {
+                    finished = {};
                 }
-            });
+                document.querySelectorAll('.calendar a.day[data-game-id]').forEach((day) => {
+                    if (day.dataset.gameId in finished) {
+                        day.classList.add('done');
+                        day.setAttribute('aria-label', `${day.textContent}, finished`);
+                    }
+                });
+            }
+            markFinished();
+            // signed in: the account's ✓s and results join this browser's (like Account.takeIn)
+            fetch('/account/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (!data.signedIn) {
+                        return;
+                    }
+                    const archive = JSON.parse(localStorage.getItem('archive') || '{}') || {};
+                    const stats = JSON.parse(localStorage.getItem('stats') || '{}') || {};
+                    ['solve', 'speed', 'score'].forEach((m) => {
+                        archive[m] = Object.assign({}, archive[m] || {}, (data.archive || {})[m] || {});
+                        stats[m] = stats[m] || {};
+                        Object.entries((data.stats || {})[m] || {}).forEach(([gameId, result]) => {
+                            const mine = stats[m][gameId];
+                            if (!mine || (m === 'score' && result.points > mine.points)) {
+                                stats[m][gameId] = result;
+                            }
+                        });
+                    });
+                    localStorage.setItem('archive', JSON.stringify(archive));
+                    localStorage.setItem('stats', JSON.stringify(stats));
+                    markFinished();
+                })
+                .catch(() => {});
 
             // a visit for the dashboard, like Manager.logVisit on the game pages
             try {

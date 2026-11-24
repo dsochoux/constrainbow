@@ -244,7 +244,7 @@ button:focus-visible, a:focus-visible {
     pointer-events: none;
 }
 
-#how-to-play-button, #stats-button, #archive-button {
+#how-to-play-button, #stats-button, #friends-button, #archive-button {
     flex: none;
     width: 30px;
     height: 30px;
@@ -802,7 +802,7 @@ body.row-links .word-row .letter {
     line-height: 1.45;
 }
 
-#close-button, #stats-close-button {
+#close-button, #stats-close-button, #friends-close-button {
     position: absolute;
     top: 12px;
     right: 16px;
@@ -912,7 +912,7 @@ body.row-links .word-row .letter {
     color: var(--ink);
 }
 
-#stats-button, #archive-button {
+#stats-button, #friends-button, #archive-button {
     font-family: var(--ui-font);
     font-size: 15px;
     padding: 0;
@@ -974,8 +974,210 @@ body.row-links .word-row .letter {
 .stats-bar.today {
     background: var(--c3);
 }
+/* ---------- friends popup (friendsPopup.js) ---------- */
+
+/* a friend link is waiting for this player to sign up */
+#friends-button {
+    position: relative;
+}
+#friends-button.has-invite::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--c1);
+}
+
+.friends-message, .friends-invite {
+    padding: 8px 12px;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    background: var(--t3);
+}
+.friends-message:first-of-type, .friends-invite:first-of-type {
+    margin-top: 0;
+}
+
+.friends-tabs {
+    display: inline-flex;
+    margin-top: 14px;
+}
+
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+.account-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.account-form input, .link-box {
+    padding: 8px 10px;
+    font: 500 16px var(--ui-font); /* 16px keeps iPhones from zooming in */
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+}
+.account-form button {
+    align-self: flex-start;
+}
+.account-error {
+    margin: 0;
+    min-height: 1em;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c1);
+}
+
+.text-button {
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: underline;
+    background: none;
+    border: none;
+}
+
+/* today's results: a row per person, a column per mode */
+.scoreboard-wrap {
+    overflow-x: auto;
+}
+.scoreboard {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.scoreboard th, .scoreboard td {
+    padding: 7px 4px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--key-off);
+}
+.scoreboard tbody tr:last-child th, .scoreboard tbody tr:last-child td {
+    border-bottom: none;
+}
+.scoreboard thead th {
+    border-bottom: 2px solid var(--ink);
+}
+.scoreboard tbody th {
+    max-width: 96px;
+    padding-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    font-weight: 700;
+}
+.scoreboard tr.you {
+    background: var(--t3);
+}
+.scoreboard td.locked, .scoreboard td.not-played {
+    color: var(--muted);
+}
+.scoreboard small {
+    font-size: 11px;
+}
+/* the mode's emoji above its name */
+.sort-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px 5px;
+    font: 700 11px var(--ui-font);
+    color: var(--ink);
+    background: none;
+    border: none;
+    border-radius: 6px;
+}
+.sort-button.sorted {
+    background: var(--ink);
+    color: var(--paper);
+}
+.sort-button:disabled {
+    color: var(--muted);
+}
+.result-button {
+    padding: 0;
+    font: inherit;
+    color: var(--ink);
+    background: none;
+    border: none;
+    border-bottom: 2px dotted var(--muted);
+}
+/* the narrowest phones (320px): just enough room for four columns without scrolling */
+@media (max-width: 359px) {
+    .scoreboard th, .scoreboard td {
+        padding: 6px 2px;
+    }
+    .scoreboard tbody th {
+        max-width: 78px;
+        padding-left: 6px;
+    }
+    .sort-button {
+        padding: 2px 3px;
+    }
+}
+.remove-cell {
+    width: 1px;
+    padding-left: 0 !important;
+}
+.remove-friend {
+    padding: 2px;
+    font-size: 14px;
+    background: none;
+    border: none;
+    opacity: 0.6;
+}
+
+.link-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+}
+.link-box {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+}
+.friends-account {
+    margin-top: 18px !important;
+}
+
+/* a person's finished board: the how-to-play example board, with SOLVE's revealed tiles marked */
+.friend-board {
+    margin-top: 14px;
+}
+.example-letter.revealed-tile {
+    color: #8a8290;
+}
+.example-letter.revealed-tile::after {
+    content: '💡';
+    position: absolute;
+    right: 1px;
+    bottom: 0;
+    font-size: 11px;
+}
+
 .stats-share {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: center;
     margin-top: 16px;
 }

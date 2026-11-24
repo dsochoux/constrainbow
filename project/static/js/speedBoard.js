@@ -169,9 +169,9 @@ export class SpeedBoard extends Board {
     }
 
 
-    // what the stats keep for a finished day
+    // what the stats keep for a finished day, with the finished board for the friends scoreboard
     getStatsResult() {
-        return { seconds: this.elapsedSeconds };
+        return { seconds: this.elapsedSeconds, words: this.getWordsList() };
     }
 
     // faster than every earlier daily speed puzzle in the stats (so never on the first one; archive

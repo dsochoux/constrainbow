@@ -271,9 +271,10 @@ export class ScoreBoard extends Board {
         return !this.revealed && this.score >= this.numPossiblePoints ? "BESTSOLUTION" : null;
     }
 
-    // what the stats keep for a finished day (a better score later the same day replaces it)
+    // what the stats keep for a finished day (a better score later the same day replaces it), with the
+    // board that scored it, for the friends scoreboard
     getStatsResult() {
-        return { points: this.score, max: this.numPossiblePoints };
+        return { points: this.score, max: this.numPossiblePoints, words: this.getWordsList() };
     }
 
     // for the share text: the day's best score; otherwise: what's logged when the

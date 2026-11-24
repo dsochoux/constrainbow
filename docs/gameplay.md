@@ -103,7 +103,7 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - Archive puzzles keep their own progress (`archiveSpeed11102026Word0`…; SOLVE shares `solveDay…` with `/solve/day`), aren't logged, don't count toward stats or streaks, and have no 📊 button. Score's SHOW BEST works there too. The share text links to the archive page and includes the year: `⏱️ constrainbow.com/archive/speed/2026-11-10` / `11/10/2026 | 0:41`.
 
 ## Stats and streaks (since 2026-11-16)
-- Each daily mode keeps its own stats in this browser (localStorage `stats`; no accounts): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
+- Each daily mode keeps its own stats in this browser (localStorage `stats`), and in the player's account if they're signed in (see "Friends and accounts"): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
   - SOLVE: no-reveal solves and average tiles revealed per day; solve times (under 2m, 2–5m, 5–10m, 10m+).
   - SPEED: best time; times (under 1m, 1–2m, 2–3m, 3–5m, 5m+).
   - SCORE: perfect scores; share of the max score (100%, 90–99%, 75–89%, under 75%). A better score later the same day replaces the day's result.
@@ -112,6 +112,16 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 - Only the daily puzzles count: the SOLVE test batch and `/solve/day` have no 📊 button and record nothing.
 - Nothing was recorded before this, so everyone's streak started on 2026-11-16.
 - Stats live only in this browser. They survive indefinitely in Chrome and Firefox (after a finish the game asks Chrome and Safari not to clear them when the device is low on space), but Safari deletes them after 7 days of using Safari without visiting the site (not for home-screen web apps), and clearing browsing data or private windows lose them too.
+
+## Friends and accounts (since 2026-11-23, branch `accounts-friends`)
+- **Accounts are optional.** The 👥 button (next to 📊 on the daily puzzles) opens a popup to make an account or sign in: a username (3–16 letters, numbers or _, seen by friends) and a password. There's no email, so there's no password reset, and the form says so.
+- Signing in (or up) adds this browser's stats and archive ✓s to the account. From then on every finish is saved to the account too, and every device signed in to it shows the same stats, streaks and ✓s. Signing out keeps the stats in the browser.
+- **Sign in on another device:** a signed-in player can make a link that signs another browser in. It works once, within 10 minutes.
+- **Friends** are always mutual. Each player has a friend link (`constrainbow.com/friend/abcd2345`). Opening someone's link while signed in makes you friends. A player who isn't signed in sees "X wants you on their scoreboard" with the sign-up form, and the friendship happens when they make an account or sign in. They can also play first: the link waits, and the 👥 button shows a red dot. "Make a new link" stops the old link working (friends stay friends).
+- **The scoreboard** is a table: you and each friend, with a column for SOLVE, SPEED and SCORE, each cell that person's result today (`-` if they haven't played it). A column stays 🔒 for your friends until you've finished that mode today; the server doesn't send their results before then. SOLVE shows the time and `💡N` for reveals, and ranks fewer reveals first, then the faster time; SPEED ranks the fastest time; SCORE shows the day's best points. Tapping a mode sorts by it (the default is the leftmost mode you've finished). A 👑 marks the best result in each unlocked column (ties share it) once at least two people have one. Tapping a result shows that person's finished board, with SOLVE's revealed tiles marked 💡.
+- The popup is titled "Score board". After a win, the stats popup has a SCORE BOARD button next to COPY RESULTS that opens it. While a person's board is open, ×, a click outside and the browser's back gesture all return to the table (opening a board adds a history step).
+- 🗑 next to a friend removes them (after asking): you disappear from each other's boards, and they aren't told.
+- Only the daily puzzles count, as with streaks.
 
 ## Sharing
 The first click on COPY RESULTS copies the following (the last line, `🔥 5-day streak`, appears once that mode's streak is at least 2 days):

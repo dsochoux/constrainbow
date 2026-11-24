@@ -1,6 +1,9 @@
 // a player's results, kept only in this browser: one entry per daily puzzle finished, per mode
 // localStorage "stats" = {"solve": {"11162026": {seconds, reveals}}, "speed": {"11162026": {seconds}},
 //                         "score": {"11162026": {points, max}}}
+// since 2026-11-23 each result also has the finished board, for the friends scoreboard: words (and
+// SOLVE's revealed, [w, l] per revealed tile). A signed-in player's stats are kept on the server too
+// (see account.js), so they follow them to other devices
 // only the daily puzzles count (not the SOLVE test batch or /solve/day)
 export const STATS_MODES = ['solve', 'speed', 'score'];
 

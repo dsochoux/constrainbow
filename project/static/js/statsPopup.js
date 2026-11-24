@@ -123,11 +123,19 @@ export class StatsPopup {
                 `).join('')}
             </div>`}
             ${this.getYesterdayBest()}
-            <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. Stats are kept in this browser only.</p>
-            ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button></div>` : ''}`;
+            <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. ${this.manager.account && this.manager.account.signedIn ? 'Stats are saved to your account.' : 'Stats are kept in this browser only (👥 to keep them on every device).'}</p>
+            ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button>${this.manager.friendsPopup ? '<button id="stats-scoreboard-button" class="pill">SCORE BOARD</button>' : ''}</div>` : ''}`;
         const copyButton = document.getElementById('stats-copy-button');
         if (copyButton) {
             copyButton.addEventListener('click', () => this.pageCopyButton.click());
+        }
+        // after a win: straight on to today's results among friends (the 👥 popup)
+        const scoreboardButton = document.getElementById('stats-scoreboard-button');
+        if (scoreboardButton) {
+            scoreboardButton.addEventListener('click', () => {
+                this.hide();
+                this.manager.friendsPopup.show();
+            });
         }
     }
 

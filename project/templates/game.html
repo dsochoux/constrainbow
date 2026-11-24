@@ -103,6 +103,13 @@
             <div id="stats-content"></div>{# filled in by statsPopup.js #}
         </div>
     </div>
+    {# accounts and today's scoreboard among friends (friendsPopup.js, project/accounts.py) #}
+    <div class="overlay" id="friends-overlay">
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="friends-title">
+            <button id="friends-close-button" aria-label="Close">&times;</button>
+            <div id="friends-content"></div>{# filled in by friendsPopup.js #}
+        </div>
+    </div>
     {% endif %}
     <div id="container">
         <div id="header-div">
@@ -139,6 +146,7 @@
                 {% endif %}
                 <a id="archive-button" href="/archive/{{ archive_mode }}" aria-label="Past puzzles">📅</a>
                 {% if is_daily %}
+                <button id="friends-button" aria-label="Score board">👥</button>
                 <button id="stats-button" aria-label="Your stats">📊</button>
                 {% endif %}
                 <button id="how-to-play-button" aria-label="How to play">?</button>

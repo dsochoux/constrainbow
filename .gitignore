@@ -2,6 +2,8 @@ database.db
 env/
 .DS_Store
 logs/
+# accounts database and the session secret (see project/accounts.py)
+data/
 game_solutions/
 # private notes, kept out of the public repo
 private/

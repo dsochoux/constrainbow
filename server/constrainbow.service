@@ -28,12 +28,13 @@ StandardOutput=append:/srv/constrainbow/gunicorn.log
 StandardError=append:/srv/constrainbow/gunicorn.log
 
 # sandboxing: even if the app had a bug, the process can only
-# - write to the two places the app actually writes
+# - write to the places the app actually writes (logs, missing-word reports, and data/: the accounts
+#   database and the session secret, see project/accounts.py)
 # - never gain more privileges (no sudo, no setuid programs)
 # - not see /root or /home at all, and get its own private /tmp
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/srv/constrainbow/logs /srv/constrainbow/word_files/reported_missing_words.txt
+ReadWritePaths=/srv/constrainbow/logs /srv/constrainbow/data /srv/constrainbow/word_files/reported_missing_words.txt
 ProtectHome=true
 PrivateTmp=true
 

@@ -15,6 +15,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dashboard import dashboard
 app.register_blueprint(dashboard)
+# optional accounts and the friends scoreboard (see accounts.py)
+import accounts
+accounts.setup(app)
+app.register_blueprint(accounts.accounts)
 
 db_path = "database.db"
 eastern = ZoneInfo("America/New_York")
@@ -634,4 +638,5 @@ if __name__ == '__main__':
     # gunicorn on the server; see word_review.py
     from word_review import word_review
     app.register_blueprint(word_review)
+    app.config["SESSION_COOKIE_SECURE"] = False  # http://localhost has no HTTPS
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -26,7 +26,7 @@ fi
 
 echo "Syncing files..."
 # app.py
-scp ./project/app.py ./project/dashboard.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
+scp ./project/app.py ./project/dashboard.py ./project/accounts.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project
 # the page templates (not word_review.html, which is only for running locally)
 scp ./project/templates/game.html ./project/templates/head.html ./project/templates/archive.html ./project/templates/dashboard.html ./project/templates/preview_test.html $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/project/templates
 # style.css and eggs.css (the easter eggs)
@@ -70,11 +70,13 @@ echo "Restarting the constrainbow service (gunicorn)..."
 # see server/constrainbow.service
 scp ./server/constrainbow.service $REMOTE_USER@$REMOTE_HOST:/etc/systemd/system/constrainbow.service
 ssh $REMOTE_USER@$REMOTE_HOST << EOF
-    # the app runs as "constrainbow", a user that can't log in; it may only write its logs and missing-word reports
+    # the app runs as "constrainbow", a user that can't log in; it may only write its logs, missing-word reports and data/
     id constrainbow >/dev/null 2>&1 || useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin constrainbow
-    mkdir -p $REMOTE_DIR/logs
+    mkdir -p $REMOTE_DIR/logs $REMOTE_DIR/data
     touch $REMOTE_DIR/word_files/reported_missing_words.txt
-    chown -R constrainbow:constrainbow $REMOTE_DIR/logs $REMOTE_DIR/word_files/reported_missing_words.txt
+    chown -R constrainbow:constrainbow $REMOTE_DIR/logs $REMOTE_DIR/data $REMOTE_DIR/word_files/reported_missing_words.txt
+    # the accounts database and session secret: only the app may read them
+    chmod 700 $REMOTE_DIR/data
     # everything else stays owned by root, but the app user must be able to read it
     chmod -R a+rX $REMOTE_DIR/project $REMOTE_DIR/word_files $REMOTE_DIR/games $REMOTE_DIR/scripts
     systemctl daemon-reload

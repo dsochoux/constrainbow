@@ -1708,7 +1708,7 @@ body.retro *, body.retro *::before, body.retro *::after {
 /* the tiles and buttons get pixel-art corners: the frame is drawn from a 3x3-pixel pattern with an empty corner,
    so each corner steps in by one pixel. background-clip keeps the fill out of the corners */
 body.retro .letter, body.retro .example-letter, body.retro .wordmark span, body.retro .key, body.retro .pill, body.retro .popup,
-body.retro #mode-switch, body.retro #how-to-play-button, body.retro #stats-button, body.retro #archive-button {
+body.retro #mode-switch, body.retro #how-to-play-button, body.retro #stats-button, body.retro #friends-button, body.retro #archive-button {
     border-style: solid;
     border-radius: 0;
     border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M3 0h3v3H3zM0 3h3v3H0zM6 3h3v3H6zM3 6h3v3H3z' fill='%231d1b20'/%3E%3C/svg%3E") 3 / 3px / 0 stretch;

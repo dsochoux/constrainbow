@@ -4,6 +4,8 @@ import { SolveBoard } from "./solveBoard.js";
 import { Stats } from "./stats.js";
 import { StatsPopup } from "./statsPopup.js";
 import { Feedback } from "./feedback.js";
+import { Account } from "./account.js";
+import { FriendsPopup } from "./friendsPopup.js";
 import { deleteAllCookies, launchConfetti } from "./helpers.js";
 
 const TITLE = "CONSTRAINBOW"; // the wordmark's letters, one per span in game.html
@@ -21,6 +23,15 @@ export class Manager {
         this.stats = new Stats();
         // the daily puzzles have a 📊 button and keep stats (the SOLVE test batch and /solve/day don't)
         this.statsPopup = document.getElementById('stats-button') ? new StatsPopup(this) : null;
+        // the optional account: stats and archive ✓s follow a signed-in player to every device, and the
+        // daily puzzles have a 👥 button with today's scoreboard among their friends
+        this.account = new Account(this);
+        this.friendsPopup = document.getElementById('friends-button') ? new FriendsPopup(this) : null;
+        this.account.sync().then(() => {
+            if (this.friendsPopup) {
+                this.friendsPopup.afterSync();
+            }
+        });
         this.showHowToPlayIfFirstTime();
         this.fetchGame().then(() => {
             this.addEventListeners();
@@ -277,7 +288,9 @@ export class Manager {
         }
         // finishing again only replaces the saved result if it's a better score (score mode)
         const isBetter = (old, result) => result.points > old.points;
-        const isFirst = this.stats.record(this.gameMode, this.gameId, this.board.getStatsResult(), isBetter);
+        const result = this.board.getStatsResult();
+        const isFirst = this.stats.record(this.gameMode, this.gameId, result, isBetter);
+        this.account.recordResult(this.gameMode, this.gameId, result); // the server keeps the better score too
         if (isFirst) {
             // as the board's wave finishes; the confetti keeps falling behind the popup (the overlay sits
             // above it) and a title message changes back behind it too
@@ -316,6 +329,7 @@ export class Manager {
         finished[this.gameMode] = finished[this.gameMode] || {};
         finished[this.gameMode][this.gameId] = true;
         localStorage.setItem('archive', JSON.stringify(finished));
+        this.account.recordArchive(this.gameMode, this.gameId);
     }
 
     // the first line of the share text: today's mode page, or this past puzzle's archive page

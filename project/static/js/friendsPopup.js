@@ -264,7 +264,10 @@ export class FriendsPopup {
                     <input id="account-username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" required>
                 </label>
                 <label>Password
-                    <input id="account-password" name="password" type="password" autocomplete="${isSignUp ? 'new-password' : 'current-password'}" maxlength="200" required>
+                    <span class="password-box">
+                        <input id="account-password" name="password" type="password" autocomplete="${isSignUp ? 'new-password' : 'current-password'}" maxlength="200" required>
+                        <button id="password-toggle" type="button" class="text-button" aria-label="Show password" aria-pressed="false">SHOW</button>
+                    </span>
                 </label>
                 <p id="account-error" class="account-error" role="alert"></p>
                 <button type="submit" class="pill primary">${isSignUp ? 'MAKE ACCOUNT' : 'SIGN IN'}</button>
@@ -275,6 +278,16 @@ export class FriendsPopup {
     setUpForm() {
         document.getElementById('signup-tab').addEventListener('click', () => { this.formMode = 'signup'; this.render(); });
         document.getElementById('signin-tab').addEventListener('click', () => { this.formMode = 'signin'; this.render(); });
+        // there's no "confirm password" box, so SHOW lets a player check what they typed
+        const password = document.getElementById('account-password');
+        const toggle = document.getElementById('password-toggle');
+        toggle.addEventListener('click', () => {
+            const isShown = password.type === 'text';
+            password.type = isShown ? 'password' : 'text';
+            toggle.textContent = isShown ? 'SHOW' : 'HIDE';
+            toggle.setAttribute('aria-label', isShown ? 'Show password' : 'Hide password');
+            toggle.setAttribute('aria-pressed', String(!isShown));
+        });
         const form = document.getElementById('account-form');
         form.addEventListener('submit', async (event) => {
             event.preventDefault();

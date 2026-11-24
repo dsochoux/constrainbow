@@ -115,6 +115,7 @@ export class SpeedBoard extends Board {
             });
         });
         this.manager.pauseKeyboard();
+        this.manager.progress.sendSoon(); // to the account, so the game carries on on another device
     }
     resumeLetters() {
         this.words.forEach((word) => {

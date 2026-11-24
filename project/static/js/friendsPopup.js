@@ -239,7 +239,7 @@ export class FriendsPopup {
         return `
             <details class="fine-print privacy-note">
                 <summary>Privacy</summary>
-                <p>Accounts are optional. With one, the game keeps your username, your password in scrambled form (a hash, so not even I can read it), your result and finished board for each puzzle, the past puzzles you've finished, and who your friends are. A cookie keeps you signed in. No email, no ads, and nothing is sold or shared.</p>
+                <p>Accounts are optional. With one, the game keeps your username, your password in scrambled form (a hash, so not even I can read it), your result and finished board for each puzzle, today's games in progress (so you can carry on on another device), the past puzzles you've finished, and who your friends are. A cookie keeps you signed in. No email, no ads, and nothing is sold or shared.</p>
                 <p>Your friends see your username and today's results. Nobody else does.</p>
                 <p>Whether or not you have an account, the game also counts plays anonymously (a random number for each browser, no IP addresses) so I can see how it's doing.</p>
                 <p>To delete your account, send feedback from the how-to-play popup (the ? button) with your username.</p>
@@ -430,12 +430,8 @@ export class FriendsPopup {
                 this.account.setInfo(data);
             }
         });
-        document.getElementById('sign-out-button').addEventListener('click', async () => {
-            await this.account.signOut();
-            this.scoreboard = null;
-            this.message = 'Signed out. Your stats stay in this browser.';
-            this.render();
-        });
+        // signing out reloads the page (Account.signOut)
+        document.getElementById('sign-out-button').addEventListener('click', () => this.account.signOut());
     }
 
     async removeFriend(username) {

@@ -1,4 +1,9 @@
 import { STATS_MODES } from './stats.js';
+import { Progress } from './progress.js';
+
+// localStorage: set while this browser is signed in, so the next visit knows to wait for the account's
+// saved game before drawing the board (see Manager.fetchGame)
+const SIGNED_IN_KEY = 'signedIn';
 
 // the optional account (see project/accounts.py): signing up and in, and keeping this browser's stats
 // and archive ✓s in step with the server, so they follow a signed-in player to every device
@@ -7,6 +12,7 @@ export class Account {
         this.manager = manager;
         this.info = { signedIn: false }; // {signedIn, username, friendLink} once the server answers
         this.listeners = [];
+        this.savedGame = null; // the page's daily game as saved from any device ({snapshot, updated}), from the sync
     }
 
     get signedIn() {
@@ -22,7 +28,17 @@ export class Account {
         this.info = data.signedIn
             ? { signedIn: true, username: data.username, friendLink: data.friendLink }
             : { signedIn: false };
+        if (data.signedIn) {
+            localStorage.setItem(SIGNED_IN_KEY, 'true');
+        } else {
+            localStorage.removeItem(SIGNED_IN_KEY);
+        }
         this.listeners.forEach((listener) => listener());
+    }
+
+    // signed in on this browser's last visit (the server's answer can say otherwise)
+    static wasSignedIn() {
+        return localStorage.getItem(SIGNED_IN_KEY) === 'true';
     }
 
     async post(url, body = {}) {
@@ -41,16 +57,19 @@ export class Account {
     }
 
     // on every page load: sends this browser's recent results and ✓s (in case one didn't reach the
-    // server), and takes in the account's, so a finish on another device shows here too
+    // server), and takes in the account's, so a finish on another device shows here too. Also asks for
+    // the page's daily game as saved from any device (see progress.js)
     async sync() {
         try {
             const { ok, data } = await this.post('/account/sync', {
                 stats: this.recentStats(7),
                 archive: Account.readArchive(),
+                savedGameFor: Progress.pageGame(),
             });
             if (ok) {
                 if (data.signedIn) {
                     this.takeIn(data);
+                    this.savedGame = data.savedGame || null;
                 }
                 this.setInfo(data);
             }
@@ -78,15 +97,23 @@ export class Account {
         if (ok) {
             this.takeIn(data);
             this.setInfo(data);
+            this.manager.progress.checkForNewer(); // a game saved on another device: reloads to show it
             return null;
         }
         return data.error || 'Something went wrong. Try again.';
     }
 
-    // this browser keeps its stats after signing out (they're the player's own)
+    // signing out leaves this browser as on a first visit, so a new account made here doesn't take in
+    // the last one's results: the daily game in progress goes to the account first (everything else is
+    // already there), then this browser forgets its stats, archive ✓s and daily games and reloads to
+    // fresh boards (see Progress.forgetGamesAndReload). Signing back in brings them all back
     async signOut() {
+        await this.manager.progress.send().catch(() => {});
         await this.post('/account/signout');
         this.setInfo({ signedIn: false });
+        localStorage.removeItem('stats');
+        localStorage.removeItem('archive');
+        this.manager.progress.forgetGamesAndReload();
     }
 
     // a finished daily puzzle (called after the stats saved it; score mode calls it for every better score)

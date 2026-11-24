@@ -77,6 +77,17 @@ CREATE TABLE IF NOT EXISTS archive (
 );
 -- the "sign in on another device" links were removed on 2026-11-23
 DROP TABLE IF EXISTS device_links;
+-- the daily game a player is in the middle of, one per mode (a new day's replaces the last), so it
+-- carries on on another device: the browser's own saved-game keys for that mode (see progress.js),
+-- and when it was saved (seconds, server time, so devices with clocks that disagree still agree)
+CREATE TABLE IF NOT EXISTS saved_games (
+    user_id INTEGER NOT NULL,
+    mode TEXT NOT NULL,
+    game_id TEXT NOT NULL,
+    snapshot TEXT NOT NULL,
+    updated REAL NOT NULL,
+    PRIMARY KEY (user_id, mode)
+);
 -- recent failed sign-ins, sign-ups and bad codes, for the rate limits (cleared after a day)
 CREATE TABLE IF NOT EXISTS attempts (
     kind TEXT NOT NULL,
@@ -225,6 +236,46 @@ def clean_words(words):
             and all(isinstance(word, str) and WORD_PATTERN.fullmatch(word) for word in words)):
         return words
     return None
+
+
+# the browser keys a saved game is made of, per mode (the same lists as SAVED_GAME_KEYS in progress.js)
+SAVED_GAME_KEYS = {
+    "solve": {"solveWord0", "solveWord1", "solveWord2", "solveWord3", "solveState"},
+    "speed": {"speedGameId", "speedWord0", "speedWord1", "speedWord2", "speedWord3",
+              "elapsedSeconds", "speedIsSolutionFound"},
+    "score": {"scoreGameId", "scoreWord0", "scoreWord1", "scoreWord2", "scoreWord3",
+              "scoreIsSolutionFound", "scoreDayBest", "scoreRevealed"},
+}
+
+
+def clean_snapshot(mode, snapshot):
+    """a saved game: {key: the browser's stored text, or None for a key it doesn't have}. The page
+    reads it back into its own storage, so only that mode's keys, and nothing big"""
+    if mode not in SAVED_GAME_KEYS or not isinstance(snapshot, dict):
+        return None
+    for key, value in snapshot.items():
+        if key not in SAVED_GAME_KEYS[mode] or not (value is None or (isinstance(value, str) and len(value) <= 2000)):
+            return None
+    return snapshot
+
+
+def is_finished(mode, snapshot):
+    """whether a saved game is a finished one (the same test as Progress.isFinished in progress.js)"""
+    if mode == "solve":
+        try:
+            return bool((json.loads(snapshot.get("solveState") or "null") or {}).get("solved"))
+        except (ValueError, AttributeError):
+            return False
+    return snapshot.get(f"{mode}IsSolutionFound") == "true"
+
+
+def saved_game(user_id, mode, game_id):
+    """{snapshot, updated} for this day's game in that mode, or None"""
+    if mode not in MODES or not is_game_id(game_id):
+        return None
+    row = get_db().execute("SELECT snapshot, updated FROM saved_games WHERE user_id = ? AND mode = ? AND game_id = ?",
+                           (user_id, mode, game_id)).fetchone()
+    return {"snapshot": json.loads(row["snapshot"]), "updated": row["updated"]} if row else None
 
 
 def clean_result(mode, result):
@@ -386,7 +437,46 @@ def sync():
     if user is None:
         return jsonify(signedIn=False)
     merge_from_browser(user["id"], data)
-    return jsonify({**account_info(user), **user_data(user["id"])})
+    # the page's daily game, if it's saved from another device ({mode, gameId} in savedGameFor)
+    wanted = data.get("savedGameFor") if isinstance(data.get("savedGameFor"), dict) else {}
+    saved = saved_game(user["id"], wanted.get("mode"), wanted.get("gameId"))
+    return jsonify({**account_info(user), **user_data(user["id"]), "savedGame": saved})
+
+
+# the daily game in progress (on pause, when the page is hidden, and on a finish): replaces the
+# mode's saved game and says when the server saved it, or says it kept the finished game it has
+@accounts.route('/account/saved-game', methods=['POST'])
+def save_game():
+    data = json_body()
+    user = current_user()
+    if data is None or user is None:
+        return '', 400 if data is None else 401
+    mode, game_id = data.get("mode"), data.get("gameId")
+    snapshot = clean_snapshot(mode, data.get("snapshot"))
+    if mode not in MODES or not is_game_id(game_id) or snapshot is None:
+        return '', 400
+    db = get_db()
+    # a finished game is never replaced by an unfinished one of the same day (a device that missed the
+    # finish, or one that was signed in to another account): the page then takes in the finished one
+    row = db.execute("SELECT game_id, snapshot FROM saved_games WHERE user_id = ? AND mode = ?",
+                     (user["id"], mode)).fetchone()
+    if (row is not None and row["game_id"] == game_id and is_finished(mode, json.loads(row["snapshot"]))
+            and not is_finished(mode, snapshot)):
+        return jsonify(kept=True)
+    updated = time.time()
+    db.execute("INSERT OR REPLACE INTO saved_games (user_id, mode, game_id, snapshot, updated) VALUES (?, ?, ?, ?, ?)",
+               (user["id"], mode, game_id, json.dumps(snapshot), updated))
+    db.commit()
+    return jsonify(updated=updated)
+
+
+# the saved game for a day (a page asks again when it comes back into view)
+@accounts.route('/account/saved-game/<mode>/<game_id>')
+def get_saved_game(mode, game_id):
+    user = current_user()
+    if user is None:
+        return '', 401
+    return jsonify(savedGame=saved_game(user["id"], mode, game_id))
 
 
 # a finished daily puzzle (score mode sends each better score too)

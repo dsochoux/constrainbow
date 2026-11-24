@@ -5,6 +5,7 @@ import { Stats } from "./stats.js";
 import { StatsPopup } from "./statsPopup.js";
 import { Feedback } from "./feedback.js";
 import { Account } from "./account.js";
+import { Progress } from "./progress.js";
 import { FriendsPopup } from "./friendsPopup.js";
 import { deleteAllCookies, launchConfetti } from "./helpers.js";
 
@@ -26,8 +27,16 @@ export class Manager {
         // the optional account: stats and archive ✓s follow a signed-in player to every device, and the
         // daily puzzles have a 👥 button with today's scoreboard among their friends
         this.account = new Account(this);
+        // a signed-in player's daily game carries on on another device (progress.js)
+        this.progress = new Progress(this);
         this.friendsPopup = document.getElementById('friends-button') ? new FriendsPopup(this) : null;
-        this.account.sync().then(() => {
+        this.synced = this.account.sync().then(() => {
+            // the board loaded before the account answered (this browser wasn't known to be signed in),
+            // and another device saved a newer game: reload to show it
+            if (this.board && this.progress.isNewer(this.account.savedGame)) {
+                this.progress.reloadWith(this.account.savedGame);
+                return;
+            }
             this.fillInMissingBoard(); // now the account is known (the board may have loaded first)
             if (this.friendsPopup) {
                 this.friendsPopup.afterSync();
@@ -76,7 +85,16 @@ export class Manager {
             solutionsElement.textContent = this.num_possible_solutions.toLocaleString();
         }
         this.loadingText.style.display = 'none';
-        
+
+        // signed in: wait (up to 3s) for the account's saved game, and if another device saved a newer
+        // one, put it in this browser's storage so the board loads it
+        if (Account.wasSignedIn() && Progress.pageGame()) {
+            await Promise.race([this.synced, new Promise((resolve) => setTimeout(resolve, 3000))]);
+            if (this.progress.isNewer(this.account.savedGame)) {
+                this.progress.takeIn(this.account.savedGame);
+            }
+        }
+
         if(this.gameMode === 'speed') {
             this.board = new SpeedBoard(this, data);
         } else if (['solve', 'solve-test', 'solve-day'].includes(this.gameMode)) {
@@ -93,6 +111,7 @@ export class Manager {
         if (this.board.isSolutionFound) {
             this.showRainbow(false);
         }
+        this.progress.markLoaded();
         this.fillInMissingBoard();
     }
 
@@ -135,9 +154,17 @@ export class Manager {
             this.logEvent('share', { solution: withSolution });
         });
 
+        // hidden (another app or tab, a locked phone, a closed tab): pause and send the game to the
+        // account; back in view: load a newer game if another device saved one
         document.addEventListener("visibilitychange", () => {
+            if (this.progress.isReloading) {
+                return; // leaving to show another device's game: keep it as it was taken in
+            }
             if (document.hidden) {
                 this.board.pause();
+                this.progress.send(true);
+            } else {
+                this.progress.checkForNewer();
             }
         });
     }
@@ -280,6 +307,7 @@ export class Manager {
     // first time today's puzzle is finished (after the celebration)
     recordResult() {
         Manager.keepStorage();
+        this.progress.sendSoon(); // the finished game, so other devices show it finished too
         if (this.isArchive) {
             this.markArchiveFinished();
             return;

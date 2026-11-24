@@ -1,5 +1,5 @@
-"""Deletes one account and everything kept for it: its results, archive ✓s, friendships (the privacy
-note promises this to anyone who asks through feedback).
+"""Deletes one account and everything kept for it: its results, archive ✓s, saved games and friendships
+(the privacy note promises this to anyone who asks through feedback).
 
 Run from the repo root. On the server, as the app's own user (so SQLite's helper files stay its own):
     ssh root@constrainbow.com
@@ -25,6 +25,7 @@ def main():
         friends = db.execute("DELETE FROM friendships WHERE user_a = ? OR user_b = ?", (user_id, user_id)).rowcount
         results = db.execute("DELETE FROM results WHERE user_id = ?", (user_id,)).rowcount
         db.execute("DELETE FROM archive WHERE user_id = ?", (user_id,))
+        db.execute("DELETE FROM saved_games WHERE user_id = ?", (user_id,))
         db.execute("DELETE FROM users WHERE id = ?", (user_id,))
     print(f"deleted {username}: {results} results, {friends} friendships")
 

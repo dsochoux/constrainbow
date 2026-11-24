@@ -58,8 +58,11 @@ body.row-links {
 body {
     --row-overhead: calc(4 * var(--row-gap) + var(--rail-pad-start) + var(--rail-pad-end));
     --tile: clamp(44px, min(calc((100vw - 32px - var(--row-overhead)) / 5), calc((100dvh - 420px) / 4)), 72px);
-    /* everything (title, mode switch, board, keyboard) is exactly as wide as the board */
+    /* everything (board, keyboard, description) is exactly as wide as the board */
     --content: calc(5 * var(--tile) + var(--row-overhead));
+    /* the title and the mode switch row: as wide as the board, but never narrower than the screen
+       allows up to 380px, so the switch and its four buttons fit when a short screen shrinks the board */
+    --header: max(var(--content), min(100vw - 32px, 380px));
     /* keyboard: 10 keys fill the top row; the wide keys fill the bottom row */
     --key: calc((var(--content) - 9 * var(--key-gap)) / 10);
     --key-wide: calc(1.5 * var(--key) + var(--key-gap) / 2);
@@ -116,7 +119,7 @@ button:focus-visible, a:focus-visible {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    width: var(--content);
+    width: var(--header);
 }
 
 /* the 12 letter tiles stretch to exactly the board's width */
@@ -141,7 +144,7 @@ button:focus-visible, a:focus-visible {
     justify-content: center;
     aspect-ratio: 0.82;
     font-family: var(--display-font);
-    font-size: calc((var(--content) - 33px) / 12 * 0.6);
+    font-size: calc((var(--header) - 33px) / 12 * 0.6);
     color: var(--ink);
     background: var(--card);
     border: 2px solid var(--ink);

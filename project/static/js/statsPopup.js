@@ -124,7 +124,7 @@ export class StatsPopup {
             </div>`}
             ${this.getYesterdayBest()}
             <p class="fine-print">A day counts once you finish it${mode === 'solve' ? ', reveals or not' : ''}. ${this.manager.account && this.manager.account.signedIn ? 'Stats are saved to your account.' : 'Stats are kept in this browser only (👥 to keep them on every device).'}</p>
-            ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button>${this.manager.friendsPopup ? '<button id="stats-scoreboard-button" class="pill">SCORE BOARD</button>' : ''}</div>` : ''}`;
+            ${this.canCopyResults() ? `<div class="stats-share"><button id="stats-copy-button" class="pill primary">${this.pageCopyButton.textContent}</button>${this.manager.friendsPopup ? '<button id="stats-scoreboard-button" class="pill">FRIENDS</button>' : ''}</div>` : ''}`;
         const copyButton = document.getElementById('stats-copy-button');
         if (copyButton) {
             copyButton.addEventListener('click', () => this.pageCopyButton.click());

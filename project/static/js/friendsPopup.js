@@ -231,12 +231,12 @@ export class FriendsPopup {
         }
         const note = this.message ? `<p class="friends-message">${this.message}</p>` : '';
         if (!this.account.signedIn) {
-            this.content.innerHTML = `<h2 id="friends-title">Score board</h2>${note}${this.signInForm()}${this.privacyNote()}`;
+            this.content.innerHTML = `<h2 id="friends-title">Friends</h2>${note}${this.signInForm()}${this.privacyNote()}`;
             this.setUpForm();
             return;
         }
         this.content.innerHTML = `
-            <h2 id="friends-title">Score board</h2>
+            <h2 id="friends-title">Friends</h2>
             ${note}
             ${this.scoreboard ? this.table() : '<p class="fine-print">Loading…</p>'}
             ${this.linkSection()}
@@ -262,7 +262,7 @@ export class FriendsPopup {
     signInForm() {
         const isSignUp = this.formMode === 'signup';
         const invite = this.invite
-            ? `<p class="friends-invite"><strong>${escape(this.invite.username)}</strong> wants you on their scoreboard. ${isSignUp ? 'Make an account' : 'Sign in'} and you'll be friends.</p>`
+            ? `<p class="friends-invite"><strong>${escape(this.invite.username)}</strong> sent you a friend link. ${isSignUp ? 'Make an account' : 'Sign in'} and you'll be friends.</p>`
             : `<p>Sign in to keep your stats on every device and see how your friends did today.</p>`;
         return `
             ${invite}
@@ -408,7 +408,7 @@ export class FriendsPopup {
     linkSection() {
         return `
             <h3>Add a friend</h3>
-            <p>Send this link to a friend. When they open it and sign in, you'll be on each other's boards.</p>
+            <p>Send this link to a friend. When they open it and sign in, you'll be friends.</p>
             <div class="link-row">
                 <input id="friend-link" class="link-box" readonly value="${escape(this.account.info.friendLink)}" aria-label="Your friend link">
                 <button id="copy-friend-link" class="pill primary">COPY</button>
@@ -455,7 +455,7 @@ export class FriendsPopup {
     }
 
     async removeFriend(username) {
-        if (!confirm(`Remove ${username}? You'll both disappear from each other's boards.`)) {
+        if (!confirm(`Remove ${username}? You'll no longer be friends.`)) {
             return;
         }
         await this.account.post('/account/unfriend', { username });

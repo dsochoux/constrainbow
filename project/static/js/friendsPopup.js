@@ -267,7 +267,7 @@ export class FriendsPopup {
                 <p id="account-error" class="account-error" role="alert"></p>
                 <button type="submit" class="pill primary">${isSignUp ? 'MAKE ACCOUNT' : 'SIGN IN'}</button>
             </form>
-            ${isSignUp ? `<p class="fine-print">No email needed, so there's <strong>no password reset</strong>: write your password down. Usernames are 3–16 letters, numbers or _, and your friends see yours.</p>` : ''}`;
+            ${isSignUp ? `<p class="fine-print">No email needed, so there's <strong>no password reset</strong>: write your password down. Usernames are 3–16 letters, numbers or _, and your friends see yours. They must be unique, except I don't have many players yet, so you can probably have your first name if you want it.</p>` : ''}`;
     }
 
     setUpForm() {

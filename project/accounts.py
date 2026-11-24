@@ -202,11 +202,10 @@ def json_body():
 
 
 def site_url():
-    # the app sits behind nginx (or a tunnel) and only sees plain http, so links it makes say https,
-    # except when it runs on this computer
-    host = request.host
-    local = host.startswith(("localhost", "127.0.0.1"))
-    return f"{'http' if local else 'https'}://{host}/"
+    # behind nginx the app itself only sees plain http; nginx says what the visitor used in
+    # X-Forwarded-Proto (https on the live site). Running locally there's no proxy, so it's plain http
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    return f"{'https' if scheme == 'https' else 'http'}://{request.host}/"
 
 
 def account_info(user):

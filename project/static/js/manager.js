@@ -28,6 +28,7 @@ export class Manager {
         this.account = new Account(this);
         this.friendsPopup = document.getElementById('friends-button') ? new FriendsPopup(this) : null;
         this.account.sync().then(() => {
+            this.fillInMissingBoard(); // now the account is known (the board may have loaded first)
             if (this.friendsPopup) {
                 this.friendsPopup.afterSync();
             }
@@ -92,6 +93,7 @@ export class Manager {
         if (this.board.isSolutionFound) {
             this.showRainbow(false);
         }
+        this.fillInMissingBoard();
     }
 
     addEventListeners() {
@@ -295,6 +297,29 @@ export class Manager {
             // as the board's wave finishes; the confetti keeps falling behind the popup (the overlay sits
             // above it) and a title message changes back behind it too
             setTimeout(() => this.statsPopup.show(), 2000);
+        }
+    }
+
+    // today's puzzle finished before the stats kept boards (2026-11-23) has a result without one, so
+    // friends couldn't open it on the scoreboard: adds the finished board on screen to the stats, and
+    // sends it to the account (the server adds a board to a result that has none). Called when the
+    // board loads and when the account answers, whichever comes last sends it
+    fillInMissingBoard() {
+        if (!this.statsPopup || !this.board || !this.board.isSolutionFound) {
+            return;
+        }
+        const saved = this.stats.data[this.gameMode][this.gameId];
+        if (saved && !saved.words) {
+            const board = this.board.getFinishedBoard(saved);
+            if (board) {
+                this.stats.data[this.gameMode][this.gameId] = { ...saved, ...board };
+                this.stats.save();
+                this.boardToSend = true;
+            }
+        }
+        if (this.boardToSend && this.account.signedIn) {
+            this.boardToSend = false;
+            this.account.recordResult(this.gameMode, this.gameId, this.stats.data[this.gameMode][this.gameId]);
         }
     }
 

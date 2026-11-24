@@ -539,6 +539,12 @@ export class Board {
         return words;
     }
 
+    // the finished board for a saved result that has none (finished before the stats kept boards,
+    // 2026-11-23), or null if it can't be known: the board on screen
+    getFinishedBoard(saved) {
+        return { words: this.getWordsList() };
+    }
+
     // the words "include solution" shares: the board as it is (ScoreBoard shares the board that earned
     // the day's best score instead)
     getShareWords() {

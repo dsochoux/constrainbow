@@ -277,6 +277,11 @@ export class ScoreBoard extends Board {
         return { points: this.score, max: this.numPossiblePoints, words: this.getWordsList() };
     }
 
+    // the board that earned the saved score (after SHOW BEST the screen may show the best board instead)
+    getFinishedBoard(saved) {
+        return this.dayBest && this.dayBest.points === saved.points ? { words: this.dayBest.words } : null;
+    }
+
     // for the share text: the day's best score; otherwise: what's logged when the
     // puzzle is first solved (the board on screen)
     getMetric(isForShare) {

@@ -269,6 +269,10 @@ export class SolveBoard extends SpeedBoard {
         return { seconds: this.elapsedSeconds, reveals: this.revealedTiles, words: this.getWordsList(), revealed: this.revealedPositions };
     }
 
+    getFinishedBoard(saved) {
+        return { words: this.getWordsList(), revealed: this.revealedPositions };
+    }
+
     // solved without REVEAL (a themed day's message comes first). Board's, not SpeedBoard's
     // (that one is for QUICKESTTIME)
     getTitleMessage() {

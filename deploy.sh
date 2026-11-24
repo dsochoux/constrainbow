@@ -49,7 +49,7 @@ if [ -f ./word_files/solve_themes.json ]; then
 fi
 # game generation scripts (the server generates its own games every night, see docs/generation-algorithm.md)
 ssh $REMOTE_USER@$REMOTE_HOST "mkdir -p $REMOTE_DIR/scripts"
-scp ./scripts/generate_game.py ./scripts/generate_unique.py ./scripts/ensure_games.py ./scripts/backup_accounts.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/scripts
+scp ./scripts/generate_game.py ./scripts/generate_unique.py ./scripts/ensure_games.py ./scripts/backup_accounts.py ./scripts/delete_account.py $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/scripts
 # games: --ignore-existing means a game that already exists is never overwritten, in either direction,
 # so a game that players may have already seen can never change
 # push any games the server is missing, then pull down any games the server generated

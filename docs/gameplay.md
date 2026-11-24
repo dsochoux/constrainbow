@@ -104,9 +104,10 @@ Danny writes the themes (roughly weekly, plus holidays): a clue and a pool of 6�
 
 ## Stats and streaks (since 2026-11-16)
 - Each daily mode keeps its own stats in this browser (localStorage `stats`), and in the player's account if they're signed in (see "Friends and accounts"): days played, current streak 🔥, best streak, plus a mode-specific number and chart:
-  - SOLVE: no-reveal solves and average tiles revealed per day; solve times (under 2m, 2–5m, 5–10m, 10m+).
-  - SPEED: best time; times (under 1m, 1–2m, 2–3m, 3–5m, 5m+).
-  - SCORE: perfect scores; share of the max score (100%, 90–99%, 75–89%, under 75%). A better score later the same day replaces the day's result.
+  - SOLVE: no-reveal solves and average tiles revealed per day; a histogram of solve times, each column's days with 💡 reveals striped on top of the days without (with a small legend).
+  - SPEED: best time; a histogram of times.
+  - SCORE: perfect scores; a histogram of the share of the max score in 5% columns, from 50% (or the lowest score, if lower) to a column of its own for 100%.
+  - Every histogram (since 2026-11-23; before that, four or five bars) highlights today's column, shows each column's count on top and its range on hover. The time histograms fit each player's own times: from the fastest to the 90th-percentile time, in a round step (1s, 2s, 5s, 10s, 15s, 30s, 1m, 2m, 5m or 10m) chosen for about 2 × √(days played) columns (8 to 18), so the shape gets finer as days add up; slower days share one last column ("5m+"). A better score later the same day replaces the day's result.
 - A day counts once its puzzle is finished. In SOLVE, reveals don't matter. The current streak stays alive until a whole day is missed (finishing yesterday but not yet today still shows the streak).
 - The 📊 button next to `?` opens the stats (and pauses the game, like `?`). They also open by themselves about 2 s after today's puzzle is finished for the first time. Today's bar is highlighted. Once today's puzzle is solved, the popup also has a COPY RESULTS button that works the page's button (same text; in speed and score a second click includes the solution).
 - Only the daily puzzles count: the SOLVE test batch and `/solve/day` have no 📊 button and record nothing.

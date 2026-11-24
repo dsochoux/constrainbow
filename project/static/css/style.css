@@ -957,25 +957,84 @@ body.row-links .word-row .letter {
     font-size: 15px;
 }
 
-/* one row per bar: its label, then a bar as long as its share of the biggest bar */
-.stats-chart {
+/* the stats histogram (statsPopup.js): one column per range of results, with its count on top and
+   some columns labeled underneath (50, 60, ... 100% in score mode; times in solve and speed) */
+.stats-histogram {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 6px 10px;
-    align-items: center;
-    font-size: 13px;
+    grid-template-columns: repeat(var(--columns), 1fr);
+    gap: 3px;
+    align-items: end;
+    padding-bottom: 2px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 18px;
 }
-.stats-bar {
-    width: calc(var(--fill) * 100%);
-    min-width: 26px;
-    padding: 2px 7px;
-    text-align: right;
+.histogram-column {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    height: 110px;
+    text-align: center;
+}
+.histogram-column b {
+    font-size: 10px;
+    line-height: 14px;
+}
+.histogram-bar {
+    --bar: var(--key-off);
+    display: flex;
+    flex-direction: column;
+    height: calc(var(--fill) * 90px);
+    overflow: hidden;
     border: 2px solid var(--ink);
-    border-radius: 6px;
-    background: var(--key-off);
+    border-radius: 4px 4px 0 0;
 }
-.stats-bar.today {
-    background: var(--c3);
+/* its parts, stacked: solve's days with reveals (striped) on top of the days without */
+.histogram-bar i {
+    flex-basis: 0;
+    background: var(--bar);
+}
+.histogram-bar i.revealed, .histogram-legend .swatch.revealed {
+    background: repeating-linear-gradient(135deg, var(--bar) 0 3px, var(--card) 3px 6px);
+}
+.histogram-bar i.revealed + i {
+    border-top: 2px solid var(--ink);
+}
+.histogram-bar.empty {
+    border: none;
+}
+.histogram-bar.today {
+    --bar: var(--c3);
+}
+/* the labels hang below the axis line at their column's left edge, where its 5% starts */
+.histogram-column small {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -1.5px; /* half the gap between columns */
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.histogram-legend {
+    margin: -6px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+.histogram-legend .swatch {
+    --bar: var(--key-off);
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    vertical-align: -2px;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    background: var(--bar);
+}
+.histogram-legend .swatch.revealed {
+    margin-left: 10px;
 }
 /* ---------- friends popup (friendsPopup.js) ---------- */
 
